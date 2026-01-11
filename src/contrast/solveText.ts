@@ -14,7 +14,7 @@ function adjustLightness(
   maxIterations = 24,
 ): OklchColor {
   const bg = new Color(background).to("oklch");
-  const bgL = bg.coords[0];
+  const bgL = bg.coords[0] ?? 0;
   const direction = bgL > 0.5 ? -1 : 1;
   let current = { ...oklch };
 
@@ -40,7 +40,7 @@ export function adjustTextColor(
 ): ColorHex {
   const fg = new Color(foreground).to("oklch");
   const [l, c, h] = fg.coords;
-  let candidate: OklchColor = { l, c, h };
+  let candidate: OklchColor = { l: l ?? 0, c: c ?? 0, h: h ?? 0 };
 
   candidate = adjustLightness(candidate, background, target);
   candidate = compressToSrgb(candidate);

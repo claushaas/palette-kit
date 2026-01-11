@@ -1,0 +1,15 @@
+{
+  "name": "palette-kit-expo",
+  "private": true,
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start"
+  },
+  "dependencies": {
+    "@claus/palette-kit": "*",
+    "expo": "^50.0.0",
+    "react": "18.2.0",
+    "react-native": "0.73.6"
+  }
+}

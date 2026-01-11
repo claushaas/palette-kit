@@ -22,4 +22,10 @@ describe("generateScale", () => {
     expect(scale.light[9]).toMatch(/^#[0-9a-fA-F]{6}$/);
     expect(scale.dark[9]).toMatch(/^#[0-9a-fA-F]{6}$/);
   });
+
+  it("includes P3 values when enabled", () => {
+    const scale = generateScale({ source: seed, p3: true });
+    expect(scale.p3?.light[9]).toMatch(/^color\(display-p3 /);
+    expect(scale.p3?.dark[9]).toMatch(/^color\(display-p3 /);
+  });
 });

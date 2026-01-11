@@ -29,27 +29,29 @@ export type CreateThemeOptions = {
     textPrimary?: number;
     textSecondary?: number;
   };
+  p3?: boolean;
 };
 
 export function createTheme(options: CreateThemeOptions): Theme {
+  const includeP3 = options.p3 ?? false;
   const scales: Record<string, Scale> = {
-    neutral: generateScale({ source: options.neutral }),
-    accent: generateScale({ source: options.accent }),
+    neutral: generateScale({ source: options.neutral, p3: includeP3 }),
+    accent: generateScale({ source: options.accent, p3: includeP3 }),
   };
 
   if (options.semantic?.success) {
-    scales.success = generateScale({ source: options.semantic.success });
+    scales.success = generateScale({ source: options.semantic.success, p3: includeP3 });
   }
   if (options.semantic?.warning) {
-    scales.warning = generateScale({ source: options.semantic.warning });
+    scales.warning = generateScale({ source: options.semantic.warning, p3: includeP3 });
   }
   if (options.semantic?.danger) {
-    scales.danger = generateScale({ source: options.semantic.danger });
+    scales.danger = generateScale({ source: options.semantic.danger, p3: includeP3 });
   }
 
   if (options.extras) {
     for (const [key, source] of Object.entries(options.extras)) {
-      scales[key] = generateScale({ source });
+      scales[key] = generateScale({ source, p3: includeP3 });
     }
   }
 

@@ -1,8 +1,16 @@
 import { radixSeeds } from "./data/radixSeeds.js";
 import { type CurveConfig, resolveCurves } from "./engine/curves.js";
-import { compressToSrgb, hexToOklch, inSrgbGamut, oklchToHex } from "./engine/oklch.js";
+import {
+  compressToP3,
+  compressToSrgb,
+  hexToOklch,
+  inP3Gamut,
+  inSrgbGamut,
+  oklchToHex,
+  oklchToP3,
+} from "./engine/oklch.js";
 import { selectTemplateId, templates } from "./engine/templates.js";
-import type { ColorHex, ColorSource, Scale, Step, TemplateId } from "./types.js";
+import type { ColorHex, ColorP3, ColorSource, Scale, Step, TemplateId } from "./types.js";
 
 const steps: Step[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
@@ -13,6 +21,7 @@ type GenerateScaleOptions = {
   template?: "auto" | TemplateId;
   curves?: CurveConfig;
   gamut?: { strategy: "compress" | "clip" };
+  p3?: boolean;
 };
 
 function getSeedHex(source: ColorSource): ColorHex {
@@ -39,7 +48,13 @@ function buildScaleForMode(
   curves?: CurveConfig,
   gamutStrategy: "compress" | "clip" = "compress",
   mode: "light" | "dark" = "light",
-): { scale: Record<Step, ColorHex>; outOfGamutCount: number } {
+  includeP3 = false,
+): {
+  scale: Record<Step, ColorHex>;
+  p3?: Record<Step, ColorP3>;
+  outOfGamutCount: number;
+  outOfP3GamutCount: number;
+} {
   const seedOklch = hexToOklch(seedHex);
   const template = templates[mode][templateId];
   const anchor = template[anchorStep];
@@ -49,14 +64,17 @@ function buildScaleForMode(
   const curveSet = resolveCurves(curves);
 
   const output = {} as Record<Step, ColorHex>;
+  const p3Output = includeP3 ? ({} as Record<Step, ColorP3>) : undefined;
   let outOfGamutCount = 0;
+  let outOfP3GamutCount = 0;
 
   for (const step of steps) {
     const base = template[step];
     const l = base.l + dL * curveSet.lightness[step];
     const c = Math.max(0, base.c + dC * curveSet.chroma[step]);
     const h = normalizeHue(base.h + dH);
-    let current = { l, c, h };
+    const candidate = { l, c, h };
+    let current = candidate;
 
     if (!inSrgbGamut(current)) {
       outOfGamutCount += 1;
@@ -66,9 +84,23 @@ function buildScaleForMode(
     }
 
     output[step] = oklchToHex(current);
+
+    if (p3Output) {
+      let p3Current = candidate;
+      if (!inP3Gamut(p3Current)) {
+        outOfP3GamutCount += 1;
+        p3Current = compressToP3(p3Current);
+      }
+      p3Output[step] = oklchToP3(p3Current);
+    }
   }
 
-  return { scale: output, outOfGamutCount };
+  return {
+    scale: output,
+    p3: p3Output,
+    outOfGamutCount,
+    outOfP3GamutCount,
+  };
 }
 
 export function generateScale(options: GenerateScaleOptions): Scale {
@@ -88,6 +120,7 @@ export function generateScale(options: GenerateScaleOptions): Scale {
     options.curves,
     gamutStrategy,
     "light",
+    options.p3 ?? false,
   );
 
   const darkResult = buildScaleForMode(
@@ -97,21 +130,33 @@ export function generateScale(options: GenerateScaleOptions): Scale {
     options.curves,
     gamutStrategy,
     "dark",
+    options.p3 ?? false,
   );
 
   const scale: Scale = {
     light: lightResult.scale,
     dark: darkResult.scale,
+    p3:
+      lightResult.p3 && darkResult.p3 ? { light: lightResult.p3, dark: darkResult.p3 } : undefined,
     meta: {
       outOfGamutCount: lightResult.outOfGamutCount + darkResult.outOfGamutCount,
+      outOfP3GamutCount: lightResult.outOfP3GamutCount + darkResult.outOfP3GamutCount,
     },
   };
 
   if (mode === "light") {
-    return { ...scale, dark: scale.light };
+    return {
+      ...scale,
+      dark: scale.light,
+      p3: scale.p3 ? { light: scale.p3.light, dark: scale.p3.light } : undefined,
+    };
   }
   if (mode === "dark") {
-    return { ...scale, light: scale.dark };
+    return {
+      ...scale,
+      light: scale.dark,
+      p3: scale.p3 ? { light: scale.p3.dark, dark: scale.p3.dark } : undefined,
+    };
   }
 
   return scale;

@@ -1,6 +1,7 @@
 export type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
 export type ColorHex = `#${string}`;
+export type ColorP3 = string;
 
 export type RadixSeedName = string;
 
@@ -12,11 +13,16 @@ export type ColorSource =
 
 export type ScaleDiagnostics = {
   outOfGamutCount: number;
+  outOfP3GamutCount?: number;
 };
 
 export type Scale = {
   light: Record<Step, ColorHex>;
   dark: Record<Step, ColorHex>;
+  p3?: {
+    light: Record<Step, ColorP3>;
+    dark: Record<Step, ColorP3>;
+  };
   meta?: ScaleDiagnostics;
 };
 

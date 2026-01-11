@@ -52,6 +52,7 @@ const theme = createTheme({
     textPrimary: 75,
     textSecondary: 60,
   },
+  p3: true,
 });
 ```
 
@@ -71,8 +72,40 @@ const css = toCssVars(theme, {
   includeTokens: true,
   includeScales: true,
   includeAlpha: true,
+  includeP3: true,
   lightSelector: ":root",
   darkSelector: ".dark",
+});
+```
+
+When `includeP3` is enabled and P3 data is available, the exporter adds a `@supports` block with `color(display-p3 ...)` values.
+
+## toTailwind
+
+Export a Tailwind config object with `colors` for light/dark modes.
+
+```ts
+import { toTailwind } from "@claus/palette-kit";
+
+const tailwind = toTailwind(theme, {
+  mode: "both",
+  includeTokens: true,
+  includeScales: false,
+  includeAlpha: false,
+});
+```
+
+## toReactNative
+
+Export a plain JS object for React Native / Expo.
+
+```ts
+import { toReactNative } from "@claus/palette-kit";
+
+const palette = toReactNative(theme, {
+  includeTokens: true,
+  includeScales: true,
+  includeAlpha: true,
 });
 ```
 
