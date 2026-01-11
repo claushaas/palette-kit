@@ -44,6 +44,34 @@ const theme = createTheme({
 });
 ```
 
+## Quick start
+
+Generate a theme and export CSS variables:
+
+```ts
+import { createTheme, toCssVars } from "@claus/palette-kit";
+
+const theme = createTheme({
+  neutral: { source: "seed", value: "#111827" },
+  accent: { source: "seed", value: "#3d63dd" },
+});
+
+const css = toCssVars(theme, { prefix: "pk" });
+```
+
+Use tokens in your app:
+
+```css
+:root {
+  /* paste the generated CSS vars here */
+}
+
+body {
+  background: var(--pk-bg-app);
+  color: var(--pk-text-primary);
+}
+```
+
 ## Principles
 
 - Tokens by intent, not by color.
@@ -52,6 +80,12 @@ const theme = createTheme({
 
 ## Docs and plans
 
+- `docs/README.md`
+- `docs/concepts.md`
+- `docs/api.md`
+- `docs/tokens.md`
+- `docs/contrast.md`
+- `docs/alpha.md`
 - `docs/Why.md`
 - `docs/spec-implementation.md`
 - `docs/plan-tests.md`
