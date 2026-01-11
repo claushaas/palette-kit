@@ -1,5 +1,6 @@
 import { generateAlphaScale } from "./alpha/generateAlphaScale.js";
 import { onSolidTextTokens } from "./contrast/onSolid.js";
+import { analyzeTheme } from "./diagnostics/analyzeTheme.js";
 import { generateScale } from "./generateScale.js";
 import { buildPresetTokens } from "./tokens/presetRadixLikeUi.js";
 import type { AlphaScale, ColorHex, ColorSource, Scale, Theme } from "./types.js";
@@ -77,9 +78,12 @@ export function createTheme(options: CreateThemeOptions): Theme {
     alpha = generateAlphaScale(accentScale.light[9], background);
   }
 
+  const diagnostics = analyzeTheme({ scales, tokens, alpha });
+
   return {
     scales,
     tokens,
     alpha,
+    diagnostics,
   };
 }

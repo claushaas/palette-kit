@@ -1,4 +1,6 @@
 export { generateAlphaScale } from "./alpha/generateAlphaScale.js";
+export { analyzeScale } from "./diagnostics/analyzeScale.js";
+export { analyzeTheme } from "./diagnostics/analyzeTheme.js";
 export { apcaContrast } from "./contrast/apca.js";
 export { onSolidTextTokens } from "./contrast/onSolid.js";
 export { createTheme } from "./createTheme.js";
