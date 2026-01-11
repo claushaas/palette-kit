@@ -1,5 +1,6 @@
 import { apcaContrast } from "../contrast/apca.js";
 import type { Theme, ThemeDiagnostics } from "../types.js";
+import { analyzeWarnings } from "./warnings.js";
 
 export function analyzeTheme(theme: Theme): ThemeDiagnostics {
   const contrast: Record<string, number> = {};
@@ -47,5 +48,7 @@ export function analyzeTheme(theme: Theme): ThemeDiagnostics {
     outOfGamutCount += scale.meta?.outOfGamutCount ?? 0;
   }
 
-  return { contrast, outOfGamutCount };
+  const warnings = analyzeWarnings(theme);
+
+  return { contrast, outOfGamutCount, warnings };
 }

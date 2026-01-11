@@ -92,6 +92,7 @@ const tailwind = toTailwind(theme, {
   includeTokens: true,
   includeScales: false,
   includeAlpha: false,
+  includeP3: true,
 });
 ```
 
@@ -106,8 +107,11 @@ const palette = toReactNative(theme, {
   includeTokens: true,
   includeScales: true,
   includeAlpha: true,
+  includeP3: true,
 });
 ```
+
+Note: React Native does not support `color(display-p3 ...)` strings as drop-in colors. The `p3` field is provided as data for platforms that can handle wide color via native APIs.
 
 ## toJson / toTs
 

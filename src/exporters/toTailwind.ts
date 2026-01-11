@@ -5,6 +5,7 @@ type TailwindOptions = {
   includeTokens?: boolean;
   includeScales?: boolean;
   includeAlpha?: boolean;
+  includeP3?: boolean;
 };
 
 function setNested(target: Record<string, unknown>, path: string[], value: unknown) {
@@ -27,11 +28,15 @@ function tokensToNested(tokens: Record<string, string>): Record<string, unknown>
   return output;
 }
 
-function scalesToNested(scales: Theme["scales"], mode: "light" | "dark") {
+function scalesToNested(scales: Theme["scales"], mode: "light" | "dark", useP3?: boolean) {
   const output: Record<string, unknown> = {};
   for (const [slot, scale] of Object.entries(scales)) {
+    const source = useP3 ? scale.p3?.[mode] : scale[mode];
+    if (!source) {
+      continue;
+    }
     const stepMap: Record<string, string> = {};
-    for (const [step, value] of Object.entries(scale[mode])) {
+    for (const [step, value] of Object.entries(source)) {
       stepMap[String(step)] = value;
     }
     output[slot] = stepMap;
@@ -55,15 +60,16 @@ export function toTailwind(theme: Theme, options?: TailwindOptions) {
   const includeTokens = options?.includeTokens ?? true;
   const includeScales = options?.includeScales ?? false;
   const includeAlpha = options?.includeAlpha ?? false;
+  const includeP3 = options?.includeP3 ?? false;
 
-  function buildModeTokens(modeKey: "light" | "dark") {
+  function buildModeTokens(modeKey: "light" | "dark", useP3?: boolean) {
     const colors: Record<string, unknown> = {};
 
     if (includeTokens) {
       colors.tokens = tokensToNested(theme.tokens[modeKey]);
     }
     if (includeScales) {
-      colors.scale = scalesToNested(theme.scales, modeKey);
+      colors.scale = scalesToNested(theme.scales, modeKey, useP3);
     }
     if (includeAlpha && theme.alpha) {
       colors.alpha = alphaToNested(theme.alpha, modeKey);
@@ -78,6 +84,20 @@ export function toTailwind(theme: Theme, options?: TailwindOptions) {
   }
   if (mode === "dark" || mode === "both") {
     colors.dark = buildModeTokens("dark");
+  }
+
+  if (includeP3) {
+    const hasP3 = Object.values(theme.scales).some((scale) => scale.p3);
+    if (hasP3) {
+      const p3: Record<string, unknown> = {};
+      if (mode === "light" || mode === "both") {
+        p3.light = buildModeTokens("light", true);
+      }
+      if (mode === "dark" || mode === "both") {
+        p3.dark = buildModeTokens("dark", true);
+      }
+      colors.p3 = p3;
+    }
   }
 
   return {

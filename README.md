@@ -72,6 +72,32 @@ body {
 }
 ```
 
+## React Native + Expo
+
+Use the React Native exporter and `useColorScheme()`:
+
+```ts
+import { useMemo } from "react";
+import { useColorScheme } from "react-native";
+import { createTheme, toReactNative } from "@claus/palette-kit";
+
+const theme = createTheme({
+  neutral: { source: "seed", value: "#111827" },
+  accent: { source: "seed", value: "#3d63dd" },
+  p3: true,
+});
+
+export function usePalette() {
+  const scheme = useColorScheme();
+  const palette = useMemo(() => toReactNative(theme, { includeP3: true }), []);
+  return scheme === "dark" ? palette.dark : palette.light;
+}
+```
+
+See `examples/expo` for a full example.
+
+Note: React Native does not support `color(display-p3 ...)` strings as drop-in colors. The `p3` field is provided as data for platforms that can handle wide color via native APIs.
+
 ## Principles
 
 - Tokens by intent, not by color.
