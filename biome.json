@@ -11,5 +11,33 @@
     "rules": {
       "recommended": true
     }
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "**/*.js",
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.css",
+      "**/*.scss",
+      "**/*.html",
+      "**/*.json",
+      "**/*.md",
+      "!**/supabase/functions",
+      "!**/node_modules",
+      "!**/dist",
+      "!**/build",
+      "!**/coverage",
+      "!**/ios",
+      "!**/android",
+      "!**/.git/",
+      "!**/.vscode",
+      "!**/*.d.ts",
+      "!**/*.spec.ts",
+      "!**/*.test.ts",
+      "!**/.github",
+      "!**/examples",
+      "!**/tests"
+    ]
   }
 }
