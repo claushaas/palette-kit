@@ -1,5 +1,6 @@
 import { generateAlphaScale } from "./alpha/generateAlphaScale.js";
 import { onSolidTextTokens } from "./contrast/onSolid.js";
+import { adjustTextColor } from "./contrast/solveText.js";
 import { analyzeTheme } from "./diagnostics/analyzeTheme.js";
 import { generateScale } from "./generateScale.js";
 import { buildPresetTokens } from "./tokens/presetRadixLikeUi.js";
@@ -23,6 +24,10 @@ export type CreateThemeOptions = {
   alpha?: {
     enabled?: boolean;
     background?: { light?: ColorHex; dark?: ColorHex };
+  };
+  contrast?: {
+    textPrimary?: number;
+    textSecondary?: number;
   };
 };
 
@@ -50,6 +55,40 @@ export function createTheme(options: CreateThemeOptions): Theme {
 
   const preset = options.tokens?.preset ?? "radix-like-ui";
   const tokens = preset === "radix-like-ui" ? buildPresetTokens(scales) : { light: {}, dark: {} };
+
+  const lightBg = tokens.light["bg.app"];
+  const darkBg = tokens.dark["bg.app"];
+  const textPrimaryTarget = options.contrast?.textPrimary ?? 75;
+  const textSecondaryTarget = options.contrast?.textSecondary ?? 60;
+
+  if (lightBg && tokens.light["text.primary"]) {
+    tokens.light["text.primary"] = adjustTextColor(
+      tokens.light["text.primary"],
+      lightBg,
+      textPrimaryTarget,
+    );
+  }
+  if (lightBg && tokens.light["text.secondary"]) {
+    tokens.light["text.secondary"] = adjustTextColor(
+      tokens.light["text.secondary"],
+      lightBg,
+      textSecondaryTarget,
+    );
+  }
+  if (darkBg && tokens.dark["text.primary"]) {
+    tokens.dark["text.primary"] = adjustTextColor(
+      tokens.dark["text.primary"],
+      darkBg,
+      textPrimaryTarget,
+    );
+  }
+  if (darkBg && tokens.dark["text.secondary"]) {
+    tokens.dark["text.secondary"] = adjustTextColor(
+      tokens.dark["text.secondary"],
+      darkBg,
+      textSecondaryTarget,
+    );
+  }
 
   const accentScale = scales.accent;
   const lightOnSolid = onSolidTextTokens(accentScale.light[9]);
