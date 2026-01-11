@@ -1,0 +1,5 @@
+tests/
+examples/
+docs/
+vitest.config.ts
+tsconfig.test.json

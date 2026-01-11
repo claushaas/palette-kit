@@ -7,15 +7,15 @@ Status: WIP. The API may change while the MVP is under construction.
 ## Installation
 
 ```bash
-npm install @claus/palette-kit
+npm install @clhaas/palette-kit
 ```
 
 ```bash
-yarn add @claus/palette-kit
+yarn add @clhaas/palette-kit
 ```
 
 ```bash
-pnpm add @claus/palette-kit
+pnpm add @clhaas/palette-kit
 ```
 
 ## What the library provides
@@ -29,7 +29,7 @@ pnpm add @claus/palette-kit
 ## Usage example (planned API)
 
 ```ts
-import { createTheme } from "@claus/palette-kit";
+import { createTheme } from "@clhaas/palette-kit";
 
 const theme = createTheme({
   neutral: { source: "seed", value: "#111827" },
@@ -49,7 +49,7 @@ const theme = createTheme({
 Generate a theme and export CSS variables:
 
 ```ts
-import { createTheme, toCssVars } from "@claus/palette-kit";
+import { createTheme, toCssVars } from "@clhaas/palette-kit";
 
 const theme = createTheme({
   neutral: { source: "seed", value: "#111827" },
@@ -79,7 +79,7 @@ Use the React Native exporter and `useColorScheme()`:
 ```ts
 import { useMemo } from "react";
 import { useColorScheme } from "react-native";
-import { createTheme, toReactNative } from "@claus/palette-kit";
+import { createTheme, toReactNative } from "@clhaas/palette-kit";
 
 const theme = createTheme({
   neutral: { source: "seed", value: "#111827" },
