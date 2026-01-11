@@ -1,38 +1,38 @@
-# Spec de Implementacao - Palette Kit
+# Implementation Spec - Palette Kit
 
-## 1) Objetivo
+## 1) Goal
 
-Gerar paletas a partir de seeds (cores iniciais), usando OKLCH + APCA conforme `docs/Why.md`. As cores do Radix podem ser usadas apenas como origem opcional de seed (step 9), se o usuario escolher.
+Generate palettes from seeds using OKLCH + APCA as described in `docs/Why.md`. Radix colors can be used only as optional seed sources (step 9).
 
-## 2) Escopo MVP (v0.1)
+## 2) MVP scope (v0.1)
 
-- Gerar scale de 12 steps (light/dark) a partir de uma seed.
-- Suportar fontes de cor:
-  - `seed` (hex direto).
-  - `radix` (nome da escala) como entrada opcional do usuario, usando seeds precomputadas.
-- OKLCH como espaco de geracao.
-- Gamut mapping simples (compressao de C ate caber em sRGB).
-- Tokens semanticos basicos (preset `radix-like-ui`).
-- Exporters: TS (objeto), JSON e CSS vars.
-- Diagnosticos minimos (contrast score e contagem de out-of-gamut).
-- Runtime moderno: Node >= 22, TypeScript >= 5.5, ESM.
-- Dependencias: `colorjs.io` (OKLCH/conversoes) e `apca-w3` (contraste).
+- Generate 12-step scale (light/dark) from a seed.
+- Support color sources:
+  - `seed` (direct hex).
+  - `radix` (scale name) as optional input, using precomputed seeds.
+- OKLCH as generation space.
+- Simple gamut mapping (compress chroma until sRGB).
+- Basic semantic tokens (`radix-like-ui` preset).
+- Exporters: TS (object), JSON, CSS vars.
+- Minimal diagnostics (contrast score and out-of-gamut count).
+- Modern runtime: Node >= 22, TypeScript >= 5.5, ESM.
+- Dependencies: `colorjs.io` (OKLCH/conversions) and `apca-w3` (contrast).
 
-## 3) Fora de escopo imediato (v0.1)
+## 3) Out of scope (v0.1)
 
-- Saida Display-P3.
-- Plugin Tailwind / RN.
-- Preview visual e snapshots visuais.
-- Diagnosticos avancados (gamut heatmap, relatorio detalhado).
+- Display-P3 output.
+- Tailwind / RN plugin.
+- Visual preview and snapshot tooling.
+- Advanced diagnostics (gamut heatmap, detailed reports).
 
-## 4) Tipos e dados (TS)
+## 4) Types and data (TS)
 
 ```ts
 type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
-type ColorHex = `#${string}`; // validar em runtime
+type ColorHex = `#${string}`; // runtime validation
 
-type RadixSeedName = string; // gerado a partir de `radixSeeds`
+type RadixSeedName = string; // generated from `radixSeeds`
 
 type TemplateId = "neutral" | "warm" | "cool";
 
@@ -62,10 +62,10 @@ type Theme = {
 };
 ```
 
-## 5) APIs propostas
+## 5) APIs
 
 ```ts
-// gera apenas uma scale
+// generate a single scale
 function generateScale(options: {
   source: ColorSource;
   mode?: "light" | "dark" | "both";
@@ -73,10 +73,10 @@ function generateScale(options: {
   template?: "auto" | TemplateId;
   curves?: CurveConfig;
   gamut?: { strategy: "compress" | "clip" };
-  contrast?: ContrastProfile; // usado para ajustes opcionais
+  contrast?: ContrastProfile;
 }): Scale;
 
-// compoe tema completo
+// compose a full theme
 function createTheme(config: {
   neutral: ColorSource;
   accent: ColorSource;
@@ -88,65 +88,61 @@ function createTheme(config: {
   extras?: Record<string, ColorSource>; // category1, chart1, etc
   tokens?: { preset?: "radix-like-ui"; overrides?: TokenOverrides };
   alpha?: { enabled?: boolean; background?: { light?: ColorHex; dark?: ColorHex } };
-  contrast?: ContrastProfile;
-  output?: { format?: "ts" | "json" | "css"; cssVarPrefix?: string };
+  contrast?: { textPrimary?: number; textSecondary?: number };
 }): Theme;
 ```
 
-## 6) Engine (geracao da scale)
+## 6) Engine (scale generation)
 
-Passos (light/dark iguais, com templates diferentes):
+Steps (light/dark share logic, different templates):
 
-1. Converter seed para OKLCH.
-2. Selecionar template interno (auto por hue ou `template` fixo).
-3. Ancorar seed no `anchorStep` (default 9):
+1. Convert seed to OKLCH.
+2. Select internal template (auto by hue or fixed `template`).
+3. Anchor seed at `anchorStep` (default 9):
    - `dL = L_seed - L_template[anchor]`
    - `dC = C_seed - C_template[anchor]`
    - `dH = H_seed - H_template[anchor]`
-4. Aplicar deltas por step, com curvas por faixa (L/C). Exemplo inicial:
+4. Apply deltas per step using curves:
    - L: 1-2 (0.25-0.35), 3-5 (0.55-0.70), 6-8 (0.75-0.90), 9-12 (1.0)
    - C: 1-2 (0.15-0.25), 3-5 (0.50-0.70), 6-8 (0.70-0.90), 9-10 (1.0), 11-12 (0.60-0.80)
-5. Gamut mapping: converter para sRGB e, se fora do gamut, reduzir C ate caber.
-6. Converter para hex.
+5. Gamut mapping: convert to sRGB and compress chroma if out of gamut.
+6. Convert to hex.
 
 ## 7) Templates
 
-- Templates internos (v0.1): `neutral`, `warm`, `cool`, definidos como curvas de L/C base em OKLCH.
-- `auto` escolhe o template pela proximidade de hue (ex.: quentes vs frias).
-- Formato sugerido:
+- Internal templates (v0.1): `neutral`, `warm`, `cool` as OKLCH curves.
+- `auto` chooses template by hue (warm vs cool, neutral for low chroma).
+
+Format:
 
 ```ts
 const templates = {
   light: { [templateId]: OKLCHStepMap },
   dark: { [templateId]: OKLCHStepMap },
 };
-
-
 ```
-
-- `templateId` e fixo (neutral, warm, cool). Ajustes futuros podem calibrar com Radix.
 
 ## 8) Contrast solver (APCA)
 
-- Aplicar nos tokens criticos: `text.primary`, `text.secondary`, `onSolid.textPrimary`.
-- Priorizar ajuste de L, reduzir C se necessario.
-- Metas iniciais (ajustaveis por perfil):
+- Apply to critical tokens: `text.primary`, `text.secondary`, `onSolid.primary`.
+- Prefer L adjustments; reduce C if needed.
+- Initial targets (configurable):
   - `text.primary`: Lc 75-90
   - `text.secondary`: Lc 55-70
-  - `onSolid.textPrimary`: Lc 60-75
-- Lib sugerida: `apca-w3` com fallback para WCAG2 ratio.
+  - `onSolid.primary`: Lc 60-75
+- Use `apca-w3` with WCAG2 fallback if needed.
 
 ## 9) Alpha scales
 
-- Gerar `a1..a12` para light/dark.
-- Entrada: base color (step 9) + background (default light #ffffff, dark #111111).
-- Metodo inicial: curva fixa de alpha por step + mesma cor base.
-- Curva default (inspirada no alpha do Radix black/white): `0.05, 0.10, 0.15, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 0.95`.
-- Saida: #RRGGBBAA.
+- Generate `a1..a12` for light/dark.
+- Input: base color (step 9) + background (default light #ffffff, dark #111111).
+- Method: fixed alpha curve + same base color.
+- Default curve: `0.05, 0.10, 0.15, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 0.95`.
+- Output: #RRGGBBAA.
 
 ## 10) Token composer (preset radix-like-ui)
 
-Mapeamento minimo (de `docs/Why.md`):
+Minimal mapping (from `docs/Why.md`):
 
 - `bg.app` -> neutral 1
 - `bg.subtle` -> neutral 2
@@ -160,23 +156,23 @@ Mapeamento minimo (de `docs/Why.md`):
 - `focus.ring` -> accent 8
 - `accent.solid` -> accent 9
 - `accent.solidHover` -> accent 10
-- `text.secondary` -> neutral 11 (solver pode ajustar)
-- `text.primary` -> neutral 12 (solver pode ajustar)
-- `onSolid.textPrimary` -> solver escolhe white/black (+ alpha)
+- `text.secondary` -> neutral 11 (solver may adjust)
+- `text.primary` -> neutral 12 (solver may adjust)
+- `onSolid.primary` -> solver chooses white/black (+ alpha)
 
 ## 11) Exporters
 
 - `toJson(theme)`
 - `toCssVars(theme, { prefix })`
-- `toTs(theme)` (objeto exportavel)
+- `toTs(theme)` (exportable object)
 
-## 12) Diagnostics (minimo)
+## 12) Diagnostics (minimal)
 
-- Contagem de steps fora do gamut (por scale).
-- APCA score dos tokens criticos.
-- Avisos: seed muito cinza, seed muito escura para light, etc.
+- Out-of-gamut count per scale.
+- APCA scores for critical tokens.
+- Warnings: low chroma seed, very dark seed for light mode, etc.
 
-## 13) Estrutura sugerida
+## 13) Suggested structure
 
 ```text
 src/
@@ -205,22 +201,22 @@ src/
     analyzeScale.ts
 ```
 
-## 14) Testes (v0.1)
+## 14) Tests (v0.1)
 
-- `generateScale` deterministico (snapshot de steps).
-- Selecionar template por hue (seed rosa pega template rosa, etc).
-- Gamut mapping nao estoura (todas cores em sRGB).
-- `createTheme` gera tokens basicos.
-- Contrast solver atinge metas (com tolerancia).
+- `generateScale` deterministic (snapshot of steps).
+- Template selection by hue.
+- Gamut mapping does not exceed sRGB.
+- `createTheme` generates basic tokens.
+- Contrast solver hits targets (with tolerance).
 
-## 15) Decisoes fechadas
+## 15) Closed decisions
 
-1) Radix como seed (step 9).
-2) Incluir apenas seeds do Radix no repo.
+1) Radix as seed (step 9).
+2) Store Radix seeds in repo.
 3) OKLCH via `colorjs.io`.
-4) APCA via `apca-w3` (com fallback WCAG2).
-5) Steps internos como `Record<Step, ColorHex>`.
-6) Alpha: base step 9 com curva fixa (0.05..0.95).
-7) Token preset: iniciar com o mapa do `docs/Why.md`.
-8) Tokens em dot notation.
-9) Runtime alvo: Node >= 22 (ESM) e TS >= 5.5.
+4) APCA via `apca-w3` (with WCAG2 fallback).
+5) Steps as `Record<Step, ColorHex>`.
+6) Alpha: base step 9 with fixed curve (0.05..0.95).
+7) Token preset starts with `docs/Why.md` map.
+8) Tokens in dot notation.
+9) Runtime: Node >= 22 (ESM) and TS >= 5.5.

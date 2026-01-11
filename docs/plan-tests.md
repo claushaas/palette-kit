@@ -1,4 +1,4 @@
-# Plan for Tests
+# Test Plan
 
 ## Goals
 

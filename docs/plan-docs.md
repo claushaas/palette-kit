@@ -1,11 +1,11 @@
-# Plan for Documentation
+# Documentation Plan
 
 ## Goals
 
 - Explain the mental model (seed -> scale -> tokens).
 - Show practical usage for devs without color expertise.
 - Provide a visual demo to showcase quality.
-- Keep docs minimal and honest while API is evolving.
+- Keep docs minimal and honest while the API evolves.
 
 ## Phase 0 - GitHub README (now)
 

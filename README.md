@@ -1,10 +1,10 @@
 # Palette Kit
 
-Gerador de paletas modernas (OKLCH + APCA) com steps Radix-like. A biblioteca aceita seeds (cores iniciais) e entrega scales light/dark, tokens semanticos e exportadores prontos para uso.
+Modern palette generator (OKLCH + APCA) with Radix-like steps. The library accepts seeds (initial colors) and produces light/dark scales, semantic tokens, and exporters ready for use.
 
-Status: WIP. A API pode mudar enquanto o MVP estiver em construcao.
+Status: WIP. The API may change while the MVP is under construction.
 
-## Instalacao
+## Installation
 
 ```bash
 npm install @claus/palette-kit
@@ -18,15 +18,15 @@ yarn add @claus/palette-kit
 pnpm add @claus/palette-kit
 ```
 
-## O que a biblioteca entrega
+## What the library provides
 
-- Scale com 12 steps (light/dark) a partir de uma seed.
-- Tokens semanticos prontos para UI (preset `radix-like-ui`).
-- Alpha scale util para overlays.
-- Exporters em TS, JSON e CSS vars.
-- Diagnosticos basicos de contraste e gamut.
+- 12-step scale (light/dark) from a seed.
+- Semantic tokens for UI (`radix-like-ui` preset).
+- Alpha scale for overlays.
+- Exporters for TS, JSON, and CSS vars.
+- Basic contrast and gamut diagnostics.
 
-## Exemplo de uso (API planejada)
+## Usage example (planned API)
 
 ```ts
 import { createTheme } from "@claus/palette-kit";
@@ -44,25 +44,25 @@ const theme = createTheme({
 });
 ```
 
-## Principios
+## Principles
 
-- Tokens por intencao, nao por cor.
-- Steps fixos (1-12) para consistencia de UI.
-- Geracao em OKLCH, contraste resolvido com APCA.
+- Tokens by intent, not by color.
+- Fixed steps (1-12) for UI consistency.
+- OKLCH generation, contrast resolved with APCA.
 
-## Documentacao e planos
+## Docs and plans
 
 - `docs/Why.md`
 - `docs/spec-implementation.md`
 - `docs/plan-tests.md`
 - `docs/plan-docs.md`
 
-## Roadmap curto
+## Short roadmap
 
-1) Gerar scales a partir de seed (light/dark).
-2) Tokens e exporters basicos.
-3) Contraste e alpha scale.
+1) Generate scales from seeds (light/dark).
+2) Tokens and basic exporters.
+3) Contrast and alpha scale.
 
-## Licenca
+## License
 
 MIT
