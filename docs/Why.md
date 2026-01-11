@@ -355,7 +355,6 @@ Se você só “clippa”, fica feio e inconsistente.
 ### 9.3 Estratégia recomendada (v2)
 
 * oferecer duas saídas:
-
   * `steps.srgb`
   * `steps.p3`
 * exportar CSS com `color(display-p3 ...)` quando suportado
