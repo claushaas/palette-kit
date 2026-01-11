@@ -13,3 +13,4 @@ export type {
 } from "./types.js";
 
 export { radixSeeds, radixSeedNames } from "./data/radixSeeds.js";
+export { generateScale } from "./generateScale.js";
