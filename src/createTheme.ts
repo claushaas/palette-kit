@@ -1,7 +1,8 @@
+import { generateAlphaScale } from "./alpha/generateAlphaScale.js";
 import { onSolidTextTokens } from "./contrast/onSolid.js";
 import { generateScale } from "./generateScale.js";
 import { buildPresetTokens } from "./tokens/presetRadixLikeUi.js";
-import type { ColorHex, ColorSource, Scale, Theme } from "./types.js";
+import type { AlphaScale, ColorHex, ColorSource, Scale, Theme } from "./types.js";
 
 export type TokenOverrides = {
   light?: Record<string, ColorHex>;
@@ -18,6 +19,10 @@ export type CreateThemeOptions = {
   };
   extras?: Record<string, ColorSource>;
   tokens?: { preset?: "radix-like-ui"; overrides?: TokenOverrides };
+  alpha?: {
+    enabled?: boolean;
+    background?: { light?: ColorHex; dark?: ColorHex };
+  };
 };
 
 export function createTheme(options: CreateThemeOptions): Theme {
@@ -63,8 +68,18 @@ export function createTheme(options: CreateThemeOptions): Theme {
     Object.assign(tokens.dark, options.tokens.overrides.dark);
   }
 
+  let alpha: AlphaScale | undefined;
+  if (options.alpha?.enabled !== false) {
+    const background = {
+      light: options.alpha?.background?.light ?? "#ffffff",
+      dark: options.alpha?.background?.dark ?? "#111111",
+    } as const;
+    alpha = generateAlphaScale(accentScale.light[9], background);
+  }
+
   return {
     scales,
     tokens,
+    alpha,
   };
 }
