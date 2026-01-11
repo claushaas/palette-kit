@@ -6,11 +6,12 @@ export { createTheme } from "./createTheme.js";
 export { radixSeedNames, radixSeeds } from "./data/radixSeeds.js";
 export { analyzeScale } from "./diagnostics/analyzeScale.js";
 export { analyzeTheme } from "./diagnostics/analyzeTheme.js";
+export { selectThemeColorMode } from "./exporters/selectColorMode.js";
 export { toCssVars } from "./exporters/toCssVars.js";
-export { toJson } from "./exporters/toJson.js";
+export { toJson, toJsonWithMode } from "./exporters/toJson.js";
 export { toReactNative } from "./exporters/toReactNative.js";
 export { toTailwind } from "./exporters/toTailwind.js";
-export { toTs } from "./exporters/toTs.js";
+export { toTs, toTsWithMode } from "./exporters/toTs.js";
 export { generateScale } from "./generateScale.js";
 export type {
   AlphaScale,
@@ -19,9 +20,11 @@ export type {
   OklchColor,
   RadixSeedName,
   Scale,
+  ScaleColorMode,
   ScaleDiagnostics,
   Step,
   TemplateId,
   Theme,
+  ThemeColorMode,
   ThemeDiagnostics,
 } from "./types.js";

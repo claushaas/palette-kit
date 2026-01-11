@@ -1,17 +1,10 @@
 import type { Theme, ThemeColorMode } from "../types.js";
 
-export function toJson(theme: Theme): string {
-  return JSON.stringify(theme, null, 2);
-}
-
-export function toJsonWithMode(theme: Theme, mode: "srgb" | "p3"): string {
-  if (mode === "p3") {
-    return JSON.stringify(toP3Theme(theme), null, 2);
+export function selectThemeColorMode(theme: Theme, mode: "srgb" | "p3"): ThemeColorMode {
+  if (mode === "srgb") {
+    return theme;
   }
-  return JSON.stringify(theme, null, 2);
-}
 
-function toP3Theme(theme: Theme): ThemeColorMode {
   const scales = Object.fromEntries(
     Object.entries(theme.scales).map(([slot, scale]) => {
       if (!scale.p3) {
@@ -27,5 +20,6 @@ function toP3Theme(theme: Theme): ThemeColorMode {
       ];
     }),
   );
+
   return { ...theme, scales };
 }

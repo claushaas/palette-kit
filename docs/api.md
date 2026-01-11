@@ -116,10 +116,23 @@ Note: React Native does not support `color(display-p3 ...)` strings as drop-in c
 ## toJson / toTs
 
 ```ts
-import { toJson, toTs } from "@claus/palette-kit";
+import { toJson, toJsonWithMode, toTs, toTsWithMode } from "@claus/palette-kit";
 
 const json = toJson(theme);
 const ts = toTs(theme);
+
+const jsonP3 = toJsonWithMode(theme, "p3");
+const tsP3 = toTsWithMode(theme, "p3");
+```
+
+## selectThemeColorMode
+
+Switch a theme to use P3 scales when available.
+
+```ts
+import { selectThemeColorMode } from "@claus/palette-kit";
+
+const themeP3 = selectThemeColorMode(theme, "p3");
 ```
 
 ## Diagnostics

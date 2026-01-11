@@ -1,6 +1,34 @@
-import type { Theme } from "../types.js";
+import type { Theme, ThemeColorMode } from "../types.js";
 
 export function toTs(theme: Theme): string {
   const serialized = JSON.stringify(theme, null, 2);
   return `export const theme = ${serialized} as const;\n`;
+}
+
+export function toTsWithMode(theme: Theme, mode: "srgb" | "p3"): string {
+  if (mode === "p3") {
+    const serialized = JSON.stringify(toP3Theme(theme), null, 2);
+    return `export const theme = ${serialized} as const;\n`;
+  }
+  const serialized = JSON.stringify(theme, null, 2);
+  return `export const theme = ${serialized} as const;\n`;
+}
+
+function toP3Theme(theme: Theme): ThemeColorMode {
+  const scales = Object.fromEntries(
+    Object.entries(theme.scales).map(([slot, scale]) => {
+      if (!scale.p3) {
+        return [slot, scale];
+      }
+      return [
+        slot,
+        {
+          ...scale,
+          light: scale.p3.light,
+          dark: scale.p3.dark,
+        },
+      ];
+    }),
+  );
+  return { ...theme, scales };
 }

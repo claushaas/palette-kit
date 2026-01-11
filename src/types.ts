@@ -26,6 +26,11 @@ export type Scale = {
   meta?: ScaleDiagnostics;
 };
 
+export type ScaleColorMode = Omit<Scale, "light" | "dark"> & {
+  light: Record<Step, string>;
+  dark: Record<Step, string>;
+};
+
 export type AlphaScale = {
   light: Record<Step, ColorHex>;
   dark: Record<Step, ColorHex>;
@@ -45,6 +50,10 @@ export type Theme = {
   };
   alpha?: AlphaScale;
   diagnostics?: ThemeDiagnostics;
+};
+
+export type ThemeColorMode = Omit<Theme, "scales"> & {
+  scales: Record<string, ScaleColorMode>;
 };
 
 export type OklchColor = {
