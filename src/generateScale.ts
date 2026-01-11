@@ -1,8 +1,8 @@
-import type { ColorHex, ColorSource, Scale, Step, TemplateId } from "./types.js";
 import { radixSeeds } from "./data/radixSeeds.js";
-import { resolveCurves, type CurveConfig } from "./engine/curves.js";
+import { type CurveConfig, resolveCurves } from "./engine/curves.js";
 import { compressToSrgb, hexToOklch, inSrgbGamut, oklchToHex } from "./engine/oklch.js";
 import { selectTemplateId, templates } from "./engine/templates.js";
+import type { ColorHex, ColorSource, Scale, Step, TemplateId } from "./types.js";
 
 const steps: Step[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
@@ -38,7 +38,7 @@ function buildScaleForMode(
   anchorStep: Step,
   curves?: CurveConfig,
   gamutStrategy: "compress" | "clip" = "compress",
-  mode: "light" | "dark" = "light"
+  mode: "light" | "dark" = "light",
 ): { scale: Record<Step, ColorHex>; outOfGamutCount: number } {
   const seedOklch = hexToOklch(seedHex);
   const template = templates[mode][templateId];
@@ -87,7 +87,7 @@ export function generateScale(options: GenerateScaleOptions): Scale {
     anchorStep,
     options.curves,
     gamutStrategy,
-    "light"
+    "light",
   );
 
   const darkResult = buildScaleForMode(
@@ -96,7 +96,7 @@ export function generateScale(options: GenerateScaleOptions): Scale {
     anchorStep,
     options.curves,
     gamutStrategy,
-    "dark"
+    "dark",
   );
 
   const scale: Scale = {

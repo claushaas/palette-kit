@@ -18,7 +18,7 @@ const baseHue: Record<TemplateId, number> = {
 function buildTemplate(
   lightness: number[],
   chroma: number[],
-  hue: number
+  hue: number,
 ): Record<Step, OklchColor> {
   const output = {} as Record<Step, OklchColor>;
   for (let i = 0; i < steps.length; i += 1) {

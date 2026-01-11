@@ -1,3 +1,12 @@
+export { generateAlphaScale } from "./alpha/generateAlphaScale.js";
+export { apcaContrast } from "./contrast/apca.js";
+export { onSolidTextTokens } from "./contrast/onSolid.js";
+export { createTheme } from "./createTheme.js";
+export { radixSeedNames, radixSeeds } from "./data/radixSeeds.js";
+export { toCssVars } from "./exporters/toCssVars.js";
+export { toJson } from "./exporters/toJson.js";
+export { toTs } from "./exporters/toTs.js";
+export { generateScale } from "./generateScale.js";
 export type {
   AlphaScale,
   ColorHex,
@@ -11,10 +20,3 @@ export type {
   Theme,
   ThemeDiagnostics,
 } from "./types.js";
-
-export { radixSeeds, radixSeedNames } from "./data/radixSeeds.js";
-export { generateScale } from "./generateScale.js";
-export { createTheme } from "./createTheme.js";
-export { toJson } from "./exporters/toJson.js";
-export { toCssVars } from "./exporters/toCssVars.js";
-export { toTs } from "./exporters/toTs.js";

@@ -1,6 +1,7 @@
-import type { ColorHex, ColorSource, Scale, Theme } from "./types.js";
+import { onSolidTextTokens } from "./contrast/onSolid.js";
 import { generateScale } from "./generateScale.js";
 import { buildPresetTokens } from "./tokens/presetRadixLikeUi.js";
+import type { ColorHex, ColorSource, Scale, Theme } from "./types.js";
 
 export type TokenOverrides = {
   light?: Record<string, ColorHex>;
@@ -43,6 +44,17 @@ export function createTheme(options: CreateThemeOptions): Theme {
 
   const preset = options.tokens?.preset ?? "radix-like-ui";
   const tokens = preset === "radix-like-ui" ? buildPresetTokens(scales) : { light: {}, dark: {} };
+
+  const accentScale = scales.accent;
+  const lightOnSolid = onSolidTextTokens(accentScale.light[9]);
+  const darkOnSolid = onSolidTextTokens(accentScale.dark[9]);
+
+  tokens.light["onSolid.primary"] = lightOnSolid.primary;
+  tokens.light["onSolid.secondary"] = lightOnSolid.secondary;
+  tokens.light["onSolid.disabled"] = lightOnSolid.disabled;
+  tokens.dark["onSolid.primary"] = darkOnSolid.primary;
+  tokens.dark["onSolid.secondary"] = darkOnSolid.secondary;
+  tokens.dark["onSolid.disabled"] = darkOnSolid.disabled;
 
   if (options.tokens?.overrides?.light) {
     Object.assign(tokens.light, options.tokens.overrides.light);
