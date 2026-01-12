@@ -2,7 +2,7 @@
 
 ## Seed
 
-A seed is the starting color (usually the accent). The engine anchors the seed at step 9 and generates the rest of the scale around it.
+A seed is the starting color (usually the accent). By default the engine auto-selects the anchor per color mode, but you can pin it to a fixed step.
 
 ## Scale
 

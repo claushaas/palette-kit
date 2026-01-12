@@ -12,6 +12,14 @@ export { toJson, toJsonWithMode } from "./exporters/toJson.js";
 export { toReactNative } from "./exporters/toReactNative.js";
 export { toTailwind } from "./exporters/toTailwind.js";
 export { toTs, toTsWithMode } from "./exporters/toTs.js";
+export type {
+  AnchorStepOption,
+  AutoAnchorModeOptions,
+  AutoAnchorOptions,
+  GenerateScaleOptions,
+  SeedNormalizeOptions,
+  SeedNormalizeRange,
+} from "./generateScale.js";
 export { generateScale } from "./generateScale.js";
 export type {
   AlphaScale,

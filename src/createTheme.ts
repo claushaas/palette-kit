@@ -2,6 +2,7 @@ import { generateAlphaScale } from "./alpha/generateAlphaScale.js";
 import { onSolidTextTokens } from "./contrast/onSolid.js";
 import { adjustTextColor } from "./contrast/solveText.js";
 import { analyzeTheme } from "./diagnostics/analyzeTheme.js";
+import type { GenerateScaleOptions } from "./generateScale.js";
 import { generateScale } from "./generateScale.js";
 import { buildPresetTokens } from "./tokens/presetRadixLikeUi.js";
 import type { AlphaScale, ColorHex, ColorSource, Scale, Theme } from "./types.js";
@@ -29,29 +30,43 @@ export type CreateThemeOptions = {
     textPrimary?: number;
     textSecondary?: number;
   };
+  scale?: Omit<GenerateScaleOptions, "source" | "mode" | "p3">;
   p3?: boolean;
 };
 
 export function createTheme(options: CreateThemeOptions): Theme {
   const includeP3 = options.p3 ?? false;
+  const scaleOptions = options.scale ?? {};
   const scales: Record<string, Scale> = {
-    neutral: generateScale({ source: options.neutral, p3: includeP3 }),
-    accent: generateScale({ source: options.accent, p3: includeP3 }),
+    neutral: generateScale({ source: options.neutral, ...scaleOptions, p3: includeP3 }),
+    accent: generateScale({ source: options.accent, ...scaleOptions, p3: includeP3 }),
   };
 
   if (options.semantic?.success) {
-    scales.success = generateScale({ source: options.semantic.success, p3: includeP3 });
+    scales.success = generateScale({
+      source: options.semantic.success,
+      ...scaleOptions,
+      p3: includeP3,
+    });
   }
   if (options.semantic?.warning) {
-    scales.warning = generateScale({ source: options.semantic.warning, p3: includeP3 });
+    scales.warning = generateScale({
+      source: options.semantic.warning,
+      ...scaleOptions,
+      p3: includeP3,
+    });
   }
   if (options.semantic?.danger) {
-    scales.danger = generateScale({ source: options.semantic.danger, p3: includeP3 });
+    scales.danger = generateScale({
+      source: options.semantic.danger,
+      ...scaleOptions,
+      p3: includeP3,
+    });
   }
 
   if (options.extras) {
     for (const [key, source] of Object.entries(options.extras)) {
-      scales[key] = generateScale({ source, p3: includeP3 });
+      scales[key] = generateScale({ source, ...scaleOptions, p3: includeP3 });
     }
   }
 

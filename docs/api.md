@@ -11,7 +11,7 @@ const scale = generateScale({
   source: { source: "seed", value: "#3d63dd" },
   mode: "both",
   template: "auto",
-  anchorStep: 9,
+  anchorStep: "auto",
 });
 ```
 
@@ -19,14 +19,16 @@ Options:
 
 - `source`: `{ source: "seed", value: "#RRGGBB" }` or `{ source: "radix", name: "slate" }`.
 - `mode`: `"light" | "dark" | "both"` (default: `both`).
-- `anchorStep`: step that matches the seed (default: `9`).
+- `anchorStep`: step that matches the seed (default: `"auto"`). Accepts a step, `"auto"`, or `{ light, dark }`.
+- `autoAnchor`: tune the auto anchor evaluation (candidate steps, contrast targets, lightness bounds).
+- `seedNormalize`: clamp seed lightness/chroma before anchoring (useful with `"auto"`).
 - `template`: `"auto" | "neutral" | "warm" | "cool"` (default: `auto`).
 - `curves`: overrides for lightness/chroma curves.
 - `gamut`: `{ strategy: "compress" | "clip" }`.
 
 Returns:
 
-- `Scale` with `light`, `dark`, and `meta.outOfGamutCount`.
+- `Scale` with `light`, `dark`, and `meta.outOfGamutCount` (plus `meta.outOfP3GamutCount` and `meta.anchorSteps`).
 
 ## createTheme
 
@@ -55,6 +57,10 @@ const theme = createTheme({
   p3: true,
 });
 ```
+
+Options:
+
+- `scale`: options forwarded to every `generateScale` call (excluding `source`, `mode`, `p3`).
 
 Returns:
 

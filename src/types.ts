@@ -14,6 +14,10 @@ export type ColorSource =
 export type ScaleDiagnostics = {
   outOfGamutCount: number;
   outOfP3GamutCount?: number;
+  anchorSteps?: {
+    light: Step;
+    dark: Step;
+  };
 };
 
 export type Scale = {

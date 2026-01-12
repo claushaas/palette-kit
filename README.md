@@ -23,10 +23,11 @@ pnpm add @clhaas/palette-kit
 - 12-step scale (light/dark) from a seed.
 - Semantic tokens for UI (`radix-like-ui` preset).
 - Alpha scale for overlays.
-- Exporters for TS, JSON, and CSS vars.
+- Exporters for TS, JSON, CSS vars, Tailwind, and React Native.
+- Auto anchor selection per mode (light/dark), overridable via `anchorStep`.
 - Basic contrast and gamut diagnostics.
 
-## Usage example (planned API)
+## Usage example
 
 ```ts
 import { createTheme } from "@clhaas/palette-kit";
@@ -40,7 +41,7 @@ const theme = createTheme({
     danger: { source: "seed", value: "#ef4444" },
   },
   tokens: { preset: "radix-like-ui" },
-  output: { format: "css", cssVarPrefix: "pk" },
+  p3: true,
 });
 ```
 

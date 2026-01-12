@@ -28,4 +28,17 @@ describe("generateScale", () => {
     expect(scale.p3?.light[9]).toMatch(/^color\(display-p3 /);
     expect(scale.p3?.dark[9]).toMatch(/^color\(display-p3 /);
   });
+
+  it("supports auto anchor per mode", () => {
+    const scale = generateScale({ source: seed, anchorStep: "auto" });
+    expect(scale.meta?.anchorSteps?.light).toBeDefined();
+    expect(scale.meta?.anchorSteps?.dark).toBeDefined();
+    expect([8, 9, 10]).toContain(scale.meta?.anchorSteps?.light);
+    expect([8, 9, 10]).toContain(scale.meta?.anchorSteps?.dark);
+  });
+
+  it("respects explicit anchor steps per mode", () => {
+    const scale = generateScale({ source: seed, anchorStep: { light: 8, dark: 10 } });
+    expect(scale.meta?.anchorSteps).toEqual({ light: 8, dark: 10 });
+  });
 });

@@ -2,7 +2,7 @@
 
 ## 1) Goal
 
-Generate palettes from seeds using OKLCH + APCA as described in `docs/Why.md`. Radix colors can be used only as optional seed sources (step 9).
+Generate palettes from seeds using OKLCH + APCA as described in `docs/Why.md`. Radix colors can be used as optional seed sources (from Radix step-9 samples).
 
 ## 2) MVP scope (v0.1)
 
@@ -13,15 +13,14 @@ Generate palettes from seeds using OKLCH + APCA as described in `docs/Why.md`. R
 - OKLCH as generation space.
 - Simple gamut mapping (compress chroma until sRGB).
 - Basic semantic tokens (`radix-like-ui` preset).
-- Exporters: TS (object), JSON, CSS vars.
-- Minimal diagnostics (contrast score and out-of-gamut count).
+- Exporters: TS (object), JSON, CSS vars, Tailwind, React Native.
+- Display-P3 output support.
+- Diagnostics (contrast score, out-of-gamut count, anchor steps).
 - Modern runtime: Node >= 22, TypeScript >= 5.5, ESM.
 - Dependencies: `colorjs.io` (OKLCH/conversions) and `apca-w3` (contrast).
 
 ## 3) Out of scope (v0.1)
 
-- Display-P3 output.
-- Tailwind / RN plugin.
 - Visual preview and snapshot tooling.
 - Advanced diagnostics (gamut heatmap, detailed reports).
 
@@ -69,11 +68,13 @@ type Theme = {
 function generateScale(options: {
   source: ColorSource;
   mode?: "light" | "dark" | "both";
-  anchorStep?: Step; // default 9
+  anchorStep?: Step | "auto" | { light?: Step | "auto"; dark?: Step | "auto" }; // default auto
+  autoAnchor?: AutoAnchorOptions;
+  seedNormalize?: SeedNormalizeOptions;
   template?: "auto" | TemplateId;
   curves?: CurveConfig;
   gamut?: { strategy: "compress" | "clip" };
-  contrast?: ContrastProfile;
+  p3?: boolean;
 }): Scale;
 
 // compose a full theme
@@ -89,6 +90,8 @@ function createTheme(config: {
   tokens?: { preset?: "radix-like-ui"; overrides?: TokenOverrides };
   alpha?: { enabled?: boolean; background?: { light?: ColorHex; dark?: ColorHex } };
   contrast?: { textPrimary?: number; textSecondary?: number };
+  scale?: Omit<GenerateScaleOptions, "source" | "mode" | "p3">;
+  p3?: boolean;
 }): Theme;
 ```
 
@@ -98,10 +101,11 @@ Steps (light/dark share logic, different templates):
 
 1. Convert seed to OKLCH.
 2. Select internal template (auto by hue or fixed `template`).
-3. Anchor seed at `anchorStep` (default 9):
+3. Anchor seed at `anchorStep` (default auto, or auto per mode):
    - `dL = L_seed - L_template[anchor]`
    - `dC = C_seed - C_template[anchor]`
    - `dH = H_seed - H_template[anchor]`
+   - optional: normalize seed L/C before anchoring
 4. Apply deltas per step using curves:
    - L: 1-2 (0.25-0.35), 3-5 (0.55-0.70), 6-8 (0.75-0.90), 9-12 (1.0)
    - C: 1-2 (0.15-0.25), 3-5 (0.50-0.70), 6-8 (0.70-0.90), 9-10 (1.0), 11-12 (0.60-0.80)

@@ -186,14 +186,15 @@ Templates provide:
 
 This avoids a pink seed ending up in a green template.
 
-### 5.3 Anchor step (default: 9)
+### 5.3 Anchor step (default: auto)
 
 - Step 9 represents "solid"
 - Make `seed ~= step9` so the chosen color maps to a solid button
+- Optional: allow auto anchor per mode to keep light/dark steps usable when seeds are extreme
 
 ### 5.4 Delta and application
 
-Calculate delta between seed and template[9]:
+Calculate delta between seed and template[anchor]:
 
 - `dL = L_seed - L_t9`
 - `dC = C_seed - C_t9`
@@ -393,7 +394,7 @@ OKLCH can generate colors that do not fit in sRGB. If you just clip, it looks ba
 
 ### Diagnostics API
 
-- `analyzeScale(scale, { background })`
+- `analyzeScale(scale)`
 - `analyzeTheme(theme)`
 
 ---
@@ -410,7 +411,7 @@ OKLCH can generate colors that do not fit in sRGB. If you just clip, it looks ba
 ### Sprint 1 - Single-color scale (light)
 
 - template selection by hue
-- anchor step 9
+- anchor step auto (overrideable)
 - curves v1 (L/C)
 - gamut compression
 - output `steps[1..12]` in hex
@@ -439,7 +440,7 @@ OKLCH can generate colors that do not fit in sRGB. If you just clip, it looks ba
 
 - preset `radix-like-ui`
 - exports TS/JSON/CSS vars
-- optional RN/Tailwind integration
+- RN/Tailwind exporters
 
 ### Sprint 7 - Visual QA
 
@@ -454,7 +455,7 @@ OKLCH can generate colors that do not fit in sRGB. If you just clip, it looks ba
 2. **UI semantics preserved** (low learning curve)
 3. **Contrast solved**, not expected
 4. **Diagnostics** that prevent pretty-but-useless palettes
-5. Clear path to **Display-P3** without breaking the MVP
+5. **Display-P3** support without breaking the MVP
 
 ---
 
