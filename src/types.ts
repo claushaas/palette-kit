@@ -43,7 +43,7 @@ export type AlphaScale = {
 export type ThemeDiagnostics = {
   contrast: Record<string, number>;
   outOfGamutCount: number;
-  warnings?: string[];
+  warnings?: readonly string[];
 };
 
 export type Theme = {
