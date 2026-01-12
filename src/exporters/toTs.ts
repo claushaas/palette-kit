@@ -2,16 +2,16 @@ import type { Theme, ThemeColorMode } from "../types.js";
 
 export function toTs(theme: Theme): string {
   const serialized = JSON.stringify(theme, null, 2);
-  return `export const theme = ${serialized} as const;\n`;
+  return `export const theme = ${serialized} as const;\n${typeExports()}`;
 }
 
 export function toTsWithMode(theme: Theme, mode: "srgb" | "p3"): string {
   if (mode === "p3") {
     const serialized = JSON.stringify(toP3Theme(theme), null, 2);
-    return `export const theme = ${serialized} as const;\n`;
+    return `export const theme = ${serialized} as const;\n${typeExports()}`;
   }
   const serialized = JSON.stringify(theme, null, 2);
-  return `export const theme = ${serialized} as const;\n`;
+  return `export const theme = ${serialized} as const;\n${typeExports()}`;
 }
 
 function toP3Theme(theme: Theme): ThemeColorMode {
@@ -31,4 +31,14 @@ function toP3Theme(theme: Theme): ThemeColorMode {
     }),
   );
   return { ...theme, scales };
+}
+
+function typeExports(): string {
+  return [
+    "export type Theme = typeof theme;",
+    'export type ThemeScaleName = keyof Theme["scales"];',
+    'export type ThemeTokenName = keyof Theme["tokens"]["light"];',
+    'export type ThemeTokenMap = Theme["tokens"]["light"];',
+    "",
+  ].join("\n");
 }

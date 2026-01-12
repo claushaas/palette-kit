@@ -2,6 +2,7 @@ export { generateAlphaScale } from "./alpha/generateAlphaScale.js";
 export { apcaContrast } from "./contrast/apca.js";
 export { onSolidTextTokens } from "./contrast/onSolid.js";
 export { adjustTextColor } from "./contrast/solveText.js";
+export type { CreateThemeOptions, TokenOverrides } from "./createTheme.js";
 export { createTheme } from "./createTheme.js";
 export { radixSeedNames, radixSeeds } from "./data/radixSeeds.js";
 export { analyzeScale } from "./diagnostics/analyzeScale.js";
