@@ -73,6 +73,57 @@ body {
 }
 ```
 
+## Step-by-step (install -> usage -> types)
+
+1) Install:
+
+```bash
+npm install @clhaas/palette-kit
+```
+
+2) Create a config file (`palette.config.mjs`):
+
+```js
+/** @type {import("@clhaas/palette-kit").CreateThemeOptions} */
+export default {
+  neutral: { source: "seed", value: "#111827" },
+  accent: { source: "seed", value: "#3d63dd" },
+  semantic: {
+    success: { source: "seed", value: "#16a34a" },
+    warning: { source: "seed", value: "#f59e0b" },
+    danger: { source: "seed", value: "#ef4444" },
+  },
+  tokens: { preset: "radix-like-ui" },
+  alpha: { enabled: true },
+  p3: true,
+};
+```
+
+3) Generate a typed theme file (includes token name types):
+
+```bash
+npx palette-kit generate --out src/theme.ts
+```
+
+4) Export CSS vars (for web apps):
+
+```ts
+import { toCssVars } from "@clhaas/palette-kit";
+import { theme } from "./theme";
+
+const css = toCssVars(theme, { prefix: "pk" });
+// write the string into a .css file or inject it at build time
+```
+
+5) Use the generated types:
+
+```ts
+import { theme, ThemeTokenMap, ThemeTokenName } from "./theme";
+
+const tokens: ThemeTokenMap = theme.tokens.light;
+const tokenName: ThemeTokenName = "bg.app";
+```
+
 ## React Native + Expo
 
 Use the React Native exporter and `useColorScheme()`:

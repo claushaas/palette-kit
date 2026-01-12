@@ -131,6 +131,58 @@ const jsonP3 = toJsonWithMode(theme, "p3");
 const tsP3 = toTsWithMode(theme, "p3");
 ```
 
+Generate a typed file for autocomplete (example):
+
+```ts
+import { createTheme, toTs } from "@claus/palette-kit";
+import { writeFileSync } from "node:fs";
+
+const theme = createTheme({
+  neutral: { source: "seed", value: "#111827" },
+  accent: { source: "seed", value: "#3d63dd" },
+  tokens: { preset: "radix-like-ui" },
+  p3: true,
+});
+
+const ts = toTs(theme);
+writeFileSync("src/theme.ts", ts);
+```
+
+Then use the exported types:
+
+```ts
+import { theme, ThemeTokenMap, ThemeTokenName } from "./theme";
+
+const tokens: ThemeTokenMap = theme.tokens.light;
+const tokenName: ThemeTokenName = "bg.app";
+```
+
+## CLI (palette-kit)
+
+Generate a typed theme file from a config:
+
+```bash
+npx palette-kit generate --out src/theme.ts
+```
+
+Create `palette.config.mjs` in your project root:
+
+```js
+/** @type {import("@claus/palette-kit").CreateThemeOptions} */
+export default {
+  neutral: { source: "seed", value: "#111827" },
+  accent: { source: "seed", value: "#3d63dd" },
+  tokens: { preset: "radix-like-ui" },
+  p3: true,
+};
+```
+
+Options:
+
+- `--config` (default: `palette.config.*`)
+- `--out` (default: `src/theme.ts`)
+- `--mode` (`srgb` or `p3`)
+
 ## selectThemeColorMode
 
 Switch a theme to use P3 scales when available.

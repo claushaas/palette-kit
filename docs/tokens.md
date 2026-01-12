@@ -59,3 +59,14 @@ On-solid tokens are computed using contrast and alpha:
 - `onSolid.primary`
 - `onSolid.secondary`
 - `onSolid.disabled`
+
+## toTs type exports
+
+When you generate a TS file with `toTs(theme)`, the output includes extra types for better autocomplete:
+
+```ts
+export type Theme = typeof theme;
+export type ThemeScaleName = keyof Theme["scales"];
+export type ThemeTokenName = keyof Theme["tokens"]["light"];
+export type ThemeTokenMap = Theme["tokens"]["light"];
+```
