@@ -24,8 +24,8 @@ export type {
 export { generateScale } from "./generateScale.js";
 export { generateOverlayScale } from "./overlays/generateOverlayScale.js";
 export { generateTextScale } from "./text/generateTextScale.js";
-export { resolveOnBgTextTokens } from "./text/resolveOnBgText.js";
 export type { TextOnBgTokens } from "./text/resolveOnBgText.js";
+export { resolveOnBgTextTokens } from "./text/resolveOnBgText.js";
 export type {
   AlphaScale,
   AlphaScales,
