@@ -134,10 +134,13 @@ export function createTheme(options: CreateThemeOptions): Theme {
     dark: { scale: "dark", steps: darkTextSteps },
   } as const;
 
-  const applyOnBgTokens = (
-    target: Record<string, ColorHex>,
-    mapping: typeof onBgLightMode,
-  ) => {
+  type OnBgMapping = {
+    light: { scale: "light" | "dark"; steps: Record<string, Step> };
+    mid: { scale: "light" | "dark"; steps: Record<string, Step> };
+    dark: { scale: "light" | "dark"; steps: Record<string, Step> };
+  };
+
+  const applyOnBgTokens = (target: Record<string, ColorHex>, mapping: OnBgMapping) => {
     for (const [zone, config] of Object.entries(mapping)) {
       const scale = config.scale === "dark" ? textScale.dark : textScale.light;
       for (const [role, step] of Object.entries(config.steps)) {
