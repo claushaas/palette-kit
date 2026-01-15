@@ -40,6 +40,11 @@ function typeExports(): string {
     'export type ThemeTokenName = keyof Theme["tokens"]["light"];',
     'export type ThemeTokenMap = Theme["tokens"]["light"];',
     'export type ThemeOverlay = Theme["overlay"];',
+    'export type ThemeMode = keyof Theme["tokens"];',
+    'export type ThemeScaleStep = keyof Theme["scales"][ThemeScaleName]["light"];',
+    'export type ThemeTokenHex = Theme["tokens"][ThemeMode][ThemeTokenName];',
+    'export type ThemeScaleHex = Theme["scales"][ThemeScaleName][ThemeMode][ThemeScaleStep];',
+    'export type ThemeAlphaHex = Theme["alpha"] extends undefined ? never : Theme["alpha"][ThemeMode][ThemeScaleStep];',
     "",
   ].join("\n");
 }
