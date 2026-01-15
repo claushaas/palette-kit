@@ -27,6 +27,12 @@ describe("toCssVars", () => {
     expect(css).toContain("--pk-alpha-12");
   });
 
+  it("includes overlay variables", () => {
+    const css = toCssVars(theme, { prefix: "pk" });
+    expect(css).toContain("--pk-overlay-black-1");
+    expect(css).toContain("--pk-overlay-white-12");
+  });
+
   it("includes display-p3 overrides", () => {
     const css = toCssVars(theme, { prefix: "pk", includeP3: true });
     expect(css).toContain("@supports (color: color(display-p3 1 1 1))");

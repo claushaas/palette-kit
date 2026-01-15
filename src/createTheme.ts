@@ -4,8 +4,9 @@ import { adjustTextColor } from "./contrast/solveText.js";
 import { analyzeTheme } from "./diagnostics/analyzeTheme.js";
 import type { GenerateScaleOptions } from "./generateScale.js";
 import { generateScale } from "./generateScale.js";
+import { generateOverlayScale } from "./overlays/generateOverlayScale.js";
 import { buildPresetTokens } from "./tokens/presetRadixLikeUi.js";
-import type { AlphaScale, ColorHex, ColorSource, Scale, Theme } from "./types.js";
+import type { AlphaScale, ColorHex, ColorSource, OverlayScale, Scale, Theme } from "./types.js";
 
 export type TokenOverrides = {
   light?: Record<string, ColorHex>;
@@ -134,12 +135,15 @@ export function createTheme(options: CreateThemeOptions): Theme {
     alpha = generateAlphaScale(accentScale.light[9], background);
   }
 
-  const diagnostics = analyzeTheme({ scales, tokens, alpha });
+  const overlay: OverlayScale = generateOverlayScale();
+
+  const diagnostics = analyzeTheme({ scales, tokens, alpha, overlay });
 
   return {
     scales,
     tokens,
     alpha,
+    overlay,
     diagnostics,
   };
 }

@@ -7,6 +7,7 @@ type CssVarsOptions = {
   includeTokens?: boolean;
   includeScales?: boolean;
   includeAlpha?: boolean;
+  includeOverlays?: boolean;
   includeP3?: boolean;
   lightSelector?: string;
   darkSelector?: string;
@@ -26,6 +27,10 @@ function alphaToCssVar(step: Step, prefix: string): string {
   return `--${prefix}-alpha-${step}`;
 }
 
+function overlayToCssVar(color: "black" | "white", step: Step, prefix: string): string {
+  return `--${prefix}-overlay-${color}-${step}`;
+}
+
 function hexToP3(value: ColorHex): string {
   return new Color(value).to("p3").toString({ format: "color" });
 }
@@ -35,6 +40,7 @@ export function toCssVars(theme: Theme, options?: CssVarsOptions): string {
   const includeTokens = options?.includeTokens ?? true;
   const includeScales = options?.includeScales ?? true;
   const includeAlpha = options?.includeAlpha ?? true;
+  const includeOverlays = options?.includeOverlays ?? true;
   const includeP3 = options?.includeP3 ?? false;
   const lightSelector = options?.lightSelector ?? ":root";
   const darkSelector = options?.darkSelector ?? ".dark";
@@ -62,6 +68,19 @@ export function toCssVars(theme: Theme, options?: CssVarsOptions): string {
     if (includeAlpha && theme.alpha) {
       for (const [step, value] of Object.entries(theme.alpha[mode])) {
         lines.push(`  ${alphaToCssVar(Number(step) as Step, prefix)}: ${value};`);
+      }
+    }
+
+    if (includeOverlays) {
+      for (const [step, value] of Object.entries(theme.overlay.black)) {
+        lines.push(
+          `  ${overlayToCssVar("black", Number(step) as Step, prefix)}: ${value};`,
+        );
+      }
+      for (const [step, value] of Object.entries(theme.overlay.white)) {
+        lines.push(
+          `  ${overlayToCssVar("white", Number(step) as Step, prefix)}: ${value};`,
+        );
       }
     }
 
@@ -100,6 +119,19 @@ export function toCssVars(theme: Theme, options?: CssVarsOptions): string {
       if (includeAlpha && theme.alpha) {
         for (const [step, value] of Object.entries(theme.alpha[mode])) {
           lines.push(`    ${alphaToCssVar(Number(step) as Step, prefix)}: ${hexToP3(value)};`);
+        }
+      }
+
+      if (includeOverlays) {
+        for (const [step, value] of Object.entries(theme.overlay.black)) {
+          lines.push(
+            `    ${overlayToCssVar("black", Number(step) as Step, prefix)}: ${hexToP3(value)};`,
+          );
+        }
+        for (const [step, value] of Object.entries(theme.overlay.white)) {
+          lines.push(
+            `    ${overlayToCssVar("white", Number(step) as Step, prefix)}: ${hexToP3(value)};`,
+          );
         }
       }
 

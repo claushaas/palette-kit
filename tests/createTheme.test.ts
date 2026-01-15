@@ -28,4 +28,10 @@ describe("createTheme", () => {
     expect(theme.alpha?.light[1]).toMatch(/^#[0-9a-fA-F]{8}$/);
     expect(theme.alpha?.dark[12]).toMatch(/^#[0-9a-fA-F]{8}$/);
   });
+
+  it("provides overlay scales", () => {
+    const theme = createTheme(options);
+    expect(theme.overlay.black[1]).toMatch(/^#[0-9a-fA-F]{8}$/);
+    expect(theme.overlay.white[12]).toMatch(/^#[0-9a-fA-F]{8}$/);
+  });
 });

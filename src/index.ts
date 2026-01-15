@@ -22,11 +22,13 @@ export type {
   SeedNormalizeRange,
 } from "./generateScale.js";
 export { generateScale } from "./generateScale.js";
+export { generateOverlayScale } from "./overlays/generateOverlayScale.js";
 export type {
   AlphaScale,
   ColorHex,
   ColorSource,
   OklchColor,
+  OverlayScale,
   RadixSeedName,
   Scale,
   ScaleColorMode,

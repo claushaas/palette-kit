@@ -40,6 +40,11 @@ export type AlphaScale = {
   dark: Record<Step, ColorHex>;
 };
 
+export type OverlayScale = {
+  black: Record<Step, ColorHex>;
+  white: Record<Step, ColorHex>;
+};
+
 export type ThemeDiagnostics = {
   contrast: Record<string, number>;
   outOfGamutCount: number;
@@ -53,6 +58,7 @@ export type Theme = {
     dark: Record<string, ColorHex>;
   };
   alpha?: AlphaScale;
+  overlay: OverlayScale;
   diagnostics?: ThemeDiagnostics;
 };
 

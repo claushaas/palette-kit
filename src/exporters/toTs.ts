@@ -39,6 +39,7 @@ function typeExports(): string {
     'export type ThemeScaleName = keyof Theme["scales"];',
     'export type ThemeTokenName = keyof Theme["tokens"]["light"];',
     'export type ThemeTokenMap = Theme["tokens"]["light"];',
+    'export type ThemeOverlay = Theme["overlay"];',
     "",
   ].join("\n");
 }

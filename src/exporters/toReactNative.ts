@@ -4,6 +4,7 @@ type ReactNativeOptions = {
   includeTokens?: boolean;
   includeScales?: boolean;
   includeAlpha?: boolean;
+  includeOverlays?: boolean;
   includeP3?: boolean;
 };
 
@@ -37,6 +38,12 @@ type ModeAlpha<T extends Theme, O extends ReactNativeOptions, M extends Mode> = 
         : D
       : undefined;
 
+type ModeOverlays<T extends Theme, O extends ReactNativeOptions> = O extends {
+  includeOverlays: false;
+}
+  ? undefined
+  : T["overlay"];
+
 type ModeP3<T extends Theme, O extends ReactNativeOptions, M extends Mode> = O extends {
   includeP3: true;
 }
@@ -52,6 +59,7 @@ type ModeP3<T extends Theme, O extends ReactNativeOptions, M extends Mode> = O e
   : undefined;
 
 type ReactNativeTheme<T extends Theme, O extends ReactNativeOptions> = {
+  overlay: ModeOverlays<T, O>;
   light: {
     tokens: ModeTokens<T, O, "light">;
     scales: ModeScales<T, O, "light">;
@@ -73,6 +81,7 @@ export function toReactNative<T extends Theme, O extends ReactNativeOptions = Re
   const includeTokens = options?.includeTokens ?? true;
   const includeScales = options?.includeScales ?? true;
   const includeAlpha = options?.includeAlpha ?? true;
+  const includeOverlays = options?.includeOverlays ?? true;
   const includeP3 = options?.includeP3 ?? false;
 
   function buildMode<M extends Mode>(mode: M) {
@@ -97,6 +106,7 @@ export function toReactNative<T extends Theme, O extends ReactNativeOptions = Re
   }
 
   return {
+    overlay: (includeOverlays ? theme.overlay : undefined) as ModeOverlays<T, O>,
     light: buildMode("light"),
     dark: buildMode("dark"),
   } as ReactNativeTheme<T, O>;

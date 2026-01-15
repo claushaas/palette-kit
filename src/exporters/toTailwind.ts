@@ -5,6 +5,7 @@ type TailwindOptions = {
   includeTokens?: boolean;
   includeScales?: boolean;
   includeAlpha?: boolean;
+  includeOverlays?: boolean;
   includeP3?: boolean;
 };
 
@@ -55,11 +56,26 @@ function alphaToNested(alpha: Theme["alpha"], mode: "light" | "dark") {
   return output;
 }
 
+function overlaysToNested(overlays: Theme["overlay"]) {
+  const output: Record<string, Record<string, string>> = {
+    black: {},
+    white: {},
+  };
+  for (const [step, value] of Object.entries(overlays.black)) {
+    output.black[String(step)] = value;
+  }
+  for (const [step, value] of Object.entries(overlays.white)) {
+    output.white[String(step)] = value;
+  }
+  return output;
+}
+
 export function toTailwind(theme: Theme, options?: TailwindOptions) {
   const mode = options?.mode ?? "both";
   const includeTokens = options?.includeTokens ?? true;
   const includeScales = options?.includeScales ?? false;
   const includeAlpha = options?.includeAlpha ?? false;
+  const includeOverlays = options?.includeOverlays ?? false;
   const includeP3 = options?.includeP3 ?? false;
 
   function buildModeTokens(modeKey: "light" | "dark", useP3?: boolean) {
@@ -73,6 +89,9 @@ export function toTailwind(theme: Theme, options?: TailwindOptions) {
     }
     if (includeAlpha && theme.alpha) {
       colors.alpha = alphaToNested(theme.alpha, modeKey);
+    }
+    if (includeOverlays) {
+      colors.overlay = overlaysToNested(theme.overlay);
     }
 
     return colors;

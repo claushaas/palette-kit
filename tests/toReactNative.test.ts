@@ -20,4 +20,10 @@ describe("toReactNative", () => {
     expect(palette.light.tokens["bg.app"]).toBeDefined();
     expect(palette.light.scales.neutral[1]).toBeDefined();
   });
+
+  it("includes overlays", () => {
+    const palette = toReactNative(theme);
+    expect(palette.overlay.black[1]).toBeDefined();
+    expect(palette.overlay.white[12]).toBeDefined();
+  });
 });

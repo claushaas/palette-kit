@@ -15,6 +15,11 @@ type TailwindColors = {
         app?: string;
       };
     };
+    overlay?: {
+      black?: {
+        "1"?: string;
+      };
+    };
   };
   dark?: unknown;
 };
@@ -33,5 +38,12 @@ describe("toTailwind", () => {
     const colors = (config as { theme: { extend: { colors: TailwindColors } } }).theme.extend
       .colors;
     expect(colors.light?.tokens?.bg?.app).toBeDefined();
+  });
+
+  it("includes overlays when enabled", () => {
+    const config = toTailwind(theme, { mode: "light", includeOverlays: true });
+    const colors = (config as { theme: { extend: { colors: TailwindColors } } }).theme.extend
+      .colors;
+    expect(colors.light?.overlay?.black?.["1"]).toBeDefined();
   });
 });
