@@ -49,9 +49,13 @@ function alphaToNested(alpha: Theme["alpha"], mode: "light" | "dark") {
   if (!alpha) {
     return undefined;
   }
-  const output: Record<string, string> = {};
-  for (const [step, value] of Object.entries(alpha[mode])) {
-    output[String(step)] = value;
+  const output: Record<string, Record<string, string>> = {};
+  for (const [slot, scale] of Object.entries(alpha)) {
+    const stepMap: Record<string, string> = {};
+    for (const [step, value] of Object.entries(scale[mode])) {
+      stepMap[String(step)] = value;
+    }
+    output[slot] = stepMap;
   }
   return output;
 }

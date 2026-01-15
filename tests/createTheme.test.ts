@@ -31,8 +31,8 @@ describe("createTheme", () => {
 
   it("generates alpha scale by default", () => {
     const theme = createTheme(options);
-    expect(theme.alpha?.light[1]).toMatch(/^#[0-9a-fA-F]{8}$/);
-    expect(theme.alpha?.dark[12]).toMatch(/^#[0-9a-fA-F]{8}$/);
+    expect(theme.alpha?.neutral.light[1]).toMatch(/^#[0-9a-fA-F]{8}$/);
+    expect(theme.alpha?.accent.dark[12]).toMatch(/^#[0-9a-fA-F]{8}$/);
   });
 
   it("provides overlay scales", () => {

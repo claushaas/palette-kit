@@ -23,8 +23,8 @@ function scaleToCssVar(slot: string, step: Step, prefix: string): string {
   return `--${prefix}-scale-${slot}-${step}`;
 }
 
-function alphaToCssVar(step: Step, prefix: string): string {
-  return `--${prefix}-alpha-${step}`;
+function alphaToCssVar(slot: string, step: Step, prefix: string): string {
+  return `--${prefix}-alpha-${slot}-${step}`;
 }
 
 function overlayToCssVar(color: "black" | "white", step: Step, prefix: string): string {
@@ -66,8 +66,10 @@ export function toCssVars(theme: Theme, options?: CssVarsOptions): string {
     }
 
     if (includeAlpha && theme.alpha) {
-      for (const [step, value] of Object.entries(theme.alpha[mode])) {
-        lines.push(`  ${alphaToCssVar(Number(step) as Step, prefix)}: ${value};`);
+      for (const [slot, scale] of Object.entries(theme.alpha)) {
+        for (const [step, value] of Object.entries(scale[mode])) {
+          lines.push(`  ${alphaToCssVar(slot, Number(step) as Step, prefix)}: ${value};`);
+        }
       }
     }
 
@@ -117,8 +119,12 @@ export function toCssVars(theme: Theme, options?: CssVarsOptions): string {
       }
 
       if (includeAlpha && theme.alpha) {
-        for (const [step, value] of Object.entries(theme.alpha[mode])) {
-          lines.push(`    ${alphaToCssVar(Number(step) as Step, prefix)}: ${hexToP3(value)};`);
+        for (const [slot, scale] of Object.entries(theme.alpha)) {
+          for (const [step, value] of Object.entries(scale[mode])) {
+            lines.push(
+              `    ${alphaToCssVar(slot, Number(step) as Step, prefix)}: ${hexToP3(value)};`,
+            );
+          }
         }
       }
 

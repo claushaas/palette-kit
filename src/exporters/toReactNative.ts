@@ -32,10 +32,10 @@ type ModeAlpha<T extends Theme, O extends ReactNativeOptions, M extends Mode> = 
   ? undefined
   : ThemeAlpha<T> extends undefined
     ? undefined
-    : ThemeAlpha<T> extends { light: infer L; dark: infer D }
+    : ThemeAlpha<T> extends Record<string, { light: infer L; dark: infer D }>
       ? M extends "light"
-        ? L
-        : D
+        ? Record<string, L>
+        : Record<string, D>
       : undefined;
 
 type ModeOverlays<T extends Theme, O extends ReactNativeOptions> = O extends {
@@ -97,10 +97,17 @@ export function toReactNative<T extends Theme, O extends ReactNativeOptions = Re
             .map(([slot, scale]) => [slot, scale.p3?.[mode]]),
         ) as ModeP3<T, O, M>)
       : (undefined as ModeP3<T, O, M>);
+    const alpha = includeAlpha
+      ? (theme.alpha
+          ? (Object.fromEntries(
+              Object.entries(theme.alpha).map(([slot, scale]) => [slot, scale[mode]]),
+            ) as ModeAlpha<T, O, M>)
+          : (undefined as ModeAlpha<T, O, M>))
+      : (undefined as ModeAlpha<T, O, M>);
     return {
       tokens: (includeTokens ? theme.tokens[mode] : {}) as Record<string, never> as ModeTokens<T, O, M>,
       scales,
-      alpha: (includeAlpha ? theme.alpha?.[mode] : undefined) as ModeAlpha<T, O, M>,
+      alpha,
       p3,
     };
   }

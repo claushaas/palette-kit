@@ -69,7 +69,7 @@ Options:
 
 Returns:
 
-- `Theme` with `scales`, `tokens`, `alpha`, `overlay`, and `diagnostics`.
+- `Theme` with `scales`, `tokens`, `alpha` (per palette slot), `overlay`, and `diagnostics`.
 
 ## toCssVars
 

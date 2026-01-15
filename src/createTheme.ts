@@ -7,7 +7,7 @@ import { generateScale } from "./generateScale.js";
 import { generateOverlayScale } from "./overlays/generateOverlayScale.js";
 import { generateTextScale } from "./text/generateTextScale.js";
 import { buildPresetTokens } from "./tokens/presetRadixLikeUi.js";
-import type { AlphaScale, ColorHex, ColorSource, OverlayScale, Scale, Theme } from "./types.js";
+import type { AlphaScales, ColorHex, ColorSource, OverlayScale, Scale, Theme } from "./types.js";
 
 export type TokenOverrides = {
   light?: Record<string, ColorHex>;
@@ -178,13 +178,18 @@ export function createTheme(options: CreateThemeOptions): Theme {
     Object.assign(tokens.dark, options.tokens.overrides.dark);
   }
 
-  let alpha: AlphaScale | undefined;
+  let alpha: AlphaScales | undefined;
   if (options.alpha?.enabled !== false) {
     const background = {
       light: options.alpha?.background?.light ?? "#ffffff",
       dark: options.alpha?.background?.dark ?? "#111111",
     } as const;
-    alpha = generateAlphaScale(accentScale.light[9], background);
+    alpha = Object.fromEntries(
+      Object.entries(scales).map(([slot, scale]) => [
+        slot,
+        generateAlphaScale(scale.light[9], background),
+      ]),
+    );
   }
 
   const overlay: OverlayScale = generateOverlayScale();

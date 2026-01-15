@@ -26,6 +26,7 @@ export { generateOverlayScale } from "./overlays/generateOverlayScale.js";
 export { generateTextScale } from "./text/generateTextScale.js";
 export type {
   AlphaScale,
+  AlphaScales,
   ColorHex,
   ColorSource,
   OklchColor,

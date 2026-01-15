@@ -23,8 +23,8 @@ describe("toCssVars", () => {
 
   it("includes alpha variables", () => {
     const css = toCssVars(theme, { prefix: "pk" });
-    expect(css).toContain("--pk-alpha-1");
-    expect(css).toContain("--pk-alpha-12");
+    expect(css).toContain("--pk-alpha-accent-1");
+    expect(css).toContain("--pk-alpha-neutral-12");
   });
 
   it("includes overlay variables", () => {
