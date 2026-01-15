@@ -44,7 +44,7 @@ function typeExports(): string {
     'export type ThemeScaleStep = keyof Theme["scales"][ThemeScaleName]["light"];',
     'export type ThemeTokenHex = Theme["tokens"][ThemeMode][ThemeTokenName];',
     'export type ThemeScaleHex = Theme["scales"][ThemeScaleName][ThemeMode][ThemeScaleStep];',
-    'export type ThemeAlphaHex = Theme["alpha"] extends undefined ? never : Theme["alpha"][ThemeMode][ThemeScaleStep];',
+    'export type ThemeAlphaHex = Theme["alpha"] extends undefined ? never : Theme["alpha"][ThemeScaleName][ThemeMode][ThemeScaleStep];',
     "",
   ].join("\n");
 }
