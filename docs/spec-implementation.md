@@ -128,11 +128,9 @@ const templates = {
 
 ## 8) Contrast solver (APCA)
 
-- Apply to critical tokens: `text.primary`, `text.secondary`, `onSolid.primary`.
+- Apply to critical tokens: `onSolid.primary`.
 - Prefer L adjustments; reduce C if needed.
 - Initial targets (configurable):
-  - `text.primary`: Lc 75-90
-  - `text.secondary`: Lc 55-70
   - `onSolid.primary`: Lc 60-75
 - Use `apca-w3` with WCAG2 fallback if needed.
 
@@ -160,8 +158,15 @@ Minimal mapping (from `docs/Why.md`):
 - `focus.ring` -> accent 8
 - `accent.solid` -> accent 9
 - `accent.solidHover` -> accent 10
-- `text.secondary` -> neutral 11 (solver may adjust)
-- `text.primary` -> neutral 12 (solver may adjust)
+- Light mode:
+  - `text.onBg.light.*` -> text.dark steps 12/10/9/8
+  - `text.onBg.mid.*` -> text.dark steps 12/11 (no tertiary/disabled)
+  - `text.onBg.dark.*` -> text.light steps 1/3/4/5
+- Dark mode (inverted):
+  - `text.onBg.light.*` -> text.light steps 1/3/4/5
+  - `text.onBg.mid.*` -> text.light steps 1/3 (no tertiary/disabled)
+  - `text.onBg.dark.*` -> text.dark steps 12/10/9/8
+- `text.primary|secondary|tertiary|disabled` -> `text.onBg.light.*`
 - `onSolid.primary` -> solver chooses white/black (+ alpha)
 
 ## 11) Exporters

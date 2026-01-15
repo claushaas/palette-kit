@@ -203,6 +203,20 @@ Options:
 
 ## selectThemeColorMode
 
+## resolveOnBgTextTokens
+
+Resolve the correct `text.onBg.*` tokens for a background step.
+
+```ts
+import { resolveOnBgTextTokens } from "@claus/palette-kit";
+
+const text = resolveOnBgTextTokens(theme, "dark", 2);
+```
+
+Returns:
+
+- `{ zone, primary, secondary, tertiary?, disabled? }`
+
 Switch a theme to use P3 scales when available.
 
 ```ts
