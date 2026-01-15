@@ -9,11 +9,7 @@ Default targets (configurable via `createTheme({ contrast })`):
 - `textPrimary`: 75
 - `textSecondary`: 60
 
-These values represent APCA Lc scores. They are meant to be product-friendly defaults, not strict compliance.
-
-## How it works
-
-The solver adjusts **Lightness (L)** in OKLCH to reach the target contrast against `bg.app`. It avoids hue changes and only compresses chroma when needed to keep values inside sRGB.
+These values represent APCA Lc scores. They are kept for compatibility but are not applied to the text scale tokens (which are deterministic by step).
 
 ## On-solid text
 

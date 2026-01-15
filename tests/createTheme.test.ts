@@ -27,6 +27,18 @@ describe("createTheme", () => {
     const theme = createTheme(options);
     expect(theme.tokens.light["text.dark.primary"]).toMatch(/^#[0-9a-fA-F]{6}$/);
     expect(theme.tokens.light["text.light.primary"]).toMatch(/^#[0-9a-fA-F]{6}$/);
+    expect(theme.tokens.light["text.onBg.light.primary"]).toMatch(/^#[0-9a-fA-F]{6}$/);
+    expect(theme.tokens.light["text.onBg.mid.secondary"]).toMatch(/^#[0-9a-fA-F]{6}$/);
+    expect(theme.tokens.light["text.onBg.mid.tertiary"]).toBeUndefined();
+    expect(theme.tokens.dark["text.onBg.light.primary"]).toMatch(/^#[0-9a-fA-F]{6}$/);
+    expect(theme.tokens.dark["text.onBg.dark.primary"]).toMatch(/^#[0-9a-fA-F]{6}$/);
+    expect(theme.tokens.dark["text.onBg.mid.disabled"]).toBeUndefined();
+    expect(theme.tokens.light["text.onBg.light.primary"]).toBe(
+      theme.tokens.light["text.dark.primary"],
+    );
+    expect(theme.tokens.dark["text.onBg.light.primary"]).toBe(
+      theme.tokens.dark["text.light.primary"],
+    );
   });
 
   it("generates alpha scale by default", () => {

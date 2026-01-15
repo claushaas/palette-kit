@@ -71,6 +71,11 @@ Returns:
 
 - `Theme` with `scales`, `tokens`, `alpha` (per palette slot), `overlay`, and `diagnostics`.
 
+Text tokens:
+
+- `text.onBg.light|mid|dark.*` helpers are resolved per mode and invert in dark mode.
+- `text.primary|secondary|tertiary|disabled` map to `bg.app` (zone `light`).
+
 Migration note:
 
 - Alpha access changed from `theme.alpha?.light[step]` to `theme.alpha?.[slot].light[step]`.

@@ -1,13 +1,13 @@
 # Text Colors
 
-Text colors are generated from fixed hex bases and a deterministic luminance scale. They do not depend on the active theme. You choose the text scale based on the background zone.
+Text colors are generated from fixed hex bases and a deterministic luminance scale. They do not depend on the active theme. You choose the text scale based on the background zone and the device color scheme.
 
 ## Goals
 
 - Deterministic, reproducible text colors.
 - No palette name coupling.
 - No alpha in text.
-- Same values in light and dark themes.
+- Same values for the text scales in light and dark themes.
 
 ## Bases
 
@@ -58,8 +58,8 @@ Mid zone (use dark text scale):
 
 - Primary: 12
 - Secondary: 11
-- Tertiary: not recommended
-- Disabled: not recommended
+- Tertiary: not available
+- Disabled: not available
 
 Dark zone (use light text scale):
 
@@ -67,6 +67,14 @@ Dark zone (use light text scale):
 - Secondary: 3
 - Tertiary: 4
 - Disabled: 5
+
+## Device color scheme
+
+When the device is in dark mode, invert the background mapping:
+
+- Light zone uses the light text scale.
+- Mid zone uses the light text scale.
+- Dark zone uses the dark text scale.
 
 ## Overlays for unstable backgrounds
 
@@ -84,7 +92,13 @@ Semantic shortcuts are also available:
 - `text.dark.primary|secondary|tertiary|disabled`
 - `text.light.primary|secondary|tertiary|disabled`
 
-For backwards compatibility, `text.primary|secondary|tertiary|disabled` are mapped to the default app background (light mode uses dark text, dark mode uses light text).
+Zone helpers are provided for background-dependent text:
+
+- `text.onBg.light.primary|secondary|tertiary|disabled`
+- `text.onBg.mid.primary|secondary`
+- `text.onBg.dark.primary|secondary|tertiary|disabled`
+
+For backwards compatibility, `text.primary|secondary|tertiary|disabled` are mapped to the default app background (`bg.app`).
 
 ## Customization
 

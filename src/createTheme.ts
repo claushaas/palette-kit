@@ -1,13 +1,20 @@
 import { generateAlphaScale } from "./alpha/generateAlphaScale.js";
 import { onSolidTextTokens } from "./contrast/onSolid.js";
-import { adjustTextColor } from "./contrast/solveText.js";
 import { analyzeTheme } from "./diagnostics/analyzeTheme.js";
 import type { GenerateScaleOptions } from "./generateScale.js";
 import { generateScale } from "./generateScale.js";
 import { generateOverlayScale } from "./overlays/generateOverlayScale.js";
 import { generateTextScale } from "./text/generateTextScale.js";
 import { buildPresetTokens } from "./tokens/presetRadixLikeUi.js";
-import type { AlphaScales, ColorHex, ColorSource, OverlayScale, Scale, Theme } from "./types.js";
+import type {
+  AlphaScales,
+  ColorHex,
+  ColorSource,
+  OverlayScale,
+  Scale,
+  Step,
+  Theme,
+} from "./types.js";
 
 export type TokenOverrides = {
   light?: Record<string, ColorHex>;
@@ -79,40 +86,6 @@ export function createTheme(options: CreateThemeOptions): Theme {
   const preset = options.tokens?.preset ?? "radix-like-ui";
   const tokens = preset === "radix-like-ui" ? buildPresetTokens(scales) : { light: {}, dark: {} };
 
-  const lightBg = tokens.light["bg.app"];
-  const darkBg = tokens.dark["bg.app"];
-  const textPrimaryTarget = options.contrast?.textPrimary ?? 75;
-  const textSecondaryTarget = options.contrast?.textSecondary ?? 60;
-
-  if (lightBg && tokens.light["text.primary"]) {
-    tokens.light["text.primary"] = adjustTextColor(
-      tokens.light["text.primary"],
-      lightBg,
-      textPrimaryTarget,
-    );
-  }
-  if (lightBg && tokens.light["text.secondary"]) {
-    tokens.light["text.secondary"] = adjustTextColor(
-      tokens.light["text.secondary"],
-      lightBg,
-      textSecondaryTarget,
-    );
-  }
-  if (darkBg && tokens.dark["text.primary"]) {
-    tokens.dark["text.primary"] = adjustTextColor(
-      tokens.dark["text.primary"],
-      darkBg,
-      textPrimaryTarget,
-    );
-  }
-  if (darkBg && tokens.dark["text.secondary"]) {
-    tokens.dark["text.secondary"] = adjustTextColor(
-      tokens.dark["text.secondary"],
-      darkBg,
-      textSecondaryTarget,
-    );
-  }
-
   const accentScale = scales.accent;
   const lightOnSolid = onSolidTextTokens(accentScale.light[9]);
   const darkOnSolid = onSolidTextTokens(accentScale.dark[9]);
@@ -141,6 +114,37 @@ export function createTheme(options: CreateThemeOptions): Theme {
     tertiary: 4,
     disabled: 5,
   } as const;
+  const midDarkTextSteps = {
+    primary: 12,
+    secondary: 11,
+  } as const;
+  const midLightTextSteps = {
+    primary: 1,
+    secondary: 3,
+  } as const;
+
+  const onBgLightMode = {
+    light: { scale: "dark", steps: darkTextSteps },
+    mid: { scale: "dark", steps: midDarkTextSteps },
+    dark: { scale: "light", steps: lightTextSteps },
+  } as const;
+  const onBgDarkMode = {
+    light: { scale: "light", steps: lightTextSteps },
+    mid: { scale: "light", steps: midLightTextSteps },
+    dark: { scale: "dark", steps: darkTextSteps },
+  } as const;
+
+  const applyOnBgTokens = (
+    target: Record<string, ColorHex>,
+    mapping: typeof onBgLightMode,
+  ) => {
+    for (const [zone, config] of Object.entries(mapping)) {
+      const scale = config.scale === "dark" ? textScale.dark : textScale.light;
+      for (const [role, step] of Object.entries(config.steps)) {
+        target[`text.onBg.${zone}.${role}`] = scale[step as Step];
+      }
+    }
+  };
 
   for (const [step, value] of Object.entries(textScale.dark)) {
     tokens.light[`text.dark.${step}`] = value;
@@ -162,14 +166,17 @@ export function createTheme(options: CreateThemeOptions): Theme {
     tokens.dark[token] = textScale.light[step];
   }
 
-  tokens.light["text.primary"] = textScale.dark[darkTextSteps.primary];
-  tokens.light["text.secondary"] = textScale.dark[darkTextSteps.secondary];
-  tokens.light["text.tertiary"] = textScale.dark[darkTextSteps.tertiary];
-  tokens.light["text.disabled"] = textScale.dark[darkTextSteps.disabled];
-  tokens.dark["text.primary"] = textScale.light[lightTextSteps.primary];
-  tokens.dark["text.secondary"] = textScale.light[lightTextSteps.secondary];
-  tokens.dark["text.tertiary"] = textScale.light[lightTextSteps.tertiary];
-  tokens.dark["text.disabled"] = textScale.light[lightTextSteps.disabled];
+  applyOnBgTokens(tokens.light, onBgLightMode);
+  applyOnBgTokens(tokens.dark, onBgDarkMode);
+
+  tokens.light["text.primary"] = tokens.light["text.onBg.light.primary"];
+  tokens.light["text.secondary"] = tokens.light["text.onBg.light.secondary"];
+  tokens.light["text.tertiary"] = tokens.light["text.onBg.light.tertiary"];
+  tokens.light["text.disabled"] = tokens.light["text.onBg.light.disabled"];
+  tokens.dark["text.primary"] = tokens.dark["text.onBg.light.primary"];
+  tokens.dark["text.secondary"] = tokens.dark["text.onBg.light.secondary"];
+  tokens.dark["text.tertiary"] = tokens.dark["text.onBg.light.tertiary"];
+  tokens.dark["text.disabled"] = tokens.dark["text.onBg.light.disabled"];
 
   if (options.tokens?.overrides?.light) {
     Object.assign(tokens.light, options.tokens.overrides.light);

@@ -59,7 +59,7 @@ On-solid tokens are computed using contrast and alpha:
 
 ## Text
 
-Text tokens are generated from the text scales (see `docs/text.md`) and are the same in light/dark modes. They are not derived from neutral.
+Text scale tokens are generated from the text scales (see `docs/text.md`) and are the same in light/dark modes. They are not derived from neutral. `text.onBg.*` helpers are resolved per mode and invert in dark mode.
 
 Scale tokens:
 
@@ -83,6 +83,19 @@ Default app tokens (mapped to the app background):
 - `text.secondary`
 - `text.tertiary`
 - `text.disabled`
+
+Background zone helpers:
+
+- `text.onBg.light.primary`
+- `text.onBg.light.secondary`
+- `text.onBg.light.tertiary`
+- `text.onBg.light.disabled`
+- `text.onBg.mid.primary`
+- `text.onBg.mid.secondary`
+- `text.onBg.dark.primary`
+- `text.onBg.dark.secondary`
+- `text.onBg.dark.tertiary`
+- `text.onBg.dark.disabled`
 
 ## toTs type exports
 
