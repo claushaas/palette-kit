@@ -23,6 +23,12 @@ describe("createTheme", () => {
     expect(theme.tokens.dark["onSolid.primary"]).toMatch(/^#[0-9a-fA-F]{8}$/);
   });
 
+  it("adds text tokens for light and dark backgrounds", () => {
+    const theme = createTheme(options);
+    expect(theme.tokens.light["text.dark.primary"]).toMatch(/^#[0-9a-fA-F]{6}$/);
+    expect(theme.tokens.light["text.light.primary"]).toMatch(/^#[0-9a-fA-F]{6}$/);
+  });
+
   it("generates alpha scale by default", () => {
     const theme = createTheme(options);
     expect(theme.alpha?.light[1]).toMatch(/^#[0-9a-fA-F]{8}$/);

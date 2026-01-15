@@ -23,6 +23,7 @@ export type {
 } from "./generateScale.js";
 export { generateScale } from "./generateScale.js";
 export { generateOverlayScale } from "./overlays/generateOverlayScale.js";
+export { generateTextScale } from "./text/generateTextScale.js";
 export type {
   AlphaScale,
   ColorHex,
@@ -34,6 +35,7 @@ export type {
   ScaleColorMode,
   ScaleDiagnostics,
   Step,
+  TextScale,
   TemplateId,
   Theme,
   ThemeColorMode,

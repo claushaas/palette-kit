@@ -45,6 +45,11 @@ export type OverlayScale = {
   white: Record<Step, ColorHex>;
 };
 
+export type TextScale = {
+  dark: Record<Step, ColorHex>;
+  light: Record<Step, ColorHex>;
+};
+
 export type ThemeDiagnostics = {
   contrast: Record<string, number>;
   outOfGamutCount: number;

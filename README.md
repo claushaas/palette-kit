@@ -164,6 +164,7 @@ Note: React Native does not support `color(display-p3 ...)` strings as drop-in c
 - `docs/tokens.md`
 - `docs/contrast.md`
 - `docs/alpha.md`
+- `docs/text.md`
 - `docs/Why.md`
 - `docs/spec-implementation.md`
 - `docs/plan-tests.md`

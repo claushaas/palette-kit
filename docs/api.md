@@ -50,6 +50,10 @@ const theme = createTheme({
     enabled: true,
     background: { light: "#ffffff", dark: "#111111" },
   },
+  text: {
+    darkBase: "#1C1C1E",
+    lightBase: "#F5F5F7",
+  },
   contrast: {
     textPrimary: 75,
     textSecondary: 60,
@@ -61,10 +65,11 @@ const theme = createTheme({
 Options:
 
 - `scale`: options forwarded to every `generateScale` call (excluding `source`, `mode`, `p3`).
+- `text`: overrides for text color bases (`darkBase`, `lightBase`).
 
 Returns:
 
-- `Theme` with `scales`, `tokens`, `alpha`, and `diagnostics`.
+- `Theme` with `scales`, `tokens`, `alpha`, `overlay`, and `diagnostics`.
 
 ## toCssVars
 
@@ -78,6 +83,7 @@ const css = toCssVars(theme, {
   includeTokens: true,
   includeScales: true,
   includeAlpha: true,
+  includeOverlays: true,
   includeP3: true,
   lightSelector: ":root",
   darkSelector: ".dark",
@@ -98,6 +104,7 @@ const tailwind = toTailwind(theme, {
   includeTokens: true,
   includeScales: false,
   includeAlpha: false,
+  includeOverlays: false,
   includeP3: true,
 });
 ```
@@ -113,6 +120,7 @@ const palette = toReactNative(theme, {
   includeTokens: true,
   includeScales: true,
   includeAlpha: true,
+  includeOverlays: true,
   includeP3: true,
 });
 ```

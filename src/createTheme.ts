@@ -5,6 +5,7 @@ import { analyzeTheme } from "./diagnostics/analyzeTheme.js";
 import type { GenerateScaleOptions } from "./generateScale.js";
 import { generateScale } from "./generateScale.js";
 import { generateOverlayScale } from "./overlays/generateOverlayScale.js";
+import { generateTextScale } from "./text/generateTextScale.js";
 import { buildPresetTokens } from "./tokens/presetRadixLikeUi.js";
 import type { AlphaScale, ColorHex, ColorSource, OverlayScale, Scale, Theme } from "./types.js";
 
@@ -26,6 +27,10 @@ export type CreateThemeOptions = {
   alpha?: {
     enabled?: boolean;
     background?: { light?: ColorHex; dark?: ColorHex };
+  };
+  text?: {
+    darkBase?: ColorHex;
+    lightBase?: ColorHex;
   };
   contrast?: {
     textPrimary?: number;
@@ -118,6 +123,53 @@ export function createTheme(options: CreateThemeOptions): Theme {
   tokens.dark["onSolid.primary"] = darkOnSolid.primary;
   tokens.dark["onSolid.secondary"] = darkOnSolid.secondary;
   tokens.dark["onSolid.disabled"] = darkOnSolid.disabled;
+
+  const textScale = generateTextScale({
+    darkBase: options.text?.darkBase,
+    lightBase: options.text?.lightBase,
+  });
+
+  const darkTextSteps = {
+    primary: 12,
+    secondary: 10,
+    tertiary: 9,
+    disabled: 8,
+  } as const;
+  const lightTextSteps = {
+    primary: 1,
+    secondary: 3,
+    tertiary: 4,
+    disabled: 5,
+  } as const;
+
+  for (const [step, value] of Object.entries(textScale.dark)) {
+    tokens.light[`text.dark.${step}`] = value;
+    tokens.dark[`text.dark.${step}`] = value;
+  }
+  for (const [step, value] of Object.entries(textScale.light)) {
+    tokens.light[`text.light.${step}`] = value;
+    tokens.dark[`text.light.${step}`] = value;
+  }
+
+  for (const [key, step] of Object.entries(darkTextSteps)) {
+    const token = `text.dark.${key}`;
+    tokens.light[token] = textScale.dark[step];
+    tokens.dark[token] = textScale.dark[step];
+  }
+  for (const [key, step] of Object.entries(lightTextSteps)) {
+    const token = `text.light.${key}`;
+    tokens.light[token] = textScale.light[step];
+    tokens.dark[token] = textScale.light[step];
+  }
+
+  tokens.light["text.primary"] = textScale.dark[darkTextSteps.primary];
+  tokens.light["text.secondary"] = textScale.dark[darkTextSteps.secondary];
+  tokens.light["text.tertiary"] = textScale.dark[darkTextSteps.tertiary];
+  tokens.light["text.disabled"] = textScale.dark[darkTextSteps.disabled];
+  tokens.dark["text.primary"] = textScale.light[lightTextSteps.primary];
+  tokens.dark["text.secondary"] = textScale.light[lightTextSteps.secondary];
+  tokens.dark["text.tertiary"] = textScale.light[lightTextSteps.tertiary];
+  tokens.dark["text.disabled"] = textScale.light[lightTextSteps.disabled];
 
   if (options.tokens?.overrides?.light) {
     Object.assign(tokens.light, options.tokens.overrides.light);
