@@ -22,7 +22,9 @@ pnpm add @clhaas/palette-kit
 
 - 12-step scale (light/dark) from a seed.
 - Semantic tokens for UI (`radix-like-ui` preset).
-- Alpha scale for overlays.
+- Alpha scales per palette slot (chromatic alpha).
+- Overlay scales (black/white alpha).
+- Deterministic text scales for light/dark backgrounds.
 - Exporters for TS, JSON, CSS vars, Tailwind, and React Native.
 - Auto anchor selection per mode (light/dark), overridable via `anchorStep`.
 - Basic contrast and gamut diagnostics.
@@ -41,6 +43,10 @@ const theme = createTheme({
     danger: { source: "seed", value: "#ef4444" },
   },
   tokens: { preset: "radix-like-ui" },
+  text: {
+    darkBase: "#1C1C1E",
+    lightBase: "#F5F5F7",
+  },
   p3: true,
 });
 ```
@@ -95,6 +101,10 @@ export default {
   },
   tokens: { preset: "radix-like-ui" },
   alpha: { enabled: true },
+  text: {
+    darkBase: "#1C1C1E",
+    lightBase: "#F5F5F7",
+  },
   p3: true,
 };
 ```
@@ -123,6 +133,31 @@ import { theme, ThemeTokenMap, ThemeTokenName } from "./theme";
 const tokens: ThemeTokenMap = theme.tokens.light;
 const tokenName: ThemeTokenName = "bg.app";
 ```
+
+## Alpha, overlay, and text examples
+
+```ts
+const accentAlpha = theme.alpha?.accent.light[5];
+const overlay = theme.overlay.black[9];
+const textOnLight = theme.tokens.light["text.dark.primary"];
+const textOnDark = theme.tokens.dark["text.light.primary"];
+```
+
+## Migration note (alpha)
+
+Alpha scales are now generated per palette slot. If you previously used:
+
+```ts
+theme.alpha?.light[5];
+```
+
+Update to:
+
+```ts
+theme.alpha?.accent.light[5];
+```
+
+CSS variables were also updated from `--pk-alpha-<step>` to `--pk-alpha-<slot>-<step>`.
 
 ## React Native + Expo
 
@@ -165,6 +200,7 @@ Note: React Native does not support `color(display-p3 ...)` strings as drop-in c
 - `docs/contrast.md`
 - `docs/alpha.md`
 - `docs/text.md`
+- `docs/overlays.md`
 - `docs/Why.md`
 - `docs/spec-implementation.md`
 - `docs/plan-tests.md`

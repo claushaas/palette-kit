@@ -8,7 +8,7 @@ If it must be read, do not use alpha. If it must be felt (state, depth, focus), 
 
 An alpha color only exists in relation to a background:
 
-```
+```text
 result = base_color ⊕ background
 ```
 
@@ -64,13 +64,18 @@ Not allowed:
 
 Radix uses a perceptual, non-linear curve so each step is visually distinct. We use the same alpha curve:
 
-```
+```text
 0.05, 0.10, 0.15, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 0.95
 ```
 
 ## Library behavior
 
 `createTheme` generates alpha scales for every palette slot. Each alpha scale is derived from step 9 of the corresponding solid scale. Alpha values are the same in light and dark modes.
+
+Migration note:
+
+- Alpha access changed from `theme.alpha?.light[step]` to `theme.alpha?.[slot].light[step]`.
+- CSS vars changed from `--pk-alpha-<step>` to `--pk-alpha-<slot>-<step>`.
 
 ```ts
 import { createTheme } from "@clhaas/palette-kit";

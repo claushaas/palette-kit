@@ -71,6 +71,11 @@ Returns:
 
 - `Theme` with `scales`, `tokens`, `alpha` (per palette slot), `overlay`, and `diagnostics`.
 
+Migration note:
+
+- Alpha access changed from `theme.alpha?.light[step]` to `theme.alpha?.[slot].light[step]`.
+- CSS vars changed from `--pk-alpha-<step>` to `--pk-alpha-<slot>-<step>`.
+
 ## toCssVars
 
 Export CSS variables for tokens, scales, and alpha.

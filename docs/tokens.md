@@ -14,9 +14,6 @@ The default preset is `radix-like-ui`. It provides a minimal, practical set of t
 - `border.subtle` -> neutral 6
 - `border.default` -> neutral 7
 - `border.strong` -> neutral 8
-- `text.secondary` -> neutral 11
-- `text.primary` -> neutral 12
-- `text.disabled` -> neutral 10
 
 ## Accent
 
@@ -59,6 +56,33 @@ On-solid tokens are computed using contrast and alpha:
 - `onSolid.primary`
 - `onSolid.secondary`
 - `onSolid.disabled`
+
+## Text
+
+Text tokens are generated from the text scales (see `docs/text.md`) and are the same in light/dark modes. They are not derived from neutral.
+
+Scale tokens:
+
+- `text.dark.1` ... `text.dark.12`
+- `text.light.1` ... `text.light.12`
+
+Semantic helpers:
+
+- `text.dark.primary`
+- `text.dark.secondary`
+- `text.dark.tertiary`
+- `text.dark.disabled`
+- `text.light.primary`
+- `text.light.secondary`
+- `text.light.tertiary`
+- `text.light.disabled`
+
+Default app tokens (mapped to the app background):
+
+- `text.primary`
+- `text.secondary`
+- `text.tertiary`
+- `text.disabled`
 
 ## toTs type exports
 
