@@ -151,12 +151,12 @@ export type BaseResolvedColor = {
 const isNormalizedQuery = (value: ColorQuery | NormalizedQuery): value is NormalizedQuery =>
   typeof value === "object" &&
   value !== null &&
-  "output" in value &&
-  "usage" in value &&
-  "surface" in value &&
-  "context" in value &&
-  "state" in value &&
-  "emphasis" in value;
+  typeof value.role === "string" &&
+  typeof value.usage === "string" &&
+  typeof value.surface === "string" &&
+  typeof value.context === "string" &&
+  typeof value.state === "string" &&
+  typeof value.emphasis === "string";
 
 export function resolveBaseColor(query: ColorQuery, theme: ThemeConfig): BaseResolvedColor;
 export function resolveBaseColor(
