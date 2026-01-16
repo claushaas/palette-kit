@@ -697,7 +697,6 @@ Abaixo está o **Implementation Plan v1**, que transforma a SPEC em um plano té
 ### 0.1 Estrutura de pastas
 
 ```text
-/packages/palette-kit
   /src
     /core
     /engine
@@ -723,7 +722,7 @@ Abaixo está o **Implementation Plan v1**, que transforma a SPEC em um plano té
 ### 0.2 Dependências
 
 - `culori` (obrigatória)
-- `@myndex/apca-w3` (ou equivalente)
+- `apca-w3`
 
 ---
 
