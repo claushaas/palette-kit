@@ -12,20 +12,52 @@ const theme = createTheme({
 
 describe("resolve", () => {
   it("applies state operators via theme.resolve", () => {
-    const base = theme.resolve({
+    const baseLight = theme.resolve({
       role: "bg.solid",
       usage: "bg",
       surface: "solid",
       context: "light",
     });
-    const hover = theme.resolve({
+    const hoverLight = theme.resolve({
       role: "bg.solid",
       usage: "bg",
       surface: "solid",
       context: "light",
       state: "hover",
     });
+    const baseDark = theme.resolve({
+      role: "bg.solid",
+      usage: "bg",
+      surface: "solid",
+      context: "dark",
+    });
+    const hoverDark = theme.resolve({
+      role: "bg.solid",
+      usage: "bg",
+      surface: "solid",
+      context: "dark",
+      state: "hover",
+    });
+    const activeLight = theme.resolve({
+      role: "bg.solid",
+      usage: "bg",
+      surface: "solid",
+      context: "light",
+      state: "active",
+    });
+    const disabledLight = theme.resolve({
+      role: "bg.solid",
+      usage: "bg",
+      surface: "solid",
+      context: "light",
+      state: "disabled",
+    });
 
-    expect(hover.oklch.l).toBeLessThan(base.oklch.l);
+    expect(hoverLight.oklch.l).toBeLessThan(baseLight.oklch.l);
+    expect(hoverDark.oklch.l).toBeGreaterThan(baseDark.oklch.l);
+    expect(Math.abs(activeLight.oklch.l - baseLight.oklch.l)).toBeGreaterThan(
+      Math.abs(hoverLight.oklch.l - baseLight.oklch.l),
+    );
+    expect(disabledLight.oklch.c).toBeLessThan(baseLight.oklch.c * 0.6);
   });
 });

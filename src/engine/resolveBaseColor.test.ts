@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { parseColor } from "../utils/parseColor.js";
+import { normalizeQuery } from "./normalize.js";
 import { resolveBaseColor } from "./resolveBaseColor.js";
 
 const themeConfig = {
@@ -17,7 +18,12 @@ const themeConfig = {
 describe("resolveBaseColor", () => {
   it("defaults action roles to accent when variant is missing", () => {
     const result = resolveBaseColor(
-      { role: "action.primary", usage: "bg", surface: "solid", context: "light" },
+      normalizeQuery({
+        role: "action.primary",
+        usage: "bg",
+        surface: "solid",
+        context: "light",
+      }),
       themeConfig,
     );
 
@@ -27,7 +33,12 @@ describe("resolveBaseColor", () => {
 
   it("defaults text roles to neutral when variant is missing", () => {
     const result = resolveBaseColor(
-      { role: "text.primary", usage: "text", surface: "surface", context: "light" },
+      normalizeQuery({
+        role: "text.primary",
+        usage: "text",
+        surface: "surface",
+        context: "light",
+      }),
       themeConfig,
     );
 
@@ -37,13 +48,13 @@ describe("resolveBaseColor", () => {
 
   it("uses custom category variants when provided", () => {
     const result = resolveBaseColor(
-      {
+      normalizeQuery({
         role: "bg.category",
         variant: "category:food",
         usage: "bg",
         surface: "surface",
         context: "light",
-      },
+      }),
       themeConfig,
     );
 
@@ -53,13 +64,13 @@ describe("resolveBaseColor", () => {
 
   it("falls back to accent for missing category variants", () => {
     const result = resolveBaseColor(
-      {
+      normalizeQuery({
         role: "bg.category",
         variant: "category:missing",
         usage: "bg",
         surface: "surface",
         context: "light",
-      },
+      }),
       themeConfig,
     );
 
@@ -69,19 +80,24 @@ describe("resolveBaseColor", () => {
 
   it("chooses steps based on usage and surface", () => {
     const appBg = resolveBaseColor(
-      { role: "bg.app", usage: "bg", surface: "app", context: "light" },
+      normalizeQuery({ role: "bg.app", usage: "bg", surface: "app", context: "light" }),
       themeConfig,
     );
     const solidBg = resolveBaseColor(
-      { role: "bg.solid", usage: "bg", surface: "solid", context: "light" },
+      normalizeQuery({ role: "bg.solid", usage: "bg", surface: "solid", context: "light" }),
       themeConfig,
     );
     const borderSurface = resolveBaseColor(
-      { role: "border.surface", usage: "border", surface: "surface", context: "light" },
+      normalizeQuery({
+        role: "border.surface",
+        usage: "border",
+        surface: "surface",
+        context: "light",
+      }),
       themeConfig,
     );
     const ring = resolveBaseColor(
-      { role: "ring.focus", usage: "ring", surface: "surface", context: "light" },
+      normalizeQuery({ role: "ring.focus", usage: "ring", surface: "surface", context: "light" }),
       themeConfig,
     );
 
@@ -93,7 +109,12 @@ describe("resolveBaseColor", () => {
 
   it("returns valid OKLCH values with stable hue", () => {
     const result = resolveBaseColor(
-      { role: "action.primary", usage: "bg", surface: "solid", context: "light" },
+      normalizeQuery({
+        role: "action.primary",
+        usage: "bg",
+        surface: "solid",
+        context: "light",
+      }),
       themeConfig,
     );
     const seed = parseColor(themeConfig.seeds.light.accent);

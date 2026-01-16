@@ -6,6 +6,6 @@ import { resolveBaseColor } from "../engine/resolveBaseColor.js";
 
 export function resolve(query: ColorQuery, theme: ThemeConfig): BaseResolvedColor {
   const normalized = normalizeQuery(query);
-  const base = resolveBaseColor(query, theme);
+  const base = resolveBaseColor(normalized, theme);
   return applyOperators(base, normalized, theme);
 }

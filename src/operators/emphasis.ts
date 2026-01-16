@@ -100,7 +100,16 @@ export const applyEmphasisOperator = (input: OperatorInput): OkLchColor => {
       break;
     case "strong": {
       const diff = next.l - neutralL;
-      const direction = diff === 0 ? (context === "light" ? -1 : 1) : Math.sign(diff);
+      let direction = diff === 0 ? (context === "light" ? -1 : 1) : Math.sign(diff);
+
+      if (usage === "text" || usage === "icon") {
+        direction = context === "light" ? -1 : 1;
+      } else if (context === "light" && direction > 0) {
+        direction = -1;
+      } else if (context === "dark" && direction < 0) {
+        direction = 1;
+      }
+
       next.c *= tuning.strongChroma;
       next.l += direction * tuning.strongDelta;
       break;

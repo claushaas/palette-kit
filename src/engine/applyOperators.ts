@@ -1,17 +1,15 @@
 import type { NormalizedQuery } from "./normalize.js";
 import type { BaseResolvedColor, ThemeConfig } from "./resolveBaseColor.js";
+import { mapColorContextToEngine } from "./context.js";
 import { applyEmphasisOperator } from "../operators/emphasis.js";
 import { applyStateOperator } from "../operators/state.js";
-
-const mapContext = (context: NormalizedQuery["context"]): "light" | "dark" =>
-  context === "dark" || context === "dimmed" ? "dark" : "light";
 
 export const applyOperators = (
   base: BaseResolvedColor,
   normalized: NormalizedQuery,
   theme: ThemeConfig,
 ): BaseResolvedColor => {
-  const context = mapContext(normalized.context);
+  const context = mapColorContextToEngine(normalized.context);
   const operatorInput = {
     oklch: base.oklch,
     context,

@@ -50,6 +50,8 @@ const STATE_TUNING: Record<OperatorInput["surface"], StateTuning> = {
   },
 };
 
+const FOCUS_BORDER_SCALE = 0.6;
+
 const clampOkLch = (color: OkLchColor, maxChroma: number): OkLchColor => ({
   ...color,
   l: clamp(color.l, 0, 100),
@@ -84,7 +86,8 @@ export const applyStateOperator = (input: OperatorInput): OkLchColor => {
       next.l += direction * tuning.selected;
       break;
     case "focus":
-      next.l += direction * tuning.focus;
+      next.l +=
+        direction * tuning.focus * (usage === "border" ? FOCUS_BORDER_SCALE : 1);
       break;
     case "disabled":
       next.c *= tuning.disabledChroma;

@@ -4,6 +4,7 @@ import type { SurfaceIntent } from "../types/index.js";
 import { clamp } from "../utils/clamp.js";
 import { lerp } from "../utils/lerp.js";
 
+// TODO: deduplicate with generateScale constants and helpers.
 const STEPS = 12;
 const OKLCH_L_MIN = 0;
 const OKLCH_L_MAX = 100;

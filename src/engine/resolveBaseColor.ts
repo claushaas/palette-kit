@@ -1,14 +1,14 @@
 import type { CurvePresetName } from "../presets/index.js";
 import type {
-  ColorQuery,
   ColorUsage,
   CssColorString,
   SemanticVariant,
   SurfaceIntent,
 } from "../types/index.js";
+import type { NormalizedQuery } from "./normalize.js";
+import { mapColorContextToEngine } from "./context.js";
 import { parseColor } from "../utils/parseColor.js";
 import { generateScale, type OkLchColor } from "./generateScale.js";
-import { normalizeQuery } from "./normalize.js";
 
 type ThemeSeeds = {
   neutral: CssColorString;
@@ -28,10 +28,6 @@ type VariantResolution = {
   variantUsed: string;
   seedUsed: CssColorString;
 };
-
-const mapContext = (context: string): "light" | "dark" =>
-  // dimmed -> dark (v1); highContrast treated as light for now (TODO: profile).
-  context === "dark" || context === "dimmed" ? "dark" : "light";
 
 const isCategoryVariant = (variant: string) => variant.startsWith("category:");
 const isChartVariant = (variant: string) => variant.startsWith("chart:");
@@ -150,9 +146,11 @@ export type BaseResolvedColor = {
   seedUsed: CssColorString;
 };
 
-export function resolveBaseColor(query: ColorQuery, theme: ThemeConfig): BaseResolvedColor {
-  const normalized = normalizeQuery(query);
-  const contextKey = mapContext(normalized.context);
+export function resolveBaseColor(
+  normalized: NormalizedQuery,
+  theme: ThemeConfig,
+): BaseResolvedColor {
+  const contextKey = mapColorContextToEngine(normalized.context);
   const { variantUsed, seedUsed } = resolveVariantSeed(
     normalized.variant,
     normalized.role,

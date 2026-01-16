@@ -49,8 +49,12 @@ describe("applyStateOperator", () => {
   it("focus only affects ring and border usage", () => {
     const bgFocus = applyStateOperator({ ...base, usage: "bg", state: "focus" });
     const ringFocus = applyStateOperator({ ...base, usage: "ring", state: "focus" });
+    const borderFocus = applyStateOperator({ ...base, usage: "border", state: "focus" });
 
     expect(bgFocus.l).toBeCloseTo(base.oklch.l, 6);
     expect(ringFocus.l).not.toBeCloseTo(base.oklch.l, 6);
+    expect(Math.abs(borderFocus.l - base.oklch.l)).toBeLessThan(
+      Math.abs(ringFocus.l - base.oklch.l),
+    );
   });
 });
