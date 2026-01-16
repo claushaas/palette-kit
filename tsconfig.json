@@ -5,11 +5,20 @@
     "moduleResolution": "NodeNext",
     "declaration": true,
     "strict": true,
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true
   },
-  "include": ["src/**/*.ts", "packages/palette-kit/src/**/*.ts"],
-  "exclude": ["examples/**", "tests/**", "node_modules/**"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "examples/**",
+    "tests/**",
+    "node_modules/**"
+  ]
 }
