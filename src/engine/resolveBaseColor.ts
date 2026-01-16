@@ -1,5 +1,11 @@
-import type { CurvePresetName } from "../presets/curves.js";
-import type { ColorQuery, CssColorString, SemanticVariant } from "../types/index.js";
+import type { CurvePresetName } from "../presets/index.js";
+import type {
+  ColorQuery,
+  ColorUsage,
+  CssColorString,
+  SemanticVariant,
+  SurfaceIntent,
+} from "../types/index.js";
 import { parseColor } from "../utils/parseColor.js";
 import { generateScale, type OkLchColor } from "./generateScale.js";
 import { normalizeQuery } from "./normalize.js";
@@ -24,6 +30,7 @@ type VariantResolution = {
 };
 
 const mapContext = (context: string): "light" | "dark" =>
+  // dimmed -> dark (v1); highContrast treated as light for now (TODO: profile).
   context === "dark" || context === "dimmed" ? "dark" : "light";
 
 const isCategoryVariant = (variant: string) => variant.startsWith("category:");
@@ -69,11 +76,14 @@ const resolveVariantSeed = (
       if (customSeed) {
         return { variantUsed: variant, seedUsed: customSeed };
       }
-    } else if (aliasVariants.has(variant)) {
-      // fall through to accent fallback
+
+      return { variantUsed: "accent", seedUsed: config.seeds[contextKey].accent };
     }
 
-    // Fallback for unsupported or alias variants: use accent
+    if (aliasVariants.has(variant)) {
+      return { variantUsed: "accent", seedUsed: config.seeds[contextKey].accent };
+    }
+
     return { variantUsed: "accent", seedUsed: config.seeds[contextKey].accent };
   }
 
@@ -87,7 +97,7 @@ const resolveVariantSeed = (
 
 const clampStep = (value: number) => Math.min(12, Math.max(1, value));
 
-const resolveStep = (usage: string, surface: string): number => {
+const resolveStep = (usage: ColorUsage, surface: SurfaceIntent): number => {
   switch (usage) {
     case "bg": {
       switch (surface) {
@@ -152,7 +162,7 @@ export function resolveBaseColor(query: ColorQuery, theme: ThemeConfig): BaseRes
 
   const parsedSeed = parseColor(seedUsed);
   const seed: OkLchColor = {
-    l: parsedSeed.okLch.channels[0],
+    l: parsedSeed.okLch.channels[0] * 100,
     c: parsedSeed.okLch.channels[1],
     h: parsedSeed.okLch.channels[2],
     alpha: parsedSeed.okLch.alpha,

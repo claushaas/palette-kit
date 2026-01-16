@@ -1,6 +1,6 @@
 import type { SurfaceIntent } from "../types/index.js";
-import type { CurvePresetName } from "../presets/curves.js";
-import { curvePresets } from "../presets/curves.js";
+import type { CurvePresetName } from "../presets/index.js";
+import { curvePresets } from "../presets/index.js";
 import { clamp } from "../utils/clamp.js";
 import { lerp } from "../utils/lerp.js";
 
