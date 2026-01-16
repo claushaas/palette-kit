@@ -6,6 +6,8 @@ import type {
   SemanticVariant,
   SurfaceIntent,
 } from "../types/index.js";
+import type { NormalizedQuery } from "./normalize.js";
+import { mapColorContextToEngine } from "./context.js";
 import { parseColor } from "../utils/parseColor.js";
 import { generateScale, type OkLchColor } from "./generateScale.js";
 import { normalizeQuery } from "./normalize.js";
@@ -28,10 +30,6 @@ type VariantResolution = {
   variantUsed: string;
   seedUsed: CssColorString;
 };
-
-const mapContext = (context: string): "light" | "dark" =>
-  // dimmed -> dark (v1); highContrast treated as light for now (TODO: profile).
-  context === "dark" || context === "dimmed" ? "dark" : "light";
 
 const isCategoryVariant = (variant: string) => variant.startsWith("category:");
 const isChartVariant = (variant: string) => variant.startsWith("chart:");
@@ -150,9 +148,29 @@ export type BaseResolvedColor = {
   seedUsed: CssColorString;
 };
 
-export function resolveBaseColor(query: ColorQuery, theme: ThemeConfig): BaseResolvedColor {
-  const normalized = normalizeQuery(query);
-  const contextKey = mapContext(normalized.context);
+// Best-effort guard: ColorQuery may include state/emphasis already; a branded flag
+// from normalizeQuery would be the strict approach in a future version.
+const isNormalizedQuery = (value: ColorQuery | NormalizedQuery): value is NormalizedQuery =>
+  typeof value === "object" &&
+  value !== null &&
+  typeof value.role === "string" &&
+  typeof value.usage === "string" &&
+  typeof value.surface === "string" &&
+  typeof value.context === "string" &&
+  typeof value.state === "string" &&
+  typeof value.emphasis === "string";
+
+export function resolveBaseColor(query: ColorQuery, theme: ThemeConfig): BaseResolvedColor;
+export function resolveBaseColor(
+  normalized: NormalizedQuery,
+  theme: ThemeConfig,
+): BaseResolvedColor;
+export function resolveBaseColor(
+  query: ColorQuery | NormalizedQuery,
+  theme: ThemeConfig,
+): BaseResolvedColor {
+  const normalized = isNormalizedQuery(query) ? query : normalizeQuery(query);
+  const contextKey = mapColorContextToEngine(normalized.context);
   const { variantUsed, seedUsed } = resolveVariantSeed(
     normalized.variant,
     normalized.role,
