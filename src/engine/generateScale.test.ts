@@ -1,23 +1,8 @@
-import { converter } from "culori";
 import { describe, expect, it } from "vitest";
 
 import { generateScale } from "./generateScale.js";
 
-const toOklch = converter("oklch");
-
-const seed = (() => {
-  const oklch = toOklch("#3d63dd");
-
-  if (!oklch) {
-    throw new Error("Failed to convert seed color");
-  }
-
-  return {
-    l: (oklch.l ?? 0) * 100,
-    c: oklch.c ?? 0,
-    h: oklch.h ?? 0,
-  };
-})();
+const seed = { l: 49.5, c: 0.19, h: 264.0 };
 
 const isMonotonic = (values: number[]) =>
   values.every((value, index) => index === 0 || value >= values[index - 1] - 1e-6);

@@ -28,7 +28,7 @@ export function generateScale(seed: OkLchColor, options: GenerateScaleOptions): 
   const range = surfaceCurve.ranges[options.context];
 
   return Array.from({ length: STEPS }, (_, index) => {
-    const t = STEPS === 1 ? 0 : index / (STEPS - 1);
+    const t = index / (STEPS - 1);
     const lightnessT = surfaceCurve.l(t);
     const chromaT = surfaceCurve.c(lightnessT);
     const l = clamp(lerp(range.l[0], range.l[1], lightnessT), OKLCH_L_MIN, OKLCH_L_MAX);
