@@ -13,8 +13,7 @@ const NEGATIVE_CHROMA_EPSILON = 1e-6;
 const toChannel = (hex: string) => Number.parseInt(hex, 16) / 255;
 
 const normalizeHue = (hue: number) => ((hue % OKLCH_H_MAX) + OKLCH_H_MAX) % OKLCH_H_MAX;
-const clamp = (value: number, min: number, max: number) =>
-  Math.min(max, Math.max(min, value));
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 export function parseColor(input: CssColorString): {
   input: CssColorString;
@@ -52,17 +51,12 @@ export function parseColor(input: CssColorString): {
   const oklchValue = toOklch({ mode: "rgb", r, g, b });
 
   if (!oklchValue) {
-    throw new Error(
-      `Unable to convert color input: "${normalizedInput}" (r=${r}, g=${g}, b=${b})`,
-    );
+    throw new Error(`Unable to convert color input: "${normalizedInput}" (r=${r}, g=${g}, b=${b})`);
   }
 
-  const l =
-    typeof oklchValue.l === "number" && Number.isFinite(oklchValue.l) ? oklchValue.l : 0;
-  const c =
-    typeof oklchValue.c === "number" && Number.isFinite(oklchValue.c) ? oklchValue.c : 0;
-  const h =
-    typeof oklchValue.h === "number" && Number.isFinite(oklchValue.h) ? oklchValue.h : 0;
+  const l = typeof oklchValue.l === "number" && Number.isFinite(oklchValue.l) ? oklchValue.l : 0;
+  const c = typeof oklchValue.c === "number" && Number.isFinite(oklchValue.c) ? oklchValue.c : 0;
+  const h = typeof oklchValue.h === "number" && Number.isFinite(oklchValue.h) ? oklchValue.h : 0;
   const scaledLightness = l * 100;
 
   if (c < -NEGATIVE_CHROMA_EPSILON) {

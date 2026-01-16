@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { normalizeQuery } from "./normalize.js";
 
@@ -44,7 +44,20 @@ describe("normalizeQuery", () => {
     ).toThrowError(/usage/i);
   });
 
+  it("warns when usage cannot be inferred in non-strict mode", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    expect(normalizeQuery({ role: "brand.primary" }).usage).toBe("bg");
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Defaulting usage to "bg"'),
+    );
+
+    warnSpy.mockRestore();
+  });
+
   it("validates background hint color values", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
     expect(
       normalizeQuery({ role: "bg.canvas", on: { kind: "color", value: "#fff" } }).on,
     ).toEqual({ kind: "color", value: "#fff" });
@@ -60,9 +73,12 @@ describe("normalizeQuery", () => {
         on: { kind: "color", value: "color(display-p3 1 0.5 0.25)" },
       }).on,
     ).toEqual({ kind: "color", value: "color(display-p3 1 0.5 0.25)" });
-    expect(() =>
-      normalizeQuery({ role: "bg.canvas", on: { kind: "color", value: "banana" } }),
-    ).toThrowError(/background hint color value/i);
+    expect(
+      normalizeQuery({ role: "bg.canvas", on: { kind: "color", value: "banana" } }).on,
+    ).toEqual({ kind: "color", value: "banana" });
+
+    expect(warnSpy).toHaveBeenCalledTimes(3);
+    warnSpy.mockRestore();
   });
 
   it("normalizes nested background hints", () => {
@@ -76,6 +92,13 @@ describe("normalizeQuery", () => {
     expect(() =>
       normalizeQuery({ role: "bg.canvas", on: { kind: "color", value: "   " } }),
     ).toThrowError(/color value is required/i);
+    expect(() =>
+      normalizeQuery({
+        role: "bg.canvas",
+        on: { kind: "color", value: "banana" },
+        output: { strict: true },
+      }),
+    ).toThrowError(/background hint color value/i);
     expect(() =>
       normalizeQuery({ role: "bg.canvas", on: { kind: "nope" } as never }),
     ).toThrowError(/background hint kind/i);

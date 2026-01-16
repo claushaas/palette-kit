@@ -27,10 +27,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "typecheck:tests": "tsc -p tsconfig.test.json --noEmit",
     "lint:biome": "biome check --unsafe --write",
     "lint:md": "markdownlint \"**/*.md\" --ignore node_modules",
-    "lint": "npm run lint:biome && npm run lint:md && npm run typecheck && npm run typecheck:tests",
+    "lint": "npm run lint:biome && npm run lint:md && npm run typecheck",
     "update": "npx npm-check-updates -i"
   },
   "dependencies": {

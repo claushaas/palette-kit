@@ -14,10 +14,7 @@ import type {
 } from "../types/index.js";
 
 export type NormalizedQuery = Required<
-  Pick<
-    ColorQuery,
-    "role" | "usage" | "context" | "surface" | "state" | "emphasis"
-  >
+  Pick<ColorQuery, "role" | "usage" | "context" | "surface" | "state" | "emphasis">
 > & {
   variant?: ColorQuery["variant"];
   on?: ColorQuery["on"];
@@ -26,16 +23,7 @@ export type NormalizedQuery = Required<
   output: Required<OutputOptions>;
 };
 
-const usages: ColorUsage[] = [
-  "bg",
-  "border",
-  "text",
-  "icon",
-  "ring",
-  "shadow",
-  "stroke",
-  "fill",
-];
+const usages: ColorUsage[] = ["bg", "border", "text", "icon", "ring", "shadow", "stroke", "fill"];
 
 const contexts: ColorContext[] = ["light", "dark", "highContrast", "dimmed"];
 
@@ -49,22 +37,9 @@ const surfaces: SurfaceIntent[] = [
   "transparent",
 ];
 
-const states: ColorState[] = [
-  "default",
-  "hover",
-  "active",
-  "selected",
-  "focus",
-  "disabled",
-];
+const states: ColorState[] = ["default", "hover", "active", "selected", "focus", "disabled"];
 
-const emphases: ColorEmphasis[] = [
-  "muted",
-  "subtle",
-  "default",
-  "strong",
-  "inverted",
-];
+const emphases: ColorEmphasis[] = ["muted", "subtle", "default", "strong", "inverted"];
 
 const semanticVariants: SemanticVariant[] = [
   "neutral",
@@ -87,11 +62,7 @@ const gamutMappings: NonNullable<OutputOptions["gamutMapping"]>[] = [
 
 const formatString = (value: string | undefined) => (value ? value.trim() : undefined);
 
-const assertOneOf = <T extends string>(
-  value: string,
-  options: readonly T[],
-  label: string,
-): T => {
+const assertOneOf = <T extends string>(value: string, options: readonly T[], label: string): T => {
   if (!options.includes(value as T)) {
     throw new Error(`Invalid ${label}: "${value}"`);
   }
@@ -113,17 +84,6 @@ const normalizeRole = (role: string | undefined) => {
 };
 
 const hexColorPattern = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
-const rgbColorPattern =
-  /^rgba?\(\s*[-+]?(\d+(\.\d+)?%?)(\s*,\s*[-+]?(\d+(\.\d+)?%?)){2}(\s*,\s*[-+]?(\d+(\.\d+)?%?)\s*)?\)$/i;
-const oklchColorPattern =
-  /^oklch\(\s*[-+]?(\d+(\.\d+)?%?)(\s+[-+]?(\d+(\.\d+)?%?)){1}(\s+[-+]?(\d+(\.\d+)?))(\s*\/\s*[-+]?(\d+(\.\d+)?%?))?\s*\)$/i;
-const displayP3Pattern = /^color\(\s*display-p3\s+.+\)$/i;
-
-const isCssColorString = (value: string) =>
-  hexColorPattern.test(value) ||
-  rgbColorPattern.test(value) ||
-  oklchColorPattern.test(value) ||
-  displayP3Pattern.test(value);
 
 const inferUsageFromRole = (role: string): ColorUsage | undefined => {
   const normalizedRole = role.trim().toLowerCase();
@@ -193,8 +153,13 @@ const normalizeVariant = (variant: string | undefined): SemanticVariant | undefi
   throw new Error(`Invalid variant: "${variant}"`);
 };
 
+const warn = (message: string) => {
+  console.warn(message);
+};
+
 const normalizeBackgroundHint = (
   hint: BackgroundHint | undefined,
+  strict: boolean,
 ): BackgroundHint | undefined => {
   if (!hint) {
     return undefined;
@@ -215,8 +180,12 @@ const normalizeBackgroundHint = (
       throw new Error("Background hint color value is required");
     }
 
-    if (!isCssColorString(value)) {
-      throw new Error(`Invalid background hint color value: "${hint.value}"`);
+    if (!hexColorPattern.test(value)) {
+      if (strict) {
+        throw new Error(`Invalid background hint color value: "${hint.value}"`);
+      }
+
+      warn(`Unvalidated background hint color value: "${hint.value}"`);
     }
 
     return { kind: "color", value };
@@ -357,6 +326,8 @@ export function normalizeQuery(q: ColorQuery): NormalizedQuery {
     if (output.strict) {
       throw new Error(`Usage is required for role: "${role}"`);
     }
+
+    warn(`Defaulting usage to "bg" for role: "${role}"`);
   }
 
   return {
@@ -367,7 +338,7 @@ export function normalizeQuery(q: ColorQuery): NormalizedQuery {
     state: assertOneOf(stateValue, states, "state"),
     emphasis: assertOneOf(emphasisValue, emphases, "emphasis"),
     variant: normalizeVariant(formatString(q.variant)),
-    on: normalizeBackgroundHint(q.on),
+    on: normalizeBackgroundHint(q.on, output.strict),
     contrast: normalizeContrast(q.contrast),
     alpha: normalizeAlpha(q.alpha),
     output,

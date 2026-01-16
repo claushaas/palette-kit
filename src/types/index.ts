@@ -13,13 +13,7 @@ export type SurfaceIntent =
   | "data"
   | "transparent";
 
-export type ColorState =
-  | "default"
-  | "hover"
-  | "active"
-  | "selected"
-  | "focus"
-  | "disabled";
+export type ColorState = "default" | "hover" | "active" | "selected" | "focus" | "disabled";
 
 export type ColorEmphasis = "muted" | "subtle" | "default" | "strong" | "inverted";
 
