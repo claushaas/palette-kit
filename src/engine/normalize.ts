@@ -55,10 +55,7 @@ const states: ColorState[] = [
   "active",
   "selected",
   "focus",
-  "pressed",
   "disabled",
-  "drag",
-  "loading",
 ];
 
 const emphases: ColorEmphasis[] = [
@@ -115,6 +112,69 @@ const normalizeRole = (role: string | undefined) => {
   return trimmed;
 };
 
+const hexColorPattern = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+const rgbColorPattern =
+  /^rgba?\(\s*[-+]?(\d+(\.\d+)?%?)(\s*,\s*[-+]?(\d+(\.\d+)?%?)){2}(\s*,\s*[-+]?(\d+(\.\d+)?%?)\s*)?\)$/i;
+const oklchColorPattern =
+  /^oklch\(\s*[-+]?(\d+(\.\d+)?%?)(\s+[-+]?(\d+(\.\d+)?%?)){1}(\s+[-+]?(\d+(\.\d+)?))(\s*\/\s*[-+]?(\d+(\.\d+)?%?))?\s*\)$/i;
+const displayP3Pattern = /^color\(\s*display-p3\s+.+\)$/i;
+
+const isCssColorString = (value: string) =>
+  hexColorPattern.test(value) ||
+  rgbColorPattern.test(value) ||
+  oklchColorPattern.test(value) ||
+  displayP3Pattern.test(value);
+
+const inferUsageFromRole = (role: string): ColorUsage | undefined => {
+  const normalizedRole = role.trim().toLowerCase();
+
+  if (normalizedRole.startsWith("text.")) {
+    return "text";
+  }
+
+  if (normalizedRole.startsWith("icon.")) {
+    return "icon";
+  }
+
+  if (normalizedRole.startsWith("border.")) {
+    return "border";
+  }
+
+  if (
+    normalizedRole.startsWith("bg.") ||
+    normalizedRole.startsWith("surface.") ||
+    normalizedRole.startsWith("overlay.")
+  ) {
+    return "bg";
+  }
+
+  if (normalizedRole.startsWith("focus.") || normalizedRole.startsWith("ring.")) {
+    return "ring";
+  }
+
+  if (normalizedRole.startsWith("chart.")) {
+    const tokens = normalizedRole.split(".");
+
+    if (tokens.includes("stroke")) {
+      return "stroke";
+    }
+
+    if (tokens.includes("fill")) {
+      return "fill";
+    }
+
+    if (tokens.includes("grid")) {
+      return "border";
+    }
+
+    if (tokens.includes("label") || tokens.includes("text")) {
+      return "text";
+    }
+  }
+
+  return undefined;
+};
+
 const normalizeVariant = (variant: string | undefined): SemanticVariant | undefined => {
   if (!variant) {
     return undefined;
@@ -155,6 +215,10 @@ const normalizeBackgroundHint = (
       throw new Error("Background hint color value is required");
     }
 
+    if (!isCssColorString(value)) {
+      throw new Error(`Invalid background hint color value: "${hint.value}"`);
+    }
+
     return { kind: "color", value };
   }
 
@@ -191,6 +255,16 @@ const normalizeContrast = (
   throw new Error(`Invalid contrast model: "${(contrast as ContrastRequirement).model}"`);
 };
 
+const validateIncludeSpaces = (includeSpaces: ColorSpace[] | undefined): ColorSpace[] => {
+  const value = includeSpaces ?? [];
+
+  value.forEach((space) => {
+    assertOneOf(space, colorSpaces, "output includeSpaces");
+  });
+
+  return value;
+};
+
 const normalizeAlpha = (alpha: AlphaStrategy | undefined): AlphaStrategy | undefined => {
   if (!alpha) {
     return undefined;
@@ -218,11 +292,7 @@ const normalizeAlpha = (alpha: AlphaStrategy | undefined): AlphaStrategy | undef
 const normalizeOutput = (output: OutputOptions | undefined): Required<OutputOptions> => {
   const preferSpaceValue = formatString(output?.preferSpace);
   const gamutMappingValue = formatString(output?.gamutMapping);
-  const includeSpaces = output?.includeSpaces ?? [];
-
-  includeSpaces.forEach((space) => {
-    assertOneOf(space, colorSpaces, "output includeSpaces");
-  });
+  const includeSpaces = validateIncludeSpaces(output?.includeSpaces);
 
   const preferSpace = preferSpaceValue
     ? assertOneOf(preferSpaceValue, colorSpaces, "output preferSpace")
@@ -256,17 +326,42 @@ const normalizeOutput = (output: OutputOptions | undefined): Required<OutputOpti
   };
 };
 
+/**
+ * Normalize a user-facing ColorQuery into a fully populated, validated structure.
+ *
+ * - Applies defaults for missing fields (context, surface, state, emphasis, output).
+ * - Infers usage from role prefixes when not provided; in strict mode, missing usage errors.
+ * - Validates nested objects (background hints, contrast requirements, alpha strategies).
+ * - Trims string inputs and enforces allowed enum values.
+ *
+ * @example
+ * normalizeQuery({ role: "text.primary" });
+ * @example
+ * normalizeQuery({
+ *   role: "bg.canvas",
+ *   on: { kind: "color", value: "#fff" },
+ *   contrast: { model: "apca", targetLc: 60 },
+ *   output: { strict: true },
+ * });
+ */
 export function normalizeQuery(q: ColorQuery): NormalizedQuery {
   const role = normalizeRole(formatString(q.role));
-  const usageValue = formatString(q.usage) ?? "bg";
   const contextValue = formatString(q.context) ?? "light";
   const surfaceValue = formatString(q.surface) ?? "surface";
   const stateValue = formatString(q.state) ?? "default";
   const emphasisValue = formatString(q.emphasis) ?? "default";
+  const output = normalizeOutput(q.output);
+  const usageValue = formatString(q.usage) ?? inferUsageFromRole(role);
+
+  if (!usageValue) {
+    if (output.strict) {
+      throw new Error(`Usage is required for role: "${role}"`);
+    }
+  }
 
   return {
     role,
-    usage: assertOneOf(usageValue, usages, "usage"),
+    usage: assertOneOf(usageValue ?? "bg", usages, "usage"),
     context: assertOneOf(contextValue, contexts, "context"),
     surface: assertOneOf(surfaceValue, surfaces, "surface"),
     state: assertOneOf(stateValue, states, "state"),
@@ -275,6 +370,6 @@ export function normalizeQuery(q: ColorQuery): NormalizedQuery {
     on: normalizeBackgroundHint(q.on),
     contrast: normalizeContrast(q.contrast),
     alpha: normalizeAlpha(q.alpha),
-    output: normalizeOutput(q.output),
+    output,
   };
 }
