@@ -1,1 +1,1 @@
-export {};
+export { parseColor } from "./parseColor.js";
