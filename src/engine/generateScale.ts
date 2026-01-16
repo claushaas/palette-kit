@@ -32,7 +32,10 @@ export function generateScale(seed: OkLchColor, options: GenerateScaleOptions): 
     const lightnessT = surfaceCurve.l(t);
     const chromaT = surfaceCurve.c(lightnessT);
     const l = clamp(lerp(range.l[0], range.l[1], lightnessT), OKLCH_L_MIN, OKLCH_L_MAX);
-    const maxChroma = Math.min(range.cMax, Math.max(0, seed.c ?? range.cMax));
+    // Allow select surfaces to exceed seed chroma slightly while staying within range caps.
+    const chromaBoost = range.chromaBoost ?? 1;
+    const boostedSeed = (seed.c ?? range.cMax) * chromaBoost;
+    const maxChroma = Math.min(range.cMax, Math.max(0, boostedSeed));
     const c = clamp(lerp(range.cMin, maxChroma, chromaT), 0, range.cMax);
 
     return {
