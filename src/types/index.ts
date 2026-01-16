@@ -19,7 +19,13 @@ export type ColorState =
   | "active"
   | "disabled"
   | "selected"
-  | "focus";
+  | "focus"
+  | "pressed"
+  | "selected"
+  | "focus"
+  | "disabled"
+  | "drag"
+  | "loading";
 
 export type ColorEmphasis = "muted" | "subtle" | "default" | "strong" | "inverted";
 
@@ -37,15 +43,7 @@ export type SemanticVariant =
 
 export type ColorRole = string;
 
-export type ColorUsage =
-  | "bg"
-  | "border"
-  | "text"
-  | "icon"
-  | "ring"
-  | "shadow"
-  | "stroke"
-  | "fill";
+export type ColorUsage = "bg" | "border" | "text" | "icon" | "ring" | "shadow" | "stroke" | "fill";
 
 export type BackgroundHint =
   | { kind: "auto" }
