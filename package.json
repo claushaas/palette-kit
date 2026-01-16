@@ -40,7 +40,7 @@
   ],
   "dependencies": {
     "apca-w3": "^0.1.9",
-    "colorjs.io": "^0.6.0"
+    "culori": "^4.0.2"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.11",
