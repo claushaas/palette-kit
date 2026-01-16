@@ -69,14 +69,11 @@ const resolveVariantSeed = (
       if (customSeed) {
         return { variantUsed: variant, seedUsed: customSeed };
       }
-
-      return { variantUsed: "accent", seedUsed: config.seeds[contextKey].accent };
+    } else if (aliasVariants.has(variant)) {
+      // fall through to accent fallback
     }
 
-    if (aliasVariants.has(variant)) {
-      return { variantUsed: "accent", seedUsed: config.seeds[contextKey].accent };
-    }
-
+    // Fallback for unsupported or alias variants: use accent
     return { variantUsed: "accent", seedUsed: config.seeds[contextKey].accent };
   }
 
