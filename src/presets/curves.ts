@@ -1,58 +1,94 @@
 import type { SurfaceIntent } from "../types/index.js";
+import { clamp } from "../utils/clamp.js";
+import { smoothstep } from "../utils/smoothstep.js";
 
 export type CurvePresetName = "modern" | "radixLike";
 
-export type CurveParams = {
-  lStart: number;
-  lEnd: number;
-  cMin: number;
-  cMax: number;
-  cPower: number;
-};
+export type CurveFn = (t: number) => number;
 
-export type SurfaceCurves = Record<
-  SurfaceIntent,
-  {
-    light: CurveParams;
-    dark: CurveParams;
-  }
->;
+export type SurfaceCurve = {
+  l: CurveFn;
+  c: CurveFn;
+  ranges: {
+    light: { l: [number, number]; cMin: number; cMax: number };
+    dark: { l: [number, number]; cMin: number; cMax: number };
+  };
+};
 
 export type CurvePreset = {
   name: CurvePresetName;
-  surfaces: SurfaceCurves;
+  surfaces: Record<SurfaceIntent, SurfaceCurve>;
 };
+
+const normalizeT = (t: number) => clamp(t, 0, 1);
+const lightnessCurve: CurveFn = (t) => smoothstep(normalizeT(t));
+const chromaCurve: CurveFn = (t) => Math.sin(Math.PI * normalizeT(t));
 
 export const modern: CurvePreset = {
   name: "modern",
   surfaces: {
+    // app: fundo do app (separação mínima, chroma baixo)
     app: {
-      light: { lStart: 88, lEnd: 99, cMin: 0.01, cMax: 0.06, cPower: 1.8 },
-      dark: { lStart: 6, lEnd: 22, cMin: 0.01, cMax: 0.08, cPower: 1.8 },
+      l: lightnessCurve,
+      c: chromaCurve,
+      ranges: {
+        light: { l: [90, 99], cMin: 0.004, cMax: 0.05 },
+        dark: { l: [6, 22], cMin: 0.004, cMax: 0.07 },
+      },
     },
+    // surface: cards/panels
     surface: {
-      light: { lStart: 82, lEnd: 97, cMin: 0.015, cMax: 0.09, cPower: 1.7 },
-      dark: { lStart: 8, lEnd: 28, cMin: 0.015, cMax: 0.1, cPower: 1.7 },
+      l: lightnessCurve,
+      c: chromaCurve,
+      ranges: {
+        light: { l: [84, 97], cMin: 0.008, cMax: 0.08 },
+        dark: { l: [8, 28], cMin: 0.008, cMax: 0.09 },
+      },
     },
+    // subtle: tints/hover backgrounds
     subtle: {
-      light: { lStart: 76, lEnd: 95, cMin: 0.02, cMax: 0.11, cPower: 1.6 },
-      dark: { lStart: 10, lEnd: 32, cMin: 0.02, cMax: 0.12, cPower: 1.6 },
+      l: lightnessCurve,
+      c: chromaCurve,
+      ranges: {
+        light: { l: [78, 95], cMin: 0.012, cMax: 0.1 },
+        dark: { l: [10, 32], cMin: 0.012, cMax: 0.11 },
+      },
     },
+    // solid: backgrounds sólidos (C maior)
     solid: {
-      light: { lStart: 45, lEnd: 90, cMin: 0.05, cMax: 0.18, cPower: 1.4 },
-      dark: { lStart: 12, lEnd: 40, cMin: 0.05, cMax: 0.2, cPower: 1.4 },
+      l: lightnessCurve,
+      c: chromaCurve,
+      ranges: {
+        light: { l: [46, 90], cMin: 0.03, cMax: 0.18 },
+        dark: { l: [12, 42], cMin: 0.03, cMax: 0.2 },
+      },
     },
+    // overlay: modal surfaces/scrims (C baixo + L controlado)
     overlay: {
-      light: { lStart: 70, lEnd: 96, cMin: 0.02, cMax: 0.12, cPower: 1.6 },
-      dark: { lStart: 14, lEnd: 42, cMin: 0.02, cMax: 0.14, cPower: 1.6 },
+      l: lightnessCurve,
+      c: chromaCurve,
+      ranges: {
+        light: { l: [72, 96], cMin: 0.01, cMax: 0.09 },
+        dark: { l: [14, 40], cMin: 0.01, cMax: 0.1 },
+      },
     },
+    // data: charts/heatmaps (tolerar C maior)
     data: {
-      light: { lStart: 40, lEnd: 85, cMin: 0.06, cMax: 0.22, cPower: 1.3 },
-      dark: { lStart: 18, lEnd: 48, cMin: 0.06, cMax: 0.24, cPower: 1.3 },
+      l: lightnessCurve,
+      c: chromaCurve,
+      ranges: {
+        light: { l: [38, 86], cMin: 0.04, cMax: 0.22 },
+        dark: { l: [18, 48], cMin: 0.04, cMax: 0.24 },
+      },
     },
+    // transparent: base neutra (quase sem chroma)
     transparent: {
-      light: { lStart: 60, lEnd: 96, cMin: 0, cMax: 0.08, cPower: 1.9 },
-      dark: { lStart: 8, lEnd: 30, cMin: 0, cMax: 0.1, cPower: 1.9 },
+      l: lightnessCurve,
+      c: chromaCurve,
+      ranges: {
+        light: { l: [62, 96], cMin: 0, cMax: 0.06 },
+        dark: { l: [8, 30], cMin: 0, cMax: 0.07 },
+      },
     },
   },
 };
@@ -60,33 +96,68 @@ export const modern: CurvePreset = {
 export const radixLike: CurvePreset = {
   name: "radixLike",
   surfaces: {
+    // app: fundo do app (separação mínima, chroma baixo)
     app: {
-      light: { lStart: 90, lEnd: 99, cMin: 0.008, cMax: 0.07, cPower: 1.4 },
-      dark: { lStart: 4, lEnd: 18, cMin: 0.008, cMax: 0.09, cPower: 1.4 },
+      l: lightnessCurve,
+      c: chromaCurve,
+      ranges: {
+        light: { l: [92, 99], cMin: 0.003, cMax: 0.06 },
+        dark: { l: [4, 18], cMin: 0.003, cMax: 0.08 },
+      },
     },
+    // surface: cards/panels
     surface: {
-      light: { lStart: 84, lEnd: 97, cMin: 0.012, cMax: 0.1, cPower: 1.35 },
-      dark: { lStart: 6, lEnd: 24, cMin: 0.012, cMax: 0.12, cPower: 1.35 },
+      l: lightnessCurve,
+      c: chromaCurve,
+      ranges: {
+        light: { l: [86, 97], cMin: 0.006, cMax: 0.1 },
+        dark: { l: [6, 24], cMin: 0.006, cMax: 0.11 },
+      },
     },
+    // subtle: tints/hover backgrounds
     subtle: {
-      light: { lStart: 78, lEnd: 94, cMin: 0.018, cMax: 0.13, cPower: 1.3 },
-      dark: { lStart: 8, lEnd: 30, cMin: 0.018, cMax: 0.14, cPower: 1.3 },
+      l: lightnessCurve,
+      c: chromaCurve,
+      ranges: {
+        light: { l: [80, 94], cMin: 0.01, cMax: 0.12 },
+        dark: { l: [8, 30], cMin: 0.01, cMax: 0.13 },
+      },
     },
+    // solid: backgrounds sólidos (C maior)
     solid: {
-      light: { lStart: 48, lEnd: 88, cMin: 0.05, cMax: 0.2, cPower: 1.2 },
-      dark: { lStart: 10, lEnd: 36, cMin: 0.05, cMax: 0.22, cPower: 1.2 },
+      l: lightnessCurve,
+      c: chromaCurve,
+      ranges: {
+        light: { l: [50, 88], cMin: 0.035, cMax: 0.2 },
+        dark: { l: [10, 38], cMin: 0.035, cMax: 0.22 },
+      },
     },
+    // overlay: modal surfaces/scrims (C baixo + L controlado)
     overlay: {
-      light: { lStart: 72, lEnd: 96, cMin: 0.02, cMax: 0.14, cPower: 1.3 },
-      dark: { lStart: 12, lEnd: 38, cMin: 0.02, cMax: 0.16, cPower: 1.3 },
+      l: lightnessCurve,
+      c: chromaCurve,
+      ranges: {
+        light: { l: [74, 96], cMin: 0.01, cMax: 0.11 },
+        dark: { l: [12, 38], cMin: 0.01, cMax: 0.12 },
+      },
     },
+    // data: charts/heatmaps (tolerar C maior)
     data: {
-      light: { lStart: 38, lEnd: 84, cMin: 0.07, cMax: 0.24, cPower: 1.15 },
-      dark: { lStart: 16, lEnd: 44, cMin: 0.07, cMax: 0.26, cPower: 1.15 },
+      l: lightnessCurve,
+      c: chromaCurve,
+      ranges: {
+        light: { l: [40, 84], cMin: 0.05, cMax: 0.24 },
+        dark: { l: [16, 46], cMin: 0.05, cMax: 0.26 },
+      },
     },
+    // transparent: base neutra (quase sem chroma)
     transparent: {
-      light: { lStart: 58, lEnd: 94, cMin: 0, cMax: 0.1, cPower: 1.5 },
-      dark: { lStart: 6, lEnd: 28, cMin: 0, cMax: 0.12, cPower: 1.5 },
+      l: lightnessCurve,
+      c: chromaCurve,
+      ranges: {
+        light: { l: [60, 94], cMin: 0, cMax: 0.08 },
+        dark: { l: [6, 28], cMin: 0, cMax: 0.09 },
+      },
     },
   },
 };

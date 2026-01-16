@@ -1,5 +1,5 @@
 import type { SurfaceIntent } from "../types/index.js";
-import type { CurveParams, CurvePresetName } from "../presets/curves.js";
+import type { CurvePresetName } from "../presets/curves.js";
 import { curvePresets } from "../presets/curves.js";
 import { clamp } from "../utils/clamp.js";
 import { lerp } from "../utils/lerp.js";
@@ -21,29 +21,19 @@ const STEPS = 12;
 const OKLCH_L_MIN = 0;
 const OKLCH_L_MAX = 100;
 
-const computeChroma = (lightness: number, seedChroma: number, params: CurveParams): number => {
-  const range = params.lEnd - params.lStart;
-  const t = range === 0 ? 0 : (lightness - params.lStart) / range;
-  const normalizedT = clamp(t, 0, 1);
-  const ridge = 1 - Math.abs(2 * normalizedT - 1);
-  const shaped = Math.pow(clamp(ridge, 0, 1), params.cPower);
-  const baseChroma = lerp(params.cMin, params.cMax, shaped);
-  const cappedChroma = Math.min(baseChroma, Math.max(0, seedChroma));
-
-  // TODO(Fase 8): gamut mapping
-  return clamp(cappedChroma, 0, params.cMax);
-};
-
 export function generateScale(seed: OkLchColor, options: GenerateScaleOptions): OkLchColor[] {
   const presetName = options.preset ?? "modern";
   const preset = curvePresets[presetName];
   const surfaceCurve = preset.surfaces[options.surface];
-  const curve = surfaceCurve[options.context];
+  const range = surfaceCurve.ranges[options.context];
 
   return Array.from({ length: STEPS }, (_, index) => {
     const t = STEPS === 1 ? 0 : index / (STEPS - 1);
-    const l = clamp(lerp(curve.lStart, curve.lEnd, t), OKLCH_L_MIN, OKLCH_L_MAX);
-    const c = computeChroma(l, seed.c ?? 0, curve);
+    const lightnessT = surfaceCurve.l(t);
+    const chromaT = surfaceCurve.c(lightnessT);
+    const l = clamp(lerp(range.l[0], range.l[1], lightnessT), OKLCH_L_MIN, OKLCH_L_MAX);
+    const maxChroma = Math.min(range.cMax, Math.max(0, seed.c ?? range.cMax));
+    const c = clamp(lerp(range.cMin, maxChroma, chromaT), 0, range.cMax);
 
     return {
       l,
