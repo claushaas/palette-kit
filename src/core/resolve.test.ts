@@ -38,6 +38,13 @@ describe("resolve", () => {
       context: "dark",
       state: "hover",
     });
+    const activeDark = theme.resolve({
+      role: "bg.solid",
+      usage: "bg",
+      surface: "solid",
+      context: "dark",
+      state: "active",
+    });
     const activeLight = theme.resolve({
       role: "bg.solid",
       usage: "bg",
@@ -52,12 +59,23 @@ describe("resolve", () => {
       context: "light",
       state: "disabled",
     });
+    const disabledDark = theme.resolve({
+      role: "bg.solid",
+      usage: "bg",
+      surface: "solid",
+      context: "dark",
+      state: "disabled",
+    });
 
     expect(hoverLight.oklch.l).toBeLessThan(baseLight.oklch.l);
     expect(hoverDark.oklch.l).toBeGreaterThan(baseDark.oklch.l);
     expect(Math.abs(activeLight.oklch.l - baseLight.oklch.l)).toBeGreaterThan(
       Math.abs(hoverLight.oklch.l - baseLight.oklch.l),
     );
+    expect(Math.abs(activeDark.oklch.l - baseDark.oklch.l)).toBeGreaterThan(
+      Math.abs(hoverDark.oklch.l - baseDark.oklch.l),
+    );
     expect(disabledLight.oklch.c).toBeLessThan(baseLight.oklch.c * 0.6);
+    expect(disabledDark.oklch.c).toBeLessThan(baseDark.oklch.c * 0.6);
   });
 });

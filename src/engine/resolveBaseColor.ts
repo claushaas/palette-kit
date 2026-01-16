@@ -1,5 +1,6 @@
 import type { CurvePresetName } from "../presets/index.js";
 import type {
+  ColorQuery,
   ColorUsage,
   CssColorString,
   SemanticVariant,
@@ -9,6 +10,7 @@ import type { NormalizedQuery } from "./normalize.js";
 import { mapColorContextToEngine } from "./context.js";
 import { parseColor } from "../utils/parseColor.js";
 import { generateScale, type OkLchColor } from "./generateScale.js";
+import { normalizeQuery } from "./normalize.js";
 
 type ThemeSeeds = {
   neutral: CssColorString;
@@ -146,10 +148,26 @@ export type BaseResolvedColor = {
   seedUsed: CssColorString;
 };
 
+const isNormalizedQuery = (value: ColorQuery | NormalizedQuery): value is NormalizedQuery =>
+  typeof value === "object" &&
+  value !== null &&
+  "output" in value &&
+  "usage" in value &&
+  "surface" in value &&
+  "context" in value &&
+  "state" in value &&
+  "emphasis" in value;
+
+export function resolveBaseColor(query: ColorQuery, theme: ThemeConfig): BaseResolvedColor;
 export function resolveBaseColor(
   normalized: NormalizedQuery,
   theme: ThemeConfig,
+): BaseResolvedColor;
+export function resolveBaseColor(
+  query: ColorQuery | NormalizedQuery,
+  theme: ThemeConfig,
 ): BaseResolvedColor {
+  const normalized = isNormalizedQuery(query) ? query : normalizeQuery(query);
   const contextKey = mapColorContextToEngine(normalized.context);
   const { variantUsed, seedUsed } = resolveVariantSeed(
     normalized.variant,
