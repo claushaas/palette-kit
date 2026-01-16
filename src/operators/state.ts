@@ -94,6 +94,7 @@ export const applyStateOperator = (input: OperatorInput): OkLchColor => {
       next.l += (neutralL - next.l) * tuning.disabledNeutralPull;
       break;
     default:
+      // Allow unknown/future states to be no-ops to avoid unexpected shifts.
       return input.oklch;
   }
 

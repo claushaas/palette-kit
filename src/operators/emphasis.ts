@@ -71,6 +71,8 @@ const EMPHASIS_TUNING: Record<OperatorInput["surface"], EmphasisTuning> = {
   },
 };
 
+const INVERTED_LERP_FACTOR = 0.8;
+
 const clampOkLch = (color: OkLchColor, maxChroma: number): OkLchColor => ({
   ...color,
   l: clamp(color.l, 0, 100),
@@ -118,7 +120,7 @@ export const applyEmphasisOperator = (input: OperatorInput): OkLchColor => {
       if (usage === "text" || usage === "icon") {
         const targetStep = input.step === 12 ? 11 : 12;
         const targetL = getStepLightness(input.preset, surface, context, targetStep);
-        next.l += (targetL - next.l) * 0.8;
+        next.l += (targetL - next.l) * INVERTED_LERP_FACTOR;
       }
       break;
     }

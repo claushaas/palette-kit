@@ -78,4 +78,22 @@ describe("resolve", () => {
     expect(disabledLight.oklch.c).toBeLessThan(baseLight.oklch.c * 0.6);
     expect(disabledDark.oklch.c).toBeLessThan(baseDark.oklch.c * 0.6);
   });
+
+  it("applies emphasis via theme.resolve", () => {
+    const base = theme.resolve({
+      role: "text.primary",
+      usage: "text",
+      surface: "surface",
+      context: "light",
+    });
+    const muted = theme.resolve({
+      role: "text.primary",
+      usage: "text",
+      surface: "surface",
+      context: "light",
+      emphasis: "muted",
+    });
+
+    expect(muted.oklch.c).toBeLessThan(base.oklch.c);
+  });
 });

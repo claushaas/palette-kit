@@ -21,6 +21,7 @@ export const applyOperators = (
     step: base.step,
   };
 
+  // Emphasis defines the baseline hierarchy; state applies transient interaction.
   const emphasized = applyEmphasisOperator(operatorInput);
   const stated = applyStateOperator({ ...operatorInput, oklch: emphasized });
 

@@ -46,6 +46,12 @@ describe("applyStateOperator", () => {
     expect(disabled.c).toBeLessThan(base.oklch.c * 0.6);
   });
 
+  it("returns the original color for default state", () => {
+    const result = applyStateOperator({ ...base, state: "default" });
+
+    expect(result).toEqual(base.oklch);
+  });
+
   it("focus only affects ring and border usage", () => {
     const bgFocus = applyStateOperator({ ...base, usage: "bg", state: "focus" });
     const ringFocus = applyStateOperator({ ...base, usage: "ring", state: "focus" });

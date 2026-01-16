@@ -59,6 +59,18 @@ describe("applyEmphasisOperator", () => {
     expect(invertedBg.l).toBeCloseTo(base.oklch.l, 6);
   });
 
+  it("inverted leaves non-text usage unchanged", () => {
+    const invertedBorder = applyEmphasisOperator({
+      ...base,
+      emphasis: "inverted",
+      usage: "border",
+    });
+
+    expect(invertedBorder.l).toBeCloseTo(base.oklch.l, 6);
+    expect(invertedBorder.c).toBeCloseTo(base.oklch.c, 6);
+    expect(invertedBorder.h).toBeCloseTo(base.oklch.h, 6);
+  });
+
   it("inverted moves text toward the target step without changing hue", () => {
     const targetL = getStepLightness(base.preset, base.surface, base.context, 12);
     const inverted = applyEmphasisOperator({
