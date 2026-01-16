@@ -17,13 +17,13 @@ export function createTheme(config: ThemeConfig): PaletteTheme {
 
   const buildTheme = (boundContext?: ColorContext): PaletteTheme => ({
     resolve: (query) =>
-      resolve(boundContext ? { ...query, context: boundContext } : query, themeConfig),
+      resolve(boundContext ? { context: boundContext, ...query } : query, themeConfig),
     color: (role, options) =>
       resolve(
         {
           role,
-          ...(options ?? {}),
           ...(boundContext ? { context: boundContext } : {}),
+          ...(options ?? {}),
         },
         themeConfig,
       ),
