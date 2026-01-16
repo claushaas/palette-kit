@@ -17,7 +17,7 @@ const themeConfig = {
 };
 
 describe("resolveBaseColor", () => {
-  const r = (query: ColorQuery) => resolveBaseColor(query, themeConfig);
+  const r = (query: ColorQuery) => resolveBaseColor(normalizeQuery(query), themeConfig);
 
   it("defaults action roles to accent when variant is missing", () => {
     const result = r({

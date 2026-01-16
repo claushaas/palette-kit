@@ -148,6 +148,8 @@ export type BaseResolvedColor = {
   seedUsed: CssColorString;
 };
 
+// Best-effort guard: ColorQuery may include state/emphasis already; a branded flag
+// from normalizeQuery would be the strict approach in a future version.
 const isNormalizedQuery = (value: ColorQuery | NormalizedQuery): value is NormalizedQuery =>
   typeof value === "object" &&
   value !== null &&
