@@ -19,10 +19,7 @@ export type ColorState =
   | "active"
   | "selected"
   | "focus"
-  | "pressed"
-  | "disabled"
-  | "drag"
-  | "loading";
+  | "disabled";
 
 export type ColorEmphasis = "muted" | "subtle" | "default" | "strong" | "inverted";
 
