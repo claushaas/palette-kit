@@ -17,12 +17,9 @@ export type ColorState =
   | "default"
   | "hover"
   | "active"
-  | "disabled"
   | "selected"
   | "focus"
   | "pressed"
-  | "selected"
-  | "focus"
   | "disabled"
   | "drag"
   | "loading";
@@ -78,7 +75,7 @@ export interface OutputOptions {
 export interface RawColor {
   space: ColorSpace;
   channels: number[];
-  alpha?: number;
+  alpha: number;
 }
 
 export interface ColorMeta {
