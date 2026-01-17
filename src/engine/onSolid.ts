@@ -169,7 +169,11 @@ export function onSolid(query: OnSolidQuery, theme: ThemeConfig): BaseResolvedCo
 
   if (!finalCheck.pass && normalized.output.strict) {
     throw new Error(
-      `onSolid contrast failed (${contrastRequirement.model}) target=${"targetLc" in contrastRequirement ? contrastRequirement.targetLc : contrastRequirement.minRatio} value=${finalCheck.value}`,
+      `onSolid contrast failed (${contrastRequirement.model}) target=${
+        contrastRequirement.model === "apca"
+          ? contrastRequirement.targetLc
+          : contrastRequirement.minRatio
+      } value=${finalCheck.value}`,
     );
   }
 
