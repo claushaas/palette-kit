@@ -6,6 +6,12 @@
     "emitDeclarationOnly": false,
     "outDir": "dist"
   },
-  "include": ["src/**/*.ts", "packages/palette-kit/src/**/*.ts"],
-  "exclude": ["tests/**", "examples/**", "node_modules/**"]
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "tests/**",
+    "examples/**",
+    "node_modules/**"
+  ]
 }
