@@ -31,13 +31,10 @@ React Native does not accept OKLCH channel objects. Use a serializer appropriate
 
 Minimal OKLCH serializer (if you have a runtime that supports `oklch()` strings):
 
-```ts
-const toOklch = (c: { l: number; c: number; h: number; alpha?: number }) => {
-  const a = c.alpha ?? 1;
-  const alphaPart = a < 1 ? ` / ${a}` : "";
-  return `oklch(${c.l}% ${c.c} ${c.h}${alphaPart})`;
-};
+- [docs/snippets/serialize-oklch.md](./snippets/serialize-oklch.md)
 
+```ts
+// Assumes `toOklch` from the snippet above.
 const rnColor = toOklch(text.oklch);
 ```
 

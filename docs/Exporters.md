@@ -1,5 +1,7 @@
 # Exporters
 
+This document intentionally distinguishes **public consumption paths** from **repo-internal utilities**.
+
 ## Status in v0.2
 
 Exporter and serializer modules exist in `src/export/`, but **they are not part of the public package export** (`package.json` only exports `"."`).

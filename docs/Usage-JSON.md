@@ -4,6 +4,10 @@ Palette Kit v0.2 does not expose a public JSON exporter. If you need token JSON,
 
 ## Example: minimal JSON map
 
+Minimal OKLCH serializer:
+
+- [docs/snippets/serialize-oklch.md](./snippets/serialize-oklch.md)
+
 ```ts
 import { createTheme } from "@clhaas/palette-kit";
 
@@ -14,12 +18,7 @@ const theme = createTheme({
   },
 });
 
-const toOklch = (c: { l: number; c: number; h: number; alpha?: number }) => {
-  const a = c.alpha ?? 1;
-  const alphaPart = a < 1 ? ` / ${a}` : "";
-  return `oklch(${c.l}% ${c.c} ${c.h}${alphaPart})`;
-};
-
+// Assumes `toOklch` from the snippet above.
 const tokens = {
   "bg.app": toOklch(
     theme.resolve({ role: "bg.app", usage: "bg", surface: "app", context: "light" }).oklch,

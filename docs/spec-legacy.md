@@ -1,4 +1,8 @@
-# Palette Kit — SPEC completa (nova versão)
+# ⚠️ Archived Spec (Legacy)
+
+THIS DOCUMENT IS ARCHIVED AND DOES NOT DESCRIBE THE CURRENT API.
+
+## Palette Kit — SPEC completa (nova versão)
 
 > **Objetivo desta SPEC**
 >

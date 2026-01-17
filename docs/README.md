@@ -19,6 +19,7 @@ Index of all documentation files generated from the v0.2 codebase.
 - [Usage: Web](./Usage-Web.md)
 - [Usage: React Native](./Usage-ReactNative.md)
 - [Usage: JSON](./Usage-JSON.md)
+- [Snippets](./snippets/serialize-oklch.md)
 - [Migration](./Migration.md)
 - [FAQ](./FAQ.md)
 - [Spec (v0.2)](./spec.md)

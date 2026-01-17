@@ -45,6 +45,8 @@ type BaseResolvedColor = {
 
 If you need CSS strings, you must serialize `oklch` yourself or use the internal serializers in `src/export/` (not part of the published API).
 
+**Stability note**: while `BaseResolvedColor` is not exported as a type, its runtime shape is considered stable for the v0.x line.
+
 ### Example
 
 ```ts

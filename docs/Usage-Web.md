@@ -35,15 +35,12 @@ console.log(bg.oklch);
 
 ## 3) Serialize for CSS
 
-v0.2 does **not** export a serializer. Use a minimal OKLCH serializer:
+v0.2 does **not** export a serializer. Use the minimal OKLCH serializer snippet:
+
+- [docs/snippets/serialize-oklch.md](./snippets/serialize-oklch.md)
 
 ```ts
-const toOklch = (c: { l: number; c: number; h: number; alpha?: number }) => {
-  const a = c.alpha ?? 1;
-  const alphaPart = a < 1 ? ` / ${a}` : "";
-  return `oklch(${c.l}% ${c.c} ${c.h}${alphaPart})`;
-};
-
+// Assumes `toOklch` from the snippet above.
 const cssValue = toOklch(bg.oklch);
 ```
 

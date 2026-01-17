@@ -9,6 +9,12 @@ A small **color engine** for generating OKLCH-based palettes from semantic queri
 - `onSolid` text/icon colors with APCA/WCAG2 contrast checks
 - Strict validation for inputs (when `output.strict` is enabled)
 
+## Non-goals (v0.2)
+
+- Token registries or predefined token maps
+- Public CSS/JSON exporters
+- CLI tooling
+
 ## Basic mental model
 
 Seed colors → preset curves → resolve step → state/emphasis operators → onSolid solver
@@ -39,6 +45,7 @@ const bg = theme.resolve({
   surface: "app",
   context: "light",
 });
+// usage/surface/context are required unless inferred from the role
 
 console.log(bg.oklch); // { l, c, h, alpha }
 ```

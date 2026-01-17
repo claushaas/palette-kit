@@ -31,6 +31,8 @@ Step selection is controlled by `usage` + `surface` and clamped to `[1..12]`.
 
 ### Step mapping table (from `resolveStep`)
 
+This table is derived from the current `resolveStep` logic and reflects behavior in v0.2. It is not a guaranteed semantic contract.
+
 | usage  | surface       | step |
 |--------|---------------|------|
 | bg     | app           | 1    |
