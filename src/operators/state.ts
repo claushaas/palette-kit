@@ -13,7 +13,14 @@ type StateTuning = {
 };
 
 const STATE_TUNING: Record<OperatorInput["surface"], StateTuning> = {
-  app: { hover: 2, active: 4, selected: 3, focus: 2, disabledChroma: 0.45, disabledNeutralPull: 0.45 },
+  app: {
+    hover: 2,
+    active: 4,
+    selected: 3,
+    focus: 2,
+    disabledChroma: 0.45,
+    disabledNeutralPull: 0.45,
+  },
   surface: {
     hover: 2.5,
     active: 4.5,
@@ -30,7 +37,14 @@ const STATE_TUNING: Record<OperatorInput["surface"], StateTuning> = {
     disabledChroma: 0.45,
     disabledNeutralPull: 0.5,
   },
-  solid: { hover: 4, active: 7, selected: 5, focus: 4, disabledChroma: 0.4, disabledNeutralPull: 0.55 },
+  solid: {
+    hover: 4,
+    active: 7,
+    selected: 5,
+    focus: 4,
+    disabledChroma: 0.4,
+    disabledNeutralPull: 0.55,
+  },
   overlay: {
     hover: 3,
     active: 5.5,
@@ -39,7 +53,14 @@ const STATE_TUNING: Record<OperatorInput["surface"], StateTuning> = {
     disabledChroma: 0.45,
     disabledNeutralPull: 0.5,
   },
-  data: { hover: 4, active: 7, selected: 5, focus: 4, disabledChroma: 0.4, disabledNeutralPull: 0.55 },
+  data: {
+    hover: 4,
+    active: 7,
+    selected: 5,
+    focus: 4,
+    disabledChroma: 0.4,
+    disabledNeutralPull: 0.55,
+  },
   transparent: {
     hover: 2,
     active: 4,
@@ -86,8 +107,7 @@ export const applyStateOperator = (input: OperatorInput): OkLchColor => {
       next.l += direction * tuning.selected;
       break;
     case "focus":
-      next.l +=
-        direction * tuning.focus * (usage === "border" ? FOCUS_BORDER_SCALE : 1);
+      next.l += direction * tuning.focus * (usage === "border" ? FOCUS_BORDER_SCALE : 1);
       break;
     case "disabled":
       next.c *= tuning.disabledChroma;

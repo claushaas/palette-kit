@@ -1,13 +1,12 @@
 import { converter } from "culori";
-
-import type { CurvePresetName } from "../presets/index.js";
 import type { OkLchColor } from "../engine/generateScale.js";
-import type { ContrastRequirement, SurfaceIntent } from "../types/index.js";
 import { getSurfaceRange } from "../operators/utils.js";
+import type { CurvePresetName } from "../presets/index.js";
+import type { ContrastRequirement, SurfaceIntent } from "../types/index.js";
 import { computeApcaLc } from "./apca.js";
-import { contrastRatio } from "./wcag2.js";
-import type { ContrastCheckResult, SolveOptions, SrgbColor } from "./types.js";
 import { scoreContrast } from "./scoring.js";
+import type { ContrastCheckResult, SolveOptions, SrgbColor } from "./types.js";
+import { contrastRatio } from "./wcag2.js";
 
 const toSrgb = converter("rgb");
 
@@ -75,7 +74,8 @@ const checkContrast = (
     const value = Math.abs(computeApcaLc(fgSrgb, bgSrgb));
     const minTarget = req.minLc ?? req.targetLc;
     const maxTarget = req.maxLc ?? Number.POSITIVE_INFINITY;
-    const pass = Number.isFinite(value) && value + epsilon >= minTarget && value <= maxTarget + epsilon;
+    const pass =
+      Number.isFinite(value) && value + epsilon >= minTarget && value <= maxTarget + epsilon;
     return { model: "apca", target, value, pass };
   }
 
@@ -154,7 +154,10 @@ export function solveContrast(
   let preferredBound = lMin;
 
   if (iterations < options.maxIterations) {
-    const downCandidate = { color: { ...clamped, l: sampleDown }, result: evaluate({ ...clamped, l: sampleDown }) };
+    const downCandidate = {
+      color: { ...clamped, l: sampleDown },
+      result: evaluate({ ...clamped, l: sampleDown }),
+    };
     best = pickBetter(best, downCandidate, req);
 
     if (best.result.pass) {
@@ -162,7 +165,10 @@ export function solveContrast(
     }
 
     if (iterations < options.maxIterations) {
-      const upCandidate = { color: { ...clamped, l: sampleUp }, result: evaluate({ ...clamped, l: sampleUp }) };
+      const upCandidate = {
+        color: { ...clamped, l: sampleUp },
+        result: evaluate({ ...clamped, l: sampleUp }),
+      };
       best = pickBetter(best, upCandidate, req);
 
       if (best.result.pass) {
