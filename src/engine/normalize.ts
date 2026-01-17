@@ -206,15 +206,26 @@ const normalizeContrast = (
       throw new Error("APCA targetLc must be a number");
     }
 
+    if (contrast.minLc !== undefined && !Number.isFinite(contrast.minLc)) {
+      throw new Error("APCA minLc must be a number");
+    }
+
+    if (contrast.maxLc !== undefined && !Number.isFinite(contrast.maxLc)) {
+      throw new Error("APCA maxLc must be a number");
+    }
+
     return contrast;
   }
 
   if (contrast.model === "wcag2") {
-    if (!Number.isFinite(contrast.ratio)) {
-      throw new Error("WCAG2 ratio must be a number");
+    const minRatio =
+      "minRatio" in contrast ? contrast.minRatio : (contrast as { ratio?: number }).ratio;
+
+    if (!Number.isFinite(minRatio)) {
+      throw new Error("WCAG2 minRatio must be a number");
     }
 
-    return contrast;
+    return { model: "wcag2", minRatio };
   }
 
   if (contrast.model === "none") {

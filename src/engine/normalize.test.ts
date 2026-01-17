@@ -110,9 +110,9 @@ describe("normalizeQuery", () => {
         .contrast,
     ).toEqual({ model: "apca", targetLc: 75 });
     expect(
-      normalizeQuery({ role: "text.primary", contrast: { model: "wcag2", ratio: 4.5 } })
+      normalizeQuery({ role: "text.primary", contrast: { model: "wcag2", minRatio: 4.5 } })
         .contrast,
-    ).toEqual({ model: "wcag2", ratio: 4.5 });
+    ).toEqual({ model: "wcag2", minRatio: 4.5 });
     expect(
       normalizeQuery({ role: "text.primary", contrast: { model: "none" } }).contrast,
     ).toEqual({ model: "none" });
@@ -121,7 +121,7 @@ describe("normalizeQuery", () => {
     ).toThrowError(/targetLc/i);
     expect(() =>
       normalizeQuery({ role: "text.primary", contrast: { model: "wcag2" } as never }),
-    ).toThrowError(/ratio/i);
+    ).toThrowError(/minRatio/i);
     expect(() =>
       normalizeQuery({ role: "text.primary", contrast: { model: "nope" } as never }),
     ).toThrowError(/contrast model/i);
