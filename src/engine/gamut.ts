@@ -99,7 +99,7 @@ export const mapToGamut = (
 ): OkLchColor => {
   // Note:
   // `preferP3ThenCompress` is primarily a caller-level strategy (e.g. serializeColor prefers P3 when possible).
-  // Inside this mapper, any non-clip mapping uses chroma clamping (clampChroma) when mapping is needed.
+  // Inside this mapper, any non-clip mapping uses chroma compression (via clampChroma) when mapping is needed.
 
   const rgb = toTargetRgb(color, target);
 
@@ -117,7 +117,12 @@ export const mapToGamut = (
 
     const clipped = { r: clamp01(rgb.r), g: clamp01(rgb.g), b: clamp01(rgb.b) };
     const clippedOklch = toOklchFromRgb(clipped, target);
-    return clippedOklch ?? fallbackColor(color);
+    return clippedOklch
+      ? {
+          ...clippedOklch,
+          ...(typeof color.alpha === "number" ? { alpha: color.alpha } : {}),
+        }
+      : fallbackColor(color);
   }
 
   if (inGamut(rgb)) {
