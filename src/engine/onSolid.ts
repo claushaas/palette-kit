@@ -15,6 +15,8 @@ type SrgbColor = { r: number; g: number; b: number };
 
 const toSrgb = converter("rgb");
 
+const EPSILON = 0.01;
+
 const nearWhite: OkLchColor = { l: 97, c: 0, h: 0, alpha: 1 };
 const nearBlack: OkLchColor = { l: 15, c: 0, h: 0, alpha: 1 };
 
@@ -103,11 +105,15 @@ const checkContrastWithAlpha = (
     const value = Math.abs(computeApcaLc(composite, bgSrgb));
     const minTarget = req.minLc ?? req.targetLc;
     const maxTarget = req.maxLc ?? Number.POSITIVE_INFINITY;
-    return { pass: value >= minTarget && value <= maxTarget, value };
+    return {
+      pass:
+        Number.isFinite(value) && value >= minTarget - EPSILON && value <= maxTarget + EPSILON,
+      value,
+    };
   }
 
   const value = contrastRatio(composite, bgSrgb);
-  return { pass: value >= req.minRatio, value };
+  return { pass: Number.isFinite(value) && value + EPSILON >= req.minRatio, value };
 };
 
 export function onSolid(query: OnSolidQuery, theme: ThemeConfig): BaseResolvedColor {
