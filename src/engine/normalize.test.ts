@@ -121,7 +121,10 @@ describe("normalizeQuery", () => {
     ).toThrowError(/targetLc/i);
     expect(() =>
       normalizeQuery({ role: "text.primary", contrast: { model: "wcag2" } as never }),
-    ).toThrowError(/minRatio/i);
+    ).toThrowError(/minRatio.*ratio/i);
+    expect(() =>
+      normalizeQuery({ role: "text.primary", contrast: { model: "wcag2", minRatio: NaN } as never }),
+    ).toThrowError(/minRatio must be a number/i);
     expect(() =>
       normalizeQuery({ role: "text.primary", contrast: { model: "nope" } as never }),
     ).toThrowError(/contrast model/i);

@@ -1,6 +1,6 @@
+import type { OkLchColor } from "../engine/generateScale.js";
 import type { CurvePresetName } from "../presets/index.js";
 import type { ColorEmphasis, ColorState, ColorUsage, SurfaceIntent } from "../types/index.js";
-import type { OkLchColor } from "../engine/generateScale.js";
 
 export type OperatorInput = {
   oklch: OkLchColor;

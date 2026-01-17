@@ -1,8 +1,8 @@
-import type { NormalizedQuery } from "./normalize.js";
-import type { BaseResolvedColor, ThemeConfig } from "./resolveBaseColor.js";
-import { mapColorContextToEngine } from "./context.js";
 import { applyEmphasisOperator } from "../operators/emphasis.js";
 import { applyStateOperator } from "../operators/state.js";
+import { mapColorContextToEngine } from "./context.js";
+import type { NormalizedQuery } from "./normalize.js";
+import type { BaseResolvedColor, ThemeConfig } from "./resolveBaseColor.js";
 
 export const applyOperators = (
   base: BaseResolvedColor,
