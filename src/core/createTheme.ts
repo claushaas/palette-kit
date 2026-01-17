@@ -1,5 +1,5 @@
-import type { ColorContext, ColorQuery, ColorRole } from "../types/index.js";
 import type { BaseResolvedColor, ThemeConfig } from "../engine/resolveBaseColor.js";
+import type { ColorContext, ColorQuery, ColorRole } from "../types/index.js";
 import { resolve } from "./resolve.js";
 
 export type PaletteTheme = {

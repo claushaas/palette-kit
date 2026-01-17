@@ -6,10 +6,10 @@ import type {
   SemanticVariant,
   SurfaceIntent,
 } from "../types/index.js";
-import type { NormalizedQuery } from "./normalize.js";
-import { mapColorContextToEngine } from "./context.js";
 import { parseColor } from "../utils/parseColor.js";
+import { mapColorContextToEngine } from "./context.js";
 import { generateScale, type OkLchColor } from "./generateScale.js";
+import type { NormalizedQuery } from "./normalize.js";
 import { normalizeQuery } from "./normalize.js";
 
 type ThemeSeeds = {
