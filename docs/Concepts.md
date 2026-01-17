@@ -1,0 +1,62 @@
+# Concepts
+
+This document explains the concepts that are implemented in v0.2 **as shown in code**. If a concept is listed but not present in the code, it is explicitly marked.
+
+## Seed / source colors
+
+`createTheme` requires seed colors for **light** and **dark** contexts:
+
+```ts
+const theme = createTheme({
+  seeds: {
+    light: { neutral: "#111827", accent: "#3d63dd" },
+    dark: { neutral: "#111827", accent: "#3d63dd" },
+  },
+});
+```
+
+These seeds are parsed to OKLCH and used to generate 12-step scales per surface.
+
+## Steps 1–12
+
+The engine generates **12 steps** per surface (`generateScale`). Steps are indexed by role/usage rules in `resolveBaseColor`:
+
+- `bg.app` → step 1
+- `bg.surface` → step 2
+- `bg.subtle` → step 3
+- `bg.solid` → step 9
+- `border.surface` → step 6 (varies)
+- `text/icon` → step 11
+
+Step selection is controlled by `usage` + `surface` and clamped to `[1..12]`.
+
+## Light / Dark contexts
+
+Queries are normalized with `context` (`light`/`dark`) and map to the corresponding seed set and curve range.
+
+## Slots / tokens (v0.2)
+
+There is **no public token system** in the package entrypoint. Internally, roles are strings like `bg.app`, `text.primary`, `action.primary` and are interpreted by the resolver.
+
+## Alpha scales
+
+There is no standalone “alpha scale” API. Alpha is represented by:
+
+- `AlphaStrategy` on `ColorQuery` / `OnSolidQuery`
+- `onSolid` defaults to fixed alpha (text `0.92`, icon `0.72`)
+
+## Overlays
+
+Overlays are treated as a `surface: "overlay"` and `usage: "bg"`. The `resolveStep` mapping uses the overlay range in presets.
+
+## Text scales
+
+There is no explicit “text scale” API. Text is resolved by `usage: "text"` and the contrast solver in `onSolid`.
+
+## Anchor step
+
+**Not implemented in v0.2.** There is no anchor-step or pinning mechanism in the codebase.
+
+## Wide gamut / Display-P3
+
+The internal serializer supports `display-p3` strings, and `OutputOptions.preferSpace/includeSpaces` accept `"p3"`. However, **exporters/serializers are not publicly exported** in v0.2.

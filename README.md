@@ -1,217 +1,71 @@
 # Palette Kit
 
-Modern palette generator (OKLCH + APCA) with Radix-like steps. The library accepts seeds (initial colors) and produces light/dark scales, semantic tokens, and exporters ready for use.
+A small color engine for generating OKLCH-based palettes from semantic queries. It focuses on deterministic OKLCH scales, semantic roles, and contrast-aware text-on-solid handling.
 
-Status: WIP. The API may change while the MVP is under construction.
+This documentation is generated **from the v0.2 code** and reflects the exact public API available in this repository.
 
-## Installation
+## Why it exists
+
+UI color systems often drift into ad-hoc hex values, inconsistent steps, and fragile contrast decisions. Palette Kit provides a single place to:
+
+- define seed colors for light/dark modes
+- generate OKLCH scales deterministically
+- resolve semantic colors by role/usage/state
+- compute `onSolid` text/icon colors with contrast checks
+
+## Quick start (3 minutes)
+
+Install:
 
 ```bash
 npm install @clhaas/palette-kit
 ```
 
-```bash
-yarn add @clhaas/palette-kit
-```
-
-```bash
-pnpm add @clhaas/palette-kit
-```
-
-## What the library provides
-
-- 12-step scale (light/dark) from a seed.
-- Semantic tokens for UI (`radix-like-ui` preset).
-- Alpha scales per palette slot (chromatic alpha).
-- Overlay scales (black/white alpha).
-- Deterministic text scales for light/dark backgrounds.
-- Exporters for TS, JSON, CSS vars, Tailwind, and React Native.
-- Auto anchor selection per mode (light/dark), overridable via `anchorStep`.
-- Basic contrast and gamut diagnostics.
-
-## Usage example
+Create a theme and resolve colors:
 
 ```ts
 import { createTheme } from "@clhaas/palette-kit";
 
 const theme = createTheme({
-  neutral: { source: "seed", value: "#111827" },
-  accent: { source: "seed", value: "#3d63dd" },
-  semantic: {
-    success: { source: "seed", value: "#16a34a" },
-    warning: { source: "seed", value: "#f59e0b" },
-    danger: { source: "seed", value: "#ef4444" },
+  seeds: {
+    light: { neutral: "#111827", accent: "#3d63dd" },
+    dark: { neutral: "#111827", accent: "#3d63dd" },
   },
-  tokens: { preset: "radix-like-ui" },
-  text: {
-    darkBase: "#1C1C1E",
-    lightBase: "#F5F5F7",
-  },
-  p3: true,
-});
-```
-
-## Quick start
-
-Generate a theme and export CSS variables:
-
-```ts
-import { createTheme, toCssVars } from "@clhaas/palette-kit";
-
-const theme = createTheme({
-  neutral: { source: "seed", value: "#111827" },
-  accent: { source: "seed", value: "#3d63dd" },
 });
 
-const css = toCssVars(theme, { prefix: "pk" });
-```
-
-Use tokens in your app:
-
-```css
-:root {
-  /* paste the generated CSS vars here */
-}
-
-body {
-  background: var(--pk-bg-app);
-  color: var(--pk-text-primary);
-}
-```
-
-## Step-by-step (install -> usage -> types)
-
-1) Install:
-
-```bash
-npm install @clhaas/palette-kit
-```
-
-2) Create a config file (`palette.config.mjs`):
-
-```js
-/** @type {import("@clhaas/palette-kit").CreateThemeOptions} */
-export default {
-  neutral: { source: "seed", value: "#111827" },
-  accent: { source: "seed", value: "#3d63dd" },
-  semantic: {
-    success: { source: "seed", value: "#16a34a" },
-    warning: { source: "seed", value: "#f59e0b" },
-    danger: { source: "seed", value: "#ef4444" },
-  },
-  tokens: { preset: "radix-like-ui" },
-  alpha: { enabled: true },
-  text: {
-    darkBase: "#1C1C1E",
-    lightBase: "#F5F5F7",
-  },
-  p3: true,
-};
-```
-
-3) Generate a typed theme file (includes token name types):
-
-```bash
-npx palette-kit generate --out src/theme.ts
-```
-
-4) Export CSS vars (for web apps):
-
-```ts
-import { toCssVars } from "@clhaas/palette-kit";
-import { theme } from "./theme";
-
-const css = toCssVars(theme, { prefix: "pk" });
-// write the string into a .css file or inject it at build time
-```
-
-5) Use the generated types:
-
-```ts
-import { theme, ThemeTokenMap, ThemeTokenName } from "./theme";
-
-const tokens: ThemeTokenMap = theme.tokens.light;
-const tokenName: ThemeTokenName = "bg.app";
-```
-
-## Alpha, overlay, and text examples
-
-```ts
-const accentAlpha = theme.alpha?.accent.light[5];
-const overlay = theme.overlay.black[9];
-const textOnLight = theme.tokens.light["text.dark.primary"];
-const textOnDark = theme.tokens.dark["text.light.primary"];
-```
-
-## Migration note (alpha)
-
-Alpha scales are now generated per palette slot. If you previously used:
-
-```ts
-theme.alpha?.light[5];
-```
-
-Update to:
-
-```ts
-theme.alpha?.accent.light[5];
-```
-
-CSS variables were also updated from `--pk-alpha-<step>` to `--pk-alpha-<slot>-<step>`.
-
-## React Native + Expo
-
-Use the React Native exporter and `useColorScheme()`:
-
-```ts
-import { useMemo } from "react";
-import { useColorScheme } from "react-native";
-import { createTheme, toReactNative } from "@clhaas/palette-kit";
-
-const theme = createTheme({
-  neutral: { source: "seed", value: "#111827" },
-  accent: { source: "seed", value: "#3d63dd" },
-  p3: true,
+const bg = theme.resolve({
+  role: "bg.app",
+  usage: "bg",
+  surface: "app",
+  context: "light",
 });
 
-export function usePalette() {
-  const scheme = useColorScheme();
-  const palette = useMemo(() => toReactNative(theme, { includeP3: true }), []);
-  return scheme === "dark" ? palette.dark : palette.light;
-}
+console.log(bg.oklch); // { l, c, h, alpha }
 ```
 
-See `examples/expo` for a full example.
+Compute text/icon colors on a solid background with contrast solving:
 
-Note: React Native does not support `color(display-p3 ...)` strings as drop-in colors. The `p3` field is provided as data for platforms that can handle wide color via native APIs.
+```ts
+const onSolidText = theme.onSolid({
+  bgRole: "action.primary",
+  usage: "text",
+  context: "light",
+  contrast: { model: "apca", targetLc: 75 },
+});
 
-## Principles
+console.log(onSolidText.oklch);
+```
 
-- Tokens by intent, not by color.
-- Fixed steps (1-12) for UI consistency.
-- OKLCH generation, contrast resolved with APCA.
+> v0.2 returns **OKLCH channel data**, not CSS strings. Exporters/serializers exist in source but are not part of the public package export. See `docs/Exporters.md`.
 
-## Docs and plans
+## Documentation
 
-- `docs/README.md`
-- `docs/concepts.md`
-- `docs/api.md`
-- `docs/tokens.md`
-- `docs/contrast.md`
-- `docs/alpha.md`
-- `docs/text.md`
-- `docs/overlays.md`
-- `docs/Why.md`
-- `docs/spec-implementation.md`
-- `docs/plan-tests.md`
-- `docs/plan-docs.md`
-
-## Short roadmap
-
-1) Generate scales from seeds (light/dark).
-2) Tokens and basic exporters.
-3) Contrast and alpha scale.
-
-## License
-
-MIT
+- [docs/README.md](docs/README.md)
+- [docs/Why.md](docs/Why.md)
+- [docs/Concepts.md](docs/Concepts.md)
+- [docs/Architecture.md](docs/Architecture.md)
+- [docs/API.md](docs/API.md)
+- [docs/Config.md](docs/Config.md)
+- [docs/Exporters.md](docs/Exporters.md)
+- [docs/CLI.md](docs/CLI.md)
+- [docs/FAQ.md](docs/FAQ.md)
