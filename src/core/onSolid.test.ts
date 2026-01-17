@@ -1,35 +1,9 @@
-import { converter } from "culori";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import { computeApcaLc } from "../contrast/apca.js";
+import * as apca from "../contrast/apca.js";
+import { blendSrgb, toSrgbColor } from "../contrast/utils.js";
 import type { OkLchColor } from "../engine/generateScale.js";
 import { createTheme } from "./createTheme.js";
-
-type SrgbColor = { r: number; g: number; b: number };
-
-const toSrgb = converter("rgb");
-
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-
-const toSrgbColor = (color: OkLchColor): SrgbColor | null => {
-  const rgb = toSrgb({ mode: "oklch", l: clamp(color.l, 0, 100) / 100, c: color.c, h: color.h });
-
-  if (!rgb) {
-    return null;
-  }
-
-  const r = typeof rgb.r === "number" && Number.isFinite(rgb.r) ? clamp(rgb.r, 0, 1) : 0;
-  const g = typeof rgb.g === "number" && Number.isFinite(rgb.g) ? clamp(rgb.g, 0, 1) : 0;
-  const b = typeof rgb.b === "number" && Number.isFinite(rgb.b) ? clamp(rgb.b, 0, 1) : 0;
-
-  return { r, g, b };
-};
-
-const blend = (fg: SrgbColor, bg: SrgbColor, alpha: number): SrgbColor => ({
-  r: fg.r * alpha + bg.r * (1 - alpha),
-  g: fg.g * alpha + bg.g * (1 - alpha),
-  b: fg.b * alpha + bg.b * (1 - alpha),
-});
 
 const passesApca = (fg: OkLchColor, bg: OkLchColor, targetLc: number, alpha = 1) => {
   const fgSrgb = toSrgbColor(fg);
@@ -39,8 +13,8 @@ const passesApca = (fg: OkLchColor, bg: OkLchColor, targetLc: number, alpha = 1)
     return false;
   }
 
-  const composite = blend(fgSrgb, bgSrgb, alpha);
-  const value = Math.abs(computeApcaLc(composite, bgSrgb));
+  const composite = blendSrgb(fgSrgb, bgSrgb, alpha);
+  const value = Math.abs(apca.computeApcaLc(composite, bgSrgb));
   return value >= targetLc;
 };
 
@@ -118,6 +92,24 @@ describe("onSolid", () => {
         output: { strict: true },
       }),
     ).toThrow(/onSolid contrast failed|Contrast solver failed/i);
+  });
+
+  it("accepts results within epsilon for strict checks", () => {
+    const spy = vi.spyOn(apca, "computeApcaLc").mockImplementation(() => 74.995);
+
+    try {
+      expect(() =>
+        theme.onSolid({
+          bgRole: "action.primary",
+          usage: "text",
+          context: "light",
+          contrast: { model: "apca", targetLc: 75 },
+          output: { strict: true },
+        }),
+      ).not.toThrow();
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it("keeps alpha at 1 when mode is none", () => {
