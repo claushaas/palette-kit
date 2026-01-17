@@ -1,14 +1,26 @@
-# Docs
+# Palette Kit Docs
 
-- `docs/concepts.md`: core concepts
-- `docs/api.md`: API reference
-- `docs/tokens.md`: token preset mapping
-- `docs/contrast.md`: contrast model and targets
-- `docs/alpha.md`: alpha scale
-- `docs/overlays.md`: overlays using black/white alpha scales
-- `docs/text.md`: text colors and scales
-- `docs/p3.md`: Display-P3 usage and notes
-- `docs/Why.md`: vision and architecture
-- `docs/spec-implementation.md`: implementation spec
-- `docs/plan-tests.md`: test plan
-- `docs/plan-docs.md`: documentation plan
+Index of all documentation files generated from the v0.2 codebase.
+
+- [API Surface Report](./_api-surface.md)
+- [Why](./Why.md)
+- [Concepts](./Concepts.md)
+- [Architecture](./Architecture.md)
+- [API](./API.md)
+- [CLI](./CLI.md)
+- [Config](./Config.md)
+- [Tokens](./Tokens.md)
+- [Alpha](./Alpha.md)
+- [Overlays](./Overlays.md)
+- [Text](./Text.md)
+- [Exporters](./Exporters.md)
+- [Diagnostics](./Diagnostics.md)
+- [Validation](./Validation.md)
+- [Usage: Web](./Usage-Web.md)
+- [Usage: React Native](./Usage-ReactNative.md)
+- [Usage: JSON](./Usage-JSON.md)
+- [Snippets](./snippets/serialize-oklch.md)
+- [Migration](./Migration.md)
+- [FAQ](./FAQ.md)
+- [Spec (v0.2)](./spec.md)
+- [Spec (legacy)](./spec-legacy.md)
