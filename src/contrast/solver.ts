@@ -75,7 +75,7 @@ const checkContrast = (
     const minTarget = req.minLc ?? req.targetLc;
     const maxTarget = req.maxLc ?? Number.POSITIVE_INFINITY;
     const pass =
-      Number.isFinite(value) && value + epsilon >= minTarget && value <= maxTarget + epsilon;
+      Number.isFinite(value) && value >= minTarget - epsilon && value <= maxTarget + epsilon;
     return { model: "apca", target, value, pass };
   }
 
