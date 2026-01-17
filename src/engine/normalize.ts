@@ -221,6 +221,10 @@ const normalizeContrast = (
     const minRatio =
       "minRatio" in contrast ? contrast.minRatio : (contrast as { ratio?: number }).ratio;
 
+    if (minRatio === undefined) {
+      throw new Error("WCAG2 contrast requires either 'minRatio' or legacy 'ratio' property");
+    }
+
     if (!Number.isFinite(minRatio)) {
       throw new Error("WCAG2 minRatio must be a number");
     }
