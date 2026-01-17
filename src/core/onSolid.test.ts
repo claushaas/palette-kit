@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import * as apca from "../contrast/apca.js";
 import { blendSrgb, toSrgbColor } from "../contrast/utils.js";
 import type { OkLchColor } from "../engine/generateScale.js";
+import * as operators from "../engine/applyOperators.js";
 import { createTheme } from "./createTheme.js";
 
 const passesApca = (fg: OkLchColor, bg: OkLchColor, targetLc: number, alpha = 1) => {
@@ -121,5 +122,25 @@ describe("onSolid", () => {
     });
 
     expect(result.oklch.alpha).toBe(1);
+  });
+
+  it("applies state and emphasis to the background before solving", () => {
+    const spy = vi.spyOn(operators, "applyOperators");
+
+    theme.onSolid({
+      bgRole: "action.primary",
+      usage: "text",
+      context: "light",
+      state: "hover",
+      emphasis: "strong",
+    });
+
+    expect(spy).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({ state: "hover", emphasis: "strong" }),
+      expect.any(Object),
+    );
+
+    spy.mockRestore();
   });
 });
