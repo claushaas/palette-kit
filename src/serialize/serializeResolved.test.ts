@@ -24,8 +24,8 @@ describe("serializeResolved", () => {
 
 describe("serializeColor", () => {
   it("uses rgba output when explicitly requested", () => {
-    const color = { l: 60, c: 0.2, h: 40, alpha: 0.5 };
-    const result = serializeColor(color, { preferSpace: "srgb", srgbFormat: "rgb" });
+    const color = { l: 60, c: 0.2, h: 40, alpha: 1 };
+    const result = serializeColor(color, { preferSpace: "srgb", srgbFormat: "rgba" });
 
     expect(result.value.startsWith("rgba(")).toBe(true);
   });

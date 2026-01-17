@@ -91,23 +91,23 @@ export interface ColorMeta {
 
 export interface ResolvedColor {
   /**
-   * String serializada correspondente ao `preferSpace`.
-   * Sempre presente.
+   * Serialized string corresponding to `preferSpace`.
+   * Always present.
    */
   value: CssColorString;
   /**
-   * Representacao sRGB auxiliar.
-   * So presente se incluida via `includeSpaces`.
+   * Auxiliary sRGB representation.
+   * Only present if included via `includeSpaces`.
    */
   srgb?: CssColorString;
   /**
-   * Representacao Display-P3 auxiliar.
-   * So presente se incluida via `includeSpaces`.
+   * Auxiliary Display-P3 representation.
+   * Only present if included via `includeSpaces`.
    */
   p3?: CssColorString;
   /**
-   * Representacao OKLCH auxiliar.
-   * So presente se incluida via `includeSpaces`.
+   * Auxiliary OKLCH representation.
+   * Only present if included via `includeSpaces`.
    */
   oklch?: CssColorString;
   alpha: number;
