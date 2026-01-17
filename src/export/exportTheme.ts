@@ -1,5 +1,5 @@
 import type { OkLchColor } from "../engine/generateScale.js";
-import type { ColorMeta, ColorQuery, OutputOptions, RawColor } from "../types/index.js";
+import type { ColorMeta, ColorQuery, OutputOptions } from "../types/index.js";
 import { serializeColor, serializeColorJson } from "./serializeColor.js";
 
 export type ThemeToken = Omit<ColorQuery, "role" | "output"> & { role?: string };
@@ -11,11 +11,11 @@ export type ExportableTheme = {
 };
 
 export type TokenValue = {
-  value: RawColor;
-  srgb?: RawColor;
-  p3?: RawColor;
-  oklch?: RawColor;
-  alpha?: number;
+  value: string;
+  srgb?: string;
+  p3?: string;
+  oklch?: string;
+  alpha: number;
   meta?: ColorMeta;
 };
 

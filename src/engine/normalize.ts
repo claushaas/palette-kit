@@ -21,7 +21,7 @@ export type NormalizedQuery = Required<
   on?: ColorQuery["on"];
   contrast?: ColorQuery["contrast"];
   alpha?: ColorQuery["alpha"];
-  output: Required<OutputOptions>;
+  output: Required<Omit<OutputOptions, "format">>;
 };
 
 export type NormalizedOnSolidQuery = Required<
@@ -29,7 +29,7 @@ export type NormalizedOnSolidQuery = Required<
 > & {
   alpha?: OnSolidQuery["alpha"];
   contrast?: OnSolidQuery["contrast"];
-  output: Required<OutputOptions>;
+  output: Required<Omit<OutputOptions, "format">>;
 };
 
 const usages: ColorUsage[] = ["bg", "border", "text", "icon", "ring", "shadow", "stroke", "fill"];
@@ -62,7 +62,7 @@ const semanticVariants: SemanticVariant[] = [
   "premium",
 ];
 
-const colorSpaces: ColorSpace[] = ["srgb", "p3", "oklch", "oklab"];
+const colorSpaces: ColorSpace[] = ["srgb", "p3", "oklch"];
 
 const gamutMappings: NonNullable<OutputOptions["gamutMapping"]>[] = [
   "clip",
@@ -310,7 +310,9 @@ const normalizeAlpha = (alpha: AlphaStrategy | undefined): AlphaStrategy | undef
   throw new Error(`Invalid alpha strategy mode: "${(alpha as AlphaStrategy).mode}"`);
 };
 
-const normalizeOutput = (output: OutputOptions | undefined): Required<OutputOptions> => {
+const normalizeOutput = (
+  output: OutputOptions | undefined,
+): Required<Omit<OutputOptions, "format">> => {
   const preferSpaceValue = formatString(output?.preferSpace);
   const gamutMappingValue = formatString(output?.gamutMapping);
   const includeSpaces = validateIncludeSpaces(output?.includeSpaces);
@@ -335,7 +337,6 @@ const normalizeOutput = (output: OutputOptions | undefined): Required<OutputOpti
     preferSpace,
     includeSpaces,
     gamutMapping,
-    format: output?.format ?? "css",
     strict: output?.strict ?? false,
     precision: {
       l: 1,

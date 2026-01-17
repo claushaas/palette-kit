@@ -83,9 +83,13 @@ describe("exportTheme", () => {
       includeSpaces: ["srgb", "oklch"],
     });
 
-    expect(tokens["bg.app"].value.space).toBe("p3");
-    expect(tokens["bg.app"].srgb?.space).toBe("srgb");
-    expect(tokens["bg.app"].oklch?.space).toBe("oklch");
+    expect(tokens["bg.app"].value.startsWith("color(display-p3 ")).toBe(true);
+    expect(typeof tokens["bg.app"].value).toBe("string");
+    expect(tokens["bg.app"].srgb?.startsWith("#")).toBe(true);
+    expect(typeof tokens["bg.app"].srgb).toBe("string");
+    expect(tokens["bg.app"].oklch?.startsWith("oklch(")).toBe(true);
+    expect(typeof tokens["bg.app"].oklch).toBe("string");
+    expect(JSON.stringify(tokens)).not.toMatch(/channels|space|raw/);
   });
 
   it("includes meta when requested and omits when not", () => {

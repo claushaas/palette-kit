@@ -334,7 +334,7 @@ A lib suporta padrões semânticos sem conflito porque cada um vira eixo/operado
 
 **AlphaStrategy** — none/fixed/solveOnBackground.
 
-**OutputOptions** — preferSpace/includeSpaces/gamutMapping/format.
+**OutputOptions** — preferSpace/includeSpaces/gamutMapping/strict/precision/includeMeta.
 
 **RawColor** — `{space, channels, alpha}`.
 

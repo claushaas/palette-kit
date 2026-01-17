@@ -28,10 +28,10 @@ describe("serializeColor", () => {
       precision: { l: 1, c: 2, h: 0, alpha: 2 },
     });
 
-    expect(result.value.space).toBe("p3");
+    expect(result.value.startsWith("color(display-p3 ")).toBe(true);
     expect(result.oklch).toBeDefined();
     expect(result.srgb).toBeDefined();
-    expect(result.oklch?.channels).toEqual([60.1, 0.23, 40]);
+    expect(result.oklch).toBe("oklch(60.1% 0.23 40 / 0.5)");
     expect(result.alpha).toBe(0.5);
   });
 
@@ -44,7 +44,8 @@ describe("serializeColor", () => {
     const colorLo = { l: 60, c: 0.2, h: 40, alpha: -1 };
     const jsonLo = serializeColorJson(colorLo, { preferSpace: "oklch", precision: { alpha: 2 } });
     expect(jsonLo.alpha).toBe(0);
-    expect(jsonLo.value.alpha).toBe(0);
+    expect(jsonLo.value).toMatch(/\/\s*0(\.0+)?\)/);
+    expect(jsonLo.oklch).toMatch(/\/\s*0(\.0+)?\)/);
   });
 
   it("throws in strict mode when preferred space cannot be serialized", () => {
