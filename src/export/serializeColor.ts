@@ -1,28 +1,17 @@
-import { converter, formatHex, formatHex8 } from "culori";
+import { formatHex, formatHex8 } from "culori";
 import { isInGamut, mapToGamut, toGamutRgb } from "../engine/gamut.js";
 import type { OkLchColor } from "../engine/generateScale.js";
-import type { ColorMeta, OutputOptions, RawColor, ResolvedColor } from "../types/index.js";
+import type { ColorMeta, OutputOptions, ResolvedColor } from "../types/index.js";
 import { clamp } from "../utils/clamp.js";
-
-type SerializeFormat = "css" | "json";
 
 type NormalizedOutput = Required<
   Pick<OutputOptions, "preferSpace" | "includeSpaces" | "gamutMapping" | "strict">
 > & {
   precision: Required<NonNullable<OutputOptions["precision"]>>;
-  format: SerializeFormat;
   includeMeta: boolean;
 };
 
-type SerializedColorJson = {
-  value: RawColor;
-  srgb?: RawColor;
-  p3?: RawColor;
-  oklch?: RawColor;
-  oklab?: RawColor;
-  alpha: number;
-  meta?: ColorMeta;
-};
+type SerializedColorJson = ResolvedColor;
 
 const DEFAULT_OUTPUT: NormalizedOutput = {
   preferSpace: "oklch",
@@ -30,7 +19,6 @@ const DEFAULT_OUTPUT: NormalizedOutput = {
   gamutMapping: "preferP3ThenCompress",
   precision: { l: 1, c: 3, h: 1, alpha: 2 },
   strict: false,
-  format: "css",
   includeMeta: false,
 };
 
@@ -57,7 +45,6 @@ const normalizeOutput = (output?: OutputOptions): NormalizedOutput => ({
     ...output?.precision,
   },
   strict: output?.strict ?? DEFAULT_OUTPUT.strict,
-  format: output?.format === "json" ? "json" : "css",
   includeMeta: output?.includeMeta ?? DEFAULT_OUTPUT.includeMeta,
 });
 
@@ -69,51 +56,6 @@ const formatOklch = (color: OkLchColor, precision: NormalizedOutput["precision"]
   const h = formatNumber(color.h, precision.h);
   const alphaPart = hasAlpha ? ` / ${formatNumber(alpha, precision.alpha)}` : "";
   return `oklch(${l}% ${c} ${h}${alphaPart})`;
-};
-
-const toOklab = converter("oklab");
-
-const toOklabChannels = (color: OkLchColor) => {
-  const converted = toOklab({
-    mode: "oklch",
-    l: clamp(color.l, 0, 100) / 100,
-    c: Math.max(0, color.c),
-    h: color.h,
-    alpha: color.alpha ?? 1,
-  });
-
-  if (!converted) {
-    return null;
-  }
-
-  const l = typeof converted.l === "number" && Number.isFinite(converted.l) ? converted.l : null;
-  const a = typeof converted.a === "number" && Number.isFinite(converted.a) ? converted.a : null;
-  const b = typeof converted.b === "number" && Number.isFinite(converted.b) ? converted.b : null;
-  const alpha =
-    typeof converted.alpha === "number" && Number.isFinite(converted.alpha)
-      ? converted.alpha
-      : null;
-
-  if (l === null || a === null || b === null) {
-    return null;
-  }
-
-  return { l, a, b, ...(alpha === null ? {} : { alpha }) };
-};
-
-const formatOklab = (color: OkLchColor, precision: NormalizedOutput["precision"]) => {
-  const channels = toOklabChannels(color);
-  if (!channels) {
-    return undefined;
-  }
-
-  const alpha = clamp(channels.alpha ?? color.alpha ?? 1, 0, 1);
-  const hasAlpha = alpha < 1;
-  const l = formatNumber(clamp(channels.l, 0, 1) * 100, precision.l);
-  const a = formatNumber(channels.a, precision.c);
-  const b = formatNumber(channels.b, precision.c);
-  const alphaPart = hasAlpha ? ` / ${formatNumber(alpha, precision.alpha)}` : "";
-  return `oklab(${l}% ${a} ${b}${alphaPart})`;
 };
 
 const formatDisplayP3 = (
@@ -138,53 +80,6 @@ const formatSrgbHex = (rgb: { r: number; g: number; b: number }, alpha: number) 
   };
   return alpha < 1 ? formatHex8(rgbColor) : formatHex(rgbColor);
 };
-
-const toRawOklch = (color: OkLchColor, precision: NormalizedOutput["precision"]): RawColor => ({
-  space: "oklch",
-  channels: [
-    roundTo(clamp(color.l, 0, 100), precision.l),
-    roundTo(Math.max(0, color.c), precision.c),
-    roundTo(color.h, precision.h),
-  ],
-  alpha: roundTo(clamp(color.alpha ?? 1, 0, 1), precision.alpha),
-});
-
-const toRawOklab = (
-  color: OkLchColor,
-  precision: NormalizedOutput["precision"],
-): RawColor | undefined => {
-  const channels = toOklabChannels(color);
-  const alpha = clamp(color.alpha ?? 1, 0, 1);
-
-  if (!channels) {
-    return undefined;
-  }
-
-  return {
-    space: "oklab",
-    channels: [
-      roundTo(clamp(channels.l, 0, 1) * 100, precision.l),
-      roundTo(channels.a, precision.c),
-      roundTo(channels.b, precision.c),
-    ],
-    alpha: roundTo(clamp(channels.alpha ?? alpha, 0, 1), precision.alpha),
-  };
-};
-
-const toRawRgb = (
-  rgb: { r: number; g: number; b: number },
-  alpha: number,
-  space: "srgb" | "p3",
-  precision: NormalizedOutput["precision"],
-): RawColor => ({
-  space,
-  channels: [
-    roundTo(clamp(rgb.r, 0, 1), precision.c),
-    roundTo(clamp(rgb.g, 0, 1), precision.c),
-    roundTo(clamp(rgb.b, 0, 1), precision.c),
-  ],
-  alpha: roundTo(clamp(alpha, 0, 1), precision.alpha),
-});
 
 const buildMeta = (meta: ColorMeta | undefined, output: NormalizedOutput): ColorMeta | undefined =>
   output.includeMeta ? { ...meta, gamutMapping: output.gamutMapping } : undefined;
@@ -216,8 +111,6 @@ export const serializeColor = (
   const spaces = new Set([normalized.preferSpace, ...normalized.includeSpaces]);
 
   const oklchText = formatOklch(color, normalized.precision);
-  const needsOklab = spaces.has("oklab") || normalized.preferSpace === "oklab";
-  const oklabText = needsOklab ? formatOklab(color, normalized.precision) : undefined;
 
   const needsSrgb = spaces.has("srgb") || normalized.preferSpace === "srgb";
   const srgbColor = needsSrgb
@@ -244,9 +137,6 @@ export const serializeColor = (
     if (normalized.preferSpace === "p3") {
       return requirePreferredSpace("p3", normalized.strict, p3Text, oklchText);
     }
-    if (normalized.preferSpace === "oklab") {
-      return requirePreferredSpace("oklab", normalized.strict, oklabText, oklchText);
-    }
     return oklchText;
   })();
 
@@ -255,7 +145,6 @@ export const serializeColor = (
     srgb: spaces.has("srgb") ? srgbText : undefined,
     p3: spaces.has("p3") ? p3Text : undefined,
     oklch: spaces.has("oklch") ? oklchText : undefined,
-    oklab: spaces.has("oklab") ? oklabText : undefined,
     alpha,
     meta: buildMeta(meta, normalized),
   };
@@ -266,65 +155,6 @@ export const serializeColorJson = (
   output?: OutputOptions,
   meta?: ColorMeta,
 ): SerializedColorJson => {
-  const normalized = normalizeOutput(output);
-  const alpha = clamp(color.alpha ?? 1, 0, 1);
-  const spaces = new Set([normalized.preferSpace, ...normalized.includeSpaces]);
-  const needsOklab = spaces.has("oklab") || normalized.preferSpace === "oklab";
-  const oklabRaw = needsOklab ? toRawOklab(color, normalized.precision) : undefined;
-
-  const needsSrgb = spaces.has("srgb") || normalized.preferSpace === "srgb";
-  const srgbColor = needsSrgb
-    ? mapToGamut(color, "srgb", normalized.gamutMapping, normalized.strict)
-    : undefined;
-  const srgbRgb = srgbColor ? toGamutRgb(srgbColor, "srgb") : null;
-  const srgbAlpha = resolveAlpha(alpha, srgbColor);
-  const needsP3 = spaces.has("p3") || normalized.preferSpace === "p3";
-  const p3Color = needsP3
-    ? normalized.gamutMapping === "preferP3ThenCompress" && isInGamut(color, "p3")
-      ? color
-      : mapToGamut(color, "p3", normalized.gamutMapping, normalized.strict)
-    : undefined;
-  const p3Rgb = p3Color ? toGamutRgb(p3Color, "p3") : null;
-  const p3Alpha = resolveAlpha(alpha, p3Color);
-
-  const value =
-    normalized.preferSpace === "srgb"
-      ? srgbRgb
-        ? toRawRgb(srgbRgb, srgbAlpha, "srgb", normalized.precision)
-        : normalized.strict
-          ? (() => {
-              throw new Error("Unable to serialize preferred space: srgb");
-            })()
-          : toRawOklch(color, normalized.precision)
-      : normalized.preferSpace === "p3"
-        ? p3Rgb
-          ? toRawRgb(p3Rgb, p3Alpha, "p3", normalized.precision)
-          : normalized.strict
-            ? (() => {
-                throw new Error("Unable to serialize preferred space: p3");
-              })()
-            : toRawOklch(color, normalized.precision)
-        : normalized.preferSpace === "oklab"
-          ? oklabRaw
-            ? oklabRaw
-            : normalized.strict
-              ? (() => {
-                  throw new Error("Unable to serialize preferred space: oklab");
-                })()
-              : toRawOklch(color, normalized.precision)
-          : toRawOklch(color, normalized.precision);
-
-  return {
-    value,
-    srgb:
-      spaces.has("srgb") && srgbRgb
-        ? toRawRgb(srgbRgb, srgbAlpha, "srgb", normalized.precision)
-        : undefined,
-    p3:
-      spaces.has("p3") && p3Rgb ? toRawRgb(p3Rgb, p3Alpha, "p3", normalized.precision) : undefined,
-    oklch: spaces.has("oklch") ? toRawOklch(color, normalized.precision) : undefined,
-    oklab: spaces.has("oklab") ? oklabRaw : undefined,
-    alpha: roundTo(alpha, normalized.precision.alpha),
-    meta: buildMeta(meta, normalized),
-  };
+  // JSON export is string-based and mirrors CSS serialization intentionally.
+  return serializeColor(color, output, meta);
 };

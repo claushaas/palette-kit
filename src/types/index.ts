@@ -1,6 +1,6 @@
 export type CssColorString = string;
 
-export type ColorSpace = "srgb" | "p3" | "oklch" | "oklab";
+export type ColorSpace = "srgb" | "p3" | "oklch";
 
 export type ColorContext = "light" | "dark" | "highContrast" | "dimmed";
 
@@ -52,7 +52,6 @@ export interface OutputOptions {
   preferSpace?: ColorSpace;
   includeSpaces?: ColorSpace[];
   gamutMapping?: "clip" | "compressChroma" | "preferP3ThenCompress";
-  format?: string;
   strict?: boolean;
   precision?: {
     l?: number;
@@ -88,9 +87,7 @@ export interface ResolvedColor {
   srgb?: CssColorString;
   p3?: CssColorString;
   oklch?: CssColorString;
-  oklab?: CssColorString;
-  raw?: RawColor;
-  alpha?: number;
+  alpha: number;
   meta?: ColorMeta;
 }
 
