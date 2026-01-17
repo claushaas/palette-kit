@@ -1,0 +1,26 @@
+# Palette Kit Docs
+
+Index of all documentation files generated from the v0.2 codebase.
+
+- [API Surface Report](./_api-surface.md)
+- [Why](./Why.md)
+- [Concepts](./Concepts.md)
+- [Architecture](./Architecture.md)
+- [API](./API.md)
+- [CLI](./CLI.md)
+- [Config](./Config.md)
+- [Tokens](./Tokens.md)
+- [Alpha](./Alpha.md)
+- [Overlays](./Overlays.md)
+- [Text](./Text.md)
+- [Exporters](./Exporters.md)
+- [Diagnostics](./Diagnostics.md)
+- [Validation](./Validation.md)
+- [Usage: Web](./Usage-Web.md)
+- [Usage: React Native](./Usage-ReactNative.md)
+- [Usage: JSON](./Usage-JSON.md)
+- [Snippets](./snippets/serialize-oklch.md)
+- [Migration](./Migration.md)
+- [FAQ](./FAQ.md)
+- [Spec (v0.2)](./spec.md)
+- [Spec (legacy)](./spec-legacy.md)
