@@ -70,6 +70,8 @@ const gamutMappings: NonNullable<OutputOptions["gamutMapping"]>[] = [
   "preferP3ThenCompress",
 ];
 
+const srgbFormats: NonNullable<OutputOptions["srgbFormat"]>[] = ["hex", "rgb", "rgba"];
+
 const formatString = (value: string | undefined) => (value ? value.trim() : undefined);
 
 const assertOneOf = <T extends string>(value: string, options: readonly T[], label: string): T => {
@@ -315,6 +317,7 @@ const normalizeOutput = (
 ): Required<Omit<OutputOptions, "format">> => {
   const preferSpaceValue = formatString(output?.preferSpace);
   const gamutMappingValue = formatString(output?.gamutMapping);
+  const srgbFormatValue = formatString(output?.srgbFormat);
   const includeSpaces = validateIncludeSpaces(output?.includeSpaces);
 
   const preferSpace = preferSpaceValue
@@ -324,6 +327,10 @@ const normalizeOutput = (
   const gamutMapping = gamutMappingValue
     ? assertOneOf(gamutMappingValue, gamutMappings, "output gamutMapping")
     : "preferP3ThenCompress";
+
+  const srgbFormat = srgbFormatValue
+    ? assertOneOf(srgbFormatValue, srgbFormats, "output srgbFormat")
+    : "hex";
 
   if (output?.strict !== undefined && typeof output.strict !== "boolean") {
     throw new Error("Output strict must be a boolean");
@@ -345,6 +352,7 @@ const normalizeOutput = (
       ...output?.precision,
     },
     includeMeta: output?.includeMeta ?? false,
+    srgbFormat,
   };
 };
 

@@ -14,6 +14,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./serialize": {
+      "types": "./dist/serialize.d.ts",
+      "default": "./dist/serialize.js"
     }
   },
   "publishConfig": {

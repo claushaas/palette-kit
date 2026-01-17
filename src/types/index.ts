@@ -60,6 +60,7 @@ export interface OutputOptions {
     alpha?: number;
   };
   includeMeta?: boolean;
+  srgbFormat?: "hex" | "rgb" | "rgba";
 }
 
 export interface RawColor {
@@ -78,14 +79,36 @@ export interface ColorMeta {
   emphasis?: ColorEmphasis;
   on?: BackgroundHint;
   contrast?: ContrastRequirement;
+  step?: number;
+  variantUsed?: string;
+  seedUsed?: CssColorString;
   gamutMapping?: OutputOptions["gamutMapping"];
+  spaceUsed?: ColorSpace;
+  clipped?: boolean;
+  compressed?: boolean;
   provenance?: string;
 }
 
 export interface ResolvedColor {
+  /**
+   * String serializada correspondente ao `preferSpace`.
+   * Sempre presente.
+   */
   value: CssColorString;
+  /**
+   * Representacao sRGB auxiliar.
+   * So presente se incluida via `includeSpaces`.
+   */
   srgb?: CssColorString;
+  /**
+   * Representacao Display-P3 auxiliar.
+   * So presente se incluida via `includeSpaces`.
+   */
   p3?: CssColorString;
+  /**
+   * Representacao OKLCH auxiliar.
+   * So presente se incluida via `includeSpaces`.
+   */
   oklch?: CssColorString;
   alpha: number;
   meta?: ColorMeta;
