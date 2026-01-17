@@ -899,6 +899,8 @@ Arquivo: `engine/onSolid.ts`
 
 ## Fase 8 — Gamut e serialização
 
+Nota v1: consistência de epsilon + strict + utilities internas.
+
 ### 8.1 Gamut mapping
 
 Arquivo: `engine/gamut.ts`
