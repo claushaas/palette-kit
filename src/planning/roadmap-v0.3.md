@@ -27,12 +27,12 @@ Preparar a base do repositório para a v0.3 sem alterar comportamento público.
 
 ### Fase 0 — Tarefas
 
-- [ ] Criar branch `v0.3`.
-- [ ] Congelar v0.2 (tag + changelog).
-- [ ] Criar `docs/spec-v0.3.md`.
-- [ ] Criar `docs/roadmap-v0.3.md`.
-- [ ] Revisar `package.json` (exports atuais).
-- [ ] Garantir build limpo.
+- [x] Criar branch `v0.3`.
+- [x] Congelar v0.2 (tag + changelog).
+- [x] Criar `src/planning/spec-v0.3.md`.
+- [x] Criar `src/planning/roadmap-v0.3.md`.
+- [x] Revisar `package.json` (exports atuais).
+- [x] Garantir build limpo.
 
 ### Fase 0 — Critério de aceite
 
