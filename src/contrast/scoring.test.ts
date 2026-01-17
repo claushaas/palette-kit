@@ -37,4 +37,15 @@ describe("scoreApca", () => {
       scoreApca(70, target, min, max, hasMax),
     );
   });
+
+  it("returns NEGATIVE_INFINITY for NaN values", () => {
+    const target = 60;
+    const min = 50;
+    const max = 80;
+    const hasMax = true;
+
+    expect(scoreApca(Number.NaN, target, min, max, hasMax)).toBe(
+      Number.NEGATIVE_INFINITY,
+    );
+  });
 });
