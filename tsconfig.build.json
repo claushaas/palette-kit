@@ -6,12 +6,6 @@
     "emitDeclarationOnly": false,
     "outDir": "dist"
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "tests/**",
-    "examples/**",
-    "node_modules/**"
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["tests/**", "examples/**", "node_modules/**"]
 }
