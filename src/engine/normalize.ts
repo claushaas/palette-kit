@@ -214,6 +214,20 @@ const normalizeContrast = (
       throw new Error("APCA maxLc must be a number");
     }
 
+    // Validate logical relationships between APCA contrast bounds
+    if (contrast.minLc !== undefined && contrast.maxLc !== undefined) {
+      if (contrast.minLc > contrast.maxLc) {
+        throw new Error("APCA minLc cannot be greater than maxLc");
+      }
+    }
+
+    if (contrast.minLc !== undefined && contrast.minLc > contrast.targetLc) {
+      throw new Error("APCA minLc cannot be greater than targetLc");
+    }
+
+    if (contrast.maxLc !== undefined && contrast.targetLc > contrast.maxLc) {
+      throw new Error("APCA targetLc cannot be greater than maxLc");
+    }
     return contrast;
   }
 
