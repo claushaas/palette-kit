@@ -39,8 +39,8 @@ export type BackgroundHint =
   | { kind: "color"; value: CssColorString };
 
 export type ContrastRequirement =
-  | { model: "apca"; targetLc: number }
-  | { model: "wcag2"; ratio: number }
+  | { model: "apca"; targetLc: number; minLc?: number; maxLc?: number }
+  | { model: "wcag2"; minRatio: number }
   | { model: "none" };
 
 export type AlphaStrategy =
