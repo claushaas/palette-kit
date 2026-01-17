@@ -8,6 +8,7 @@ import type {
   ColorState,
   ColorUsage,
   ContrastRequirement,
+  OnSolidQuery,
   OutputOptions,
   SemanticVariant,
   SurfaceIntent,
@@ -23,7 +24,16 @@ export type NormalizedQuery = Required<
   output: Required<OutputOptions>;
 };
 
+export type NormalizedOnSolidQuery = Required<
+  Pick<OnSolidQuery, "bgRole" | "usage" | "context" | "state" | "emphasis">
+> & {
+  alpha?: OnSolidQuery["alpha"];
+  contrast?: OnSolidQuery["contrast"];
+  output: Required<OutputOptions>;
+};
+
 const usages: ColorUsage[] = ["bg", "border", "text", "icon", "ring", "shadow", "stroke", "fill"];
+const onSolidUsages: OnSolidQuery["usage"][] = ["text", "icon"];
 
 const contexts: ColorContext[] = ["light", "dark", "highContrast", "dimmed"];
 
@@ -78,6 +88,19 @@ const normalizeRole = (role: string | undefined) => {
   const trimmed = role.trim();
   if (!trimmed) {
     throw new Error("Color role is required");
+  }
+
+  return trimmed;
+};
+
+const normalizeBgRole = (role: string | undefined) => {
+  if (role === undefined) {
+    throw new Error("Background role (bgRole) is required");
+  }
+
+  const trimmed = role.trim();
+  if (!trimmed) {
+    throw new Error("Background role (bgRole) is required");
   }
 
   return trimmed;
@@ -368,6 +391,37 @@ export function normalizeQuery(q: ColorQuery): NormalizedQuery {
     emphasis: assertOneOf(emphasisValue, emphases, "emphasis"),
     variant: normalizeVariant(formatString(q.variant)),
     on: normalizeBackgroundHint(q.on, output.strict),
+    contrast: normalizeContrast(q.contrast),
+    alpha: normalizeAlpha(q.alpha),
+    output,
+  };
+}
+
+/**
+ * Normalize a user-facing OnSolidQuery into a fully populated, validated structure.
+ *
+ * - Applies defaults for missing fields (context, state, emphasis, output).
+ * - Validates usage ("text" | "icon") and required background role.
+ * - Validates nested objects (contrast requirements, alpha strategies).
+ */
+export function normalizeOnSolidQuery(q: OnSolidQuery): NormalizedOnSolidQuery {
+  const bgRole = normalizeBgRole(formatString(q.bgRole));
+  const usageValue = formatString(q.usage);
+  const contextValue = formatString(q.context) ?? "light";
+  const stateValue = formatString(q.state) ?? "default";
+  const emphasisValue = formatString(q.emphasis) ?? "default";
+  const output = normalizeOutput(q.output);
+
+  if (!usageValue) {
+    throw new Error("On-solid usage is required (text or icon)");
+  }
+
+  return {
+    bgRole,
+    usage: assertOneOf(usageValue, onSolidUsages, "onSolid usage"),
+    context: assertOneOf(contextValue, contexts, "context"),
+    state: assertOneOf(stateValue, states, "state"),
+    emphasis: assertOneOf(emphasisValue, emphases, "emphasis"),
     contrast: normalizeContrast(q.contrast),
     alpha: normalizeAlpha(q.alpha),
     output,
