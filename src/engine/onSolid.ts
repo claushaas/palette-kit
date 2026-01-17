@@ -1,7 +1,6 @@
-import { converter } from "culori";
-
 import { computeApcaLc } from "../contrast/apca.js";
 import { solveContrast } from "../contrast/solver.js";
+import { blendSrgb, toSrgbColor } from "../contrast/utils.js";
 import { contrastRatio } from "../contrast/wcag2.js";
 import type { ContrastRequirement, OnSolidQuery } from "../types/index.js";
 import { applyOperators } from "./applyOperators.js";
@@ -11,36 +10,10 @@ import { normalizeOnSolidQuery, normalizeQuery } from "./normalize.js";
 import type { BaseResolvedColor, ThemeConfig } from "./resolveBaseColor.js";
 import { resolveBaseColor } from "./resolveBaseColor.js";
 
-type SrgbColor = { r: number; g: number; b: number };
-
-const toSrgb = converter("rgb");
-
-const EPSILON = 0.01;
+const DEFAULT_SOLVE_EPSILON = 0.01;
 
 const nearWhite: OkLchColor = { l: 97, c: 0, h: 0, alpha: 1 };
 const nearBlack: OkLchColor = { l: 15, c: 0, h: 0, alpha: 1 };
-
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-
-const toSrgbColor = (color: OkLchColor): SrgbColor | null => {
-  const rgb = toSrgb({ mode: "oklch", l: clamp(color.l, 0, 100) / 100, c: color.c, h: color.h });
-
-  if (!rgb) {
-    return null;
-  }
-
-  const r = typeof rgb.r === "number" && Number.isFinite(rgb.r) ? clamp(rgb.r, 0, 1) : 0;
-  const g = typeof rgb.g === "number" && Number.isFinite(rgb.g) ? clamp(rgb.g, 0, 1) : 0;
-  const b = typeof rgb.b === "number" && Number.isFinite(rgb.b) ? clamp(rgb.b, 0, 1) : 0;
-
-  return { r, g, b };
-};
-
-const blend = (fg: SrgbColor, bg: SrgbColor, alpha: number): SrgbColor => ({
-  r: fg.r * alpha + bg.r * (1 - alpha),
-  g: fg.g * alpha + bg.g * (1 - alpha),
-  b: fg.b * alpha + bg.b * (1 - alpha),
-});
 
 const defaultContrastForUsage = (usage: OnSolidQuery["usage"]): ContrastRequirement => ({
   model: "apca",
@@ -87,6 +60,7 @@ const checkContrastWithAlpha = (
   bg: OkLchColor,
   req: ContrastRequirement,
   alpha: number,
+  epsilon = DEFAULT_SOLVE_EPSILON,
 ): { pass: boolean; value: number } => {
   if (req.model === "none") {
     return { pass: true, value: 0 };
@@ -99,20 +73,20 @@ const checkContrastWithAlpha = (
     return { pass: false, value: Number.NaN };
   }
 
-  const composite = blend(fgSrgb, bgSrgb, alpha);
+  const composite = blendSrgb(fgSrgb, bgSrgb, alpha);
 
   if (req.model === "apca") {
     const value = Math.abs(computeApcaLc(composite, bgSrgb));
     const minTarget = req.minLc ?? req.targetLc;
     const maxTarget = req.maxLc ?? Number.POSITIVE_INFINITY;
     return {
-      pass: Number.isFinite(value) && value >= minTarget - EPSILON && value <= maxTarget + EPSILON,
+      pass: Number.isFinite(value) && value >= minTarget - epsilon && value <= maxTarget + epsilon,
       value,
     };
   }
 
   const value = contrastRatio(composite, bgSrgb);
-  return { pass: Number.isFinite(value) && value + EPSILON >= req.minRatio, value };
+  return { pass: Number.isFinite(value) && value + epsilon >= req.minRatio, value };
 };
 
 export function onSolid(query: OnSolidQuery, theme: ThemeConfig): BaseResolvedColor {
@@ -134,6 +108,7 @@ export function onSolid(query: OnSolidQuery, theme: ThemeConfig): BaseResolvedCo
     emphasis: normalized.emphasis,
   });
   const bgBase = resolveBaseColor(bgNormalized, theme);
+  // Apply state/emphasis operators to the background before onSolid solves.
   const bgResolved = applyOperators(bgBase, bgNormalized, theme);
   const bg = bgResolved.oklch;
 
@@ -152,7 +127,13 @@ export function onSolid(query: OnSolidQuery, theme: ThemeConfig): BaseResolvedCo
 
   let finalAlpha = alpha;
   let finalColor = solved.color;
-  let finalCheck = checkContrastWithAlpha(finalColor, bg, contrastRequirement, finalAlpha);
+  let finalCheck = checkContrastWithAlpha(
+    finalColor,
+    bg,
+    contrastRequirement,
+    finalAlpha,
+    DEFAULT_SOLVE_EPSILON,
+  );
 
   if (!finalCheck.pass && finalAlpha < 1) {
     finalAlpha = 1;
@@ -161,11 +142,17 @@ export function onSolid(query: OnSolidQuery, theme: ThemeConfig): BaseResolvedCo
       bg,
       contrastRequirement,
       solverContext,
-      { strict: false },
+      { strict: normalized.output.strict },
     );
 
     finalColor = solvedOpaque.color;
-    finalCheck = checkContrastWithAlpha(finalColor, bg, contrastRequirement, finalAlpha);
+    finalCheck = checkContrastWithAlpha(
+      finalColor,
+      bg,
+      contrastRequirement,
+      finalAlpha,
+      DEFAULT_SOLVE_EPSILON,
+    );
   }
 
   if (!finalCheck.pass && normalized.output.strict) {
