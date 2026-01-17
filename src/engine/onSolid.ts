@@ -106,8 +106,7 @@ const checkContrastWithAlpha = (
     const minTarget = req.minLc ?? req.targetLc;
     const maxTarget = req.maxLc ?? Number.POSITIVE_INFINITY;
     return {
-      pass:
-        Number.isFinite(value) && value >= minTarget - EPSILON && value <= maxTarget + EPSILON,
+      pass: Number.isFinite(value) && value >= minTarget - EPSILON && value <= maxTarget + EPSILON,
       value,
     };
   }
@@ -147,13 +146,9 @@ export function onSolid(query: OnSolidQuery, theme: ThemeConfig): BaseResolvedCo
     context: mapColorContextToEngine(bgNormalized.context),
   };
 
-  const solved = solveContrast(
-    { ...baseFg, alpha },
-    bg,
-    contrastRequirement,
-    solverContext,
-    { strict: normalized.output.strict },
-  );
+  const solved = solveContrast({ ...baseFg, alpha }, bg, contrastRequirement, solverContext, {
+    strict: normalized.output.strict,
+  });
 
   let finalAlpha = alpha;
   let finalColor = solved.color;
@@ -174,11 +169,15 @@ export function onSolid(query: OnSolidQuery, theme: ThemeConfig): BaseResolvedCo
   }
 
   if (!finalCheck.pass && normalized.output.strict) {
+    const target =
+      contrastRequirement.model === "apca"
+        ? contrastRequirement.targetLc
+        : contrastRequirement.model === "wcag2"
+          ? contrastRequirement.minRatio
+          : 0;
     throw new Error(
       `onSolid contrast failed (${contrastRequirement.model}) target=${
-        contrastRequirement.model === "apca"
-          ? contrastRequirement.targetLc
-          : contrastRequirement.minRatio
+        target
       } value=${finalCheck.value}`,
     );
   }

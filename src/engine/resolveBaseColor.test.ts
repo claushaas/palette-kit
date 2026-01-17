@@ -4,8 +4,9 @@ import { parseColor } from "../utils/parseColor.js";
 import type { ColorQuery } from "../types/index.js";
 import { normalizeQuery } from "./normalize.js";
 import { resolveBaseColor } from "./resolveBaseColor.js";
+import type { ThemeConfig } from "./resolveBaseColor.js";
 
-const themeConfig = {
+const themeConfig: ThemeConfig = {
   seeds: {
     light: { neutral: "#8B8D98", accent: "#3D63DD" },
     dark: { neutral: "#8B8D98", accent: "#3D63DD" },
@@ -53,7 +54,7 @@ describe("resolveBaseColor", () => {
     });
 
     expect(result.variantUsed).toBe("category:food");
-    expect(result.seedUsed).toBe(themeConfig.variants["category:food"]);
+    expect(result.seedUsed).toBe(themeConfig.variants?.["category:food"]);
   });
 
   it("falls back to accent for missing category variants", () => {

@@ -686,7 +686,7 @@ Abaixo está o **Implementation Plan v1**, que transforma a SPEC em um plano té
 
 ---
 
-# Implementation Plan v1
+## Implementation Plan v1
 
 > Objetivo: permitir implementar a Palette Kit **sem decisões pendentes**, em ordem incremental, com PRs pequenos e verificáveis.
 
