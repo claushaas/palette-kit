@@ -1,6 +1,6 @@
 # API
 
-This API reference is derived from the **API Surface Report** (`docs/_api-surface.md`). Only items exported by the package entrypoint are documented here.
+This reference is derived from the **API Surface Report** (`docs/_api-surface.md`). Only items exported by the package entrypoint are documented as public API.
 
 ## Public entrypoint
 
@@ -12,7 +12,7 @@ import { createTheme } from "@clhaas/palette-kit";
 
 **Source**: `src/core/createTheme.ts`
 
-**Signature**:
+### Signature (observed)
 
 ```ts
 function createTheme(config: {
@@ -30,22 +30,20 @@ function createTheme(config: {
 }
 ```
 
-**Notes (from code)**:
+### Data contract (runtime return shape)
 
-- `preset` defaults to `"modern"`.
-- `variants` defaults to `{}`.
-- Returned `resolve`/`color`/`onSolid` return **base** OKLCH data, not CSS strings.
-
-**BaseResolvedColor shape** (internal type used in return values):
+`createTheme` returns a **BaseResolvedColor** object for `resolve`, `color`, and `onSolid`. This shape is not exported, but it is the **actual runtime contract** in v0.2:
 
 ```ts
-{
+type BaseResolvedColor = {
   oklch: { l: number; c: number; h: number; alpha?: number };
   step: number;
   variantUsed: string;
   seedUsed: string;
-}
+};
 ```
+
+If you need CSS strings, you must serialize `oklch` yourself or use the internal serializers in `src/export/` (not part of the published API).
 
 ### Example
 
@@ -93,7 +91,7 @@ All types below are exported from `src/types/index.ts` and reexported by the pac
 - `OnSolidQuery`
 - `SemanticColorTheme`
 
-### Type details (selected)
+### Selected type details
 
 #### ColorSpace
 
@@ -127,4 +125,13 @@ interface ResolvedColor {
 }
 ```
 
-> Note: `ResolvedColor` represents string-based serialization **only in internal exporters**. `createTheme` currently returns `BaseResolvedColor` objects.
+`ResolvedColor` is used by internal serializers. It is not returned by `createTheme` in v0.2.
+
+### Data flow summary
+
+```text
+createTheme(...) → theme.resolve(...) → BaseResolvedColor (runtime shape)
+createTheme(...) → theme.onSolid(...) → BaseResolvedColor (runtime shape)
+```
+
+`ResolvedColor` is a **serialization-only** type in v0.2. It is not part of the public resolver contract.

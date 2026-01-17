@@ -6,6 +6,7 @@ For full documentation, see:
 
 - [docs/README.md](./README.md)
 - [docs/_api-surface.md](./_api-surface.md)
+- [docs/spec-legacy.md](./spec-legacy.md) (archived, speculative v0.1-era spec)
 
 ## Scope of v0.2
 
@@ -13,6 +14,30 @@ For full documentation, see:
 - Theme resolution returns OKLCH channel data (not CSS strings).
 - Internal serializers/exporters exist in `src/export/` but are **not exported** from the package entrypoint.
 - CLI is declared in `package.json` but has no implementation in the repository.
+
+## Design intent vs current implementation
+
+The original spec covered a broader system (tokens, exporters, CLI). In v0.2:
+
+**Implemented (current)**:
+
+- Resolver engine with `createTheme`, `resolve`, `color`, `onSolid`, `withContext`
+- OKLCH step generation (12 steps)
+- State and emphasis operators
+- APCA/WCAG2-based `onSolid`
+
+**Planned but not implemented in v0.2**:
+
+- Public exporters (CSS/JSON) as part of the package API
+- CLI for generating tokens
+- Token map output as part of the public API
+- Anchor-step/slot pinning
+
+**Why it was cut**:
+
+- The public entrypoint in v0.2 exports only `createTheme` + types.
+- Exporters and serializers exist in `src/export/`, but they are not exposed in `package.json` exports.
+- CLI is declared but no `src/cli.*` exists in this tag.
 
 ## Implementation summary
 

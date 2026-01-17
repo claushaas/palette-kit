@@ -25,10 +25,32 @@ The engine generates **12 steps** per surface (`generateScale`). Steps are index
 - `bg.surface` → step 2
 - `bg.subtle` → step 3
 - `bg.solid` → step 9
-- `border.surface` → step 6 (varies)
-- `text/icon` → step 11
+- `text` / `icon` → step 11
 
 Step selection is controlled by `usage` + `surface` and clamped to `[1..12]`.
+
+### Step mapping table (from `resolveStep`)
+
+| usage  | surface       | step |
+|--------|---------------|------|
+| bg     | app           | 1    |
+| bg     | surface       | 2    |
+| bg     | subtle        | 3    |
+| bg     | solid         | 9    |
+| bg     | overlay       | 2    |
+| bg     | data          | 9    |
+| bg     | transparent   | 1    |
+| border | solid         | 8    |
+| border | data          | 8    |
+| border | (others)      | 6    |
+| text   | (any)         | 11   |
+| icon   | (any)         | 11   |
+| ring   | (any)         | 8    |
+| stroke | data          | 9    |
+| stroke | (others)      | 8    |
+| fill   | (any)         | 9    |
+
+Defaults are applied when a surface isn’t listed explicitly.
 
 ## Light / Dark contexts
 
@@ -58,5 +80,15 @@ There is no explicit “text scale” API. Text is resolved by `usage: "text"` a
 **Not implemented in v0.2.** There is no anchor-step or pinning mechanism in the codebase.
 
 ## Wide gamut / Display-P3
+
+The internal serializer supports `color(display-p3 ...)`, and `OutputOptions` accepts `"p3"` as a preferred or included space. However, exporters/serializers are **not** part of the public entrypoint in v0.2. Public consumers must handle any wide-gamut serialization themselves.
+
+## Role interpretation (variant inference)
+
+`resolveBaseColor` infers a variant from role prefixes when `variant` is not provided:
+
+- `action.*` → `accent`
+- `bg.*`, `surface.*`, `border.*`, `text.*` → `neutral`
+- anything else → `neutral`
 
 The internal serializer supports `display-p3` strings, and `OutputOptions.preferSpace/includeSpaces` accept `"p3"`. However, **exporters/serializers are not publicly exported** in v0.2.

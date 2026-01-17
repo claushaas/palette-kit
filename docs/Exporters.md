@@ -13,6 +13,24 @@ If you are working inside this repository or building from source, you can impor
 
 These return **string-based color values** (hex / `oklch()` / `color(display-p3 ...)`).
 
+## Recommended consumption (public API only)
+
+If you are consuming the published package (no internal imports), the supported path is:
+
+1. `createTheme(...)`
+2. `theme.resolve(...)` / `theme.onSolid(...)`
+3. serialize the returned OKLCH channels yourself
+
+Minimal OKLCH serializer:
+
+```ts
+const toOklch = (c: { l: number; c: number; h: number; alpha?: number }) => {
+  const a = c.alpha ?? 1;
+  const alphaPart = a < 1 ? ` / ${a}` : "";
+  return `oklch(${c.l}% ${c.c} ${c.h}${alphaPart})`;
+};
+```
+
 ## Example (internal usage)
 
 ```ts

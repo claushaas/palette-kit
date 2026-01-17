@@ -1,17 +1,17 @@
 # Palette Kit
 
-A small color engine for generating OKLCH-based palettes from semantic queries. It focuses on deterministic OKLCH scales, semantic roles, and contrast-aware text-on-solid handling.
+A small **color engine** for generating OKLCH-based palettes from semantic queries. v0.2 exposes only the resolver and types; serializers/exporters exist in source but are not part of the published entrypoint.
 
-This documentation is generated **from the v0.2 code** and reflects the exact public API available in this repository.
+## What you get
 
-## Why it exists
+- Deterministic OKLCH scales (12 steps) from light/dark seed colors
+- Semantic resolution via `role`, `usage`, `surface`, `state`, `context`
+- `onSolid` text/icon colors with APCA/WCAG2 contrast checks
+- Strict validation for inputs (when `output.strict` is enabled)
 
-UI color systems often drift into ad-hoc hex values, inconsistent steps, and fragile contrast decisions. Palette Kit provides a single place to:
+## Basic mental model
 
-- define seed colors for light/dark modes
-- generate OKLCH scales deterministically
-- resolve semantic colors by role/usage/state
-- compute `onSolid` text/icon colors with contrast checks
+Seed colors → preset curves → resolve step → state/emphasis operators → onSolid solver
 
 ## Quick start (3 minutes)
 
@@ -21,7 +21,7 @@ Install:
 npm install @clhaas/palette-kit
 ```
 
-Create a theme and resolve colors:
+Create a theme and resolve a background:
 
 ```ts
 import { createTheme } from "@clhaas/palette-kit";
@@ -43,7 +43,7 @@ const bg = theme.resolve({
 console.log(bg.oklch); // { l, c, h, alpha }
 ```
 
-Compute text/icon colors on a solid background with contrast solving:
+Compute readable text on a solid background:
 
 ```ts
 const onSolidText = theme.onSolid({
@@ -52,20 +52,65 @@ const onSolidText = theme.onSolid({
   context: "light",
   contrast: { model: "apca", targetLc: 75 },
 });
-
-console.log(onSolidText.oklch);
 ```
 
-> v0.2 returns **OKLCH channel data**, not CSS strings. Exporters/serializers exist in source but are not part of the public package export. See `docs/Exporters.md`.
+## How to use in Web
 
-## Documentation
+v0.2 returns OKLCH channel data. To use it in CSS, serialize it yourself or use internal serializers.
+
+Minimal serializer (manual):
+
+```ts
+const toOklch = (c: { l: number; c: number; h: number; alpha?: number }) => {
+  const a = c.alpha ?? 1;
+  const alphaPart = a < 1 ? ` / ${a}` : "";
+  return `oklch(${c.l}% ${c.c} ${c.h}${alphaPart})`;
+};
+
+const value = toOklch(bg.oklch);
+```
+
+Internal serializer (repo-only):
+
+```ts
+import { serializeColor } from "../src/export/serializeColor.js";
+
+const value = serializeColor(bg.oklch, { preferSpace: "oklch" }).value;
+```
+
+## How to use in React Native
+
+React Native expects color strings. Use the same serializer strategy as above and pass `value` directly to styles.
+
+```ts
+const rnColor = toOklch(onSolidText.oklch);
+```
+
+## Glossary (minimal)
+
+- **role**: semantic name (e.g. `bg.app`, `text.primary`)
+- **usage**: category (`bg`, `text`, `border`, `ring`, ...)
+- **surface**: where it lives (`app`, `surface`, `solid`, ...)
+- **context**: `light` or `dark`
+- **state**: `default`, `hover`, `active`, ...
+- **emphasis**: `muted`, `subtle`, `default`, `strong`
+- **variant**: `neutral`, `accent`, `success`, ...
+
+## Docs
 
 - [docs/README.md](docs/README.md)
-- [docs/Why.md](docs/Why.md)
-- [docs/Concepts.md](docs/Concepts.md)
-- [docs/Architecture.md](docs/Architecture.md)
-- [docs/API.md](docs/API.md)
-- [docs/Config.md](docs/Config.md)
-- [docs/Exporters.md](docs/Exporters.md)
-- [docs/CLI.md](docs/CLI.md)
-- [docs/FAQ.md](docs/FAQ.md)
+- [docs/_api-surface.md](docs/_api-surface.md)
+- Usage guides:
+  - [Web](docs/Usage-Web.md)
+  - [React Native](docs/Usage-ReactNative.md)
+  - [JSON](docs/Usage-JSON.md)
+
+## Compatibility
+
+- Package is ESM (`"type": "module"`).
+- TypeScript types are published (`dist/index.d.ts`).
+- React Native/Expo requires string serialization (see above).
+
+## License
+
+MIT — see [LICENSE](LICENSE).
