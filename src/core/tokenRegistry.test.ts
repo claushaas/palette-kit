@@ -67,6 +67,24 @@ describe("token registry", () => {
     expect(() => validateTokenRegistry(registry)).toThrow(/must not include output/i);
   });
 
+  it("treats whitespace-padded default state as default", () => {
+    const registry: TokenRegistry = {
+      tokens: {
+        "bg.app": {
+          name: "bg.app",
+          query: {
+            role: "bg.app",
+            usage: "bg",
+            surface: "app",
+            state: " default " as never,
+          } as never,
+        },
+      },
+    };
+
+    expect(() => validateTokenRegistry(registry)).not.toThrow();
+  });
+
   it("throws when token query encodes a non-default state", () => {
     const registry: TokenRegistry = {
       tokens: {

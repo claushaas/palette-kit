@@ -1,9 +1,11 @@
-import { normalizeQuery } from "../engine/normalize.js";
+import { COLOR_STATES, normalizeQuery } from "../engine/normalize.js";
 import type { BaseResolvedColor } from "../engine/resolveBaseColor.js";
 import type { TokenDefinition, TokenRegistry, TokenState } from "../types/index.js";
 import type { PaletteTheme } from "./createTheme.js";
 
-const ALLOWED_TOKEN_STATES: TokenState[] = ["hover", "active", "selected", "focus", "disabled"];
+const ALLOWED_TOKEN_STATES: TokenState[] = COLOR_STATES.filter(
+  (state): state is TokenState => state !== "default",
+);
 
 const validateTokenStates = (states: TokenDefinition["states"], name: string) => {
   if (!states) return;
@@ -43,7 +45,9 @@ export const validateTokenDefinition = (token: TokenDefinition): void => {
     throw new Error(`Token "${token.name}" requires a surface`);
   }
 
-  if (token.query.state && token.query.state !== "default") {
+  const rawState = (token.query as { state?: unknown }).state;
+  const normalizedState = typeof rawState === "string" ? rawState.trim() : (rawState as undefined);
+  if (normalizedState && normalizedState !== "default") {
     throw new Error(
       `Token "${token.name}" must not encode state in query; declare supported states via token.states`,
     );

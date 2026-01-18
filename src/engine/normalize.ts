@@ -47,7 +47,14 @@ const surfaces: SurfaceIntent[] = [
   "transparent",
 ];
 
-const states: ColorState[] = ["default", "hover", "active", "selected", "focus", "disabled"];
+export const COLOR_STATES: readonly ColorState[] = [
+  "default",
+  "hover",
+  "active",
+  "selected",
+  "focus",
+  "disabled",
+];
 
 const emphases: ColorEmphasis[] = ["muted", "subtle", "default", "strong", "inverted"];
 
@@ -396,7 +403,7 @@ export function normalizeQuery(q: ColorQuery): NormalizedQuery {
     usage: assertOneOf(usageValue ?? "bg", usages, "usage"),
     context: assertOneOf(contextValue, contexts, "context"),
     surface: assertOneOf(surfaceValue, surfaces, "surface"),
-    state: assertOneOf(stateValue, states, "state"),
+    state: assertOneOf(stateValue, COLOR_STATES, "state"),
     emphasis: assertOneOf(emphasisValue, emphases, "emphasis"),
     variant: normalizeVariant(formatString(q.variant)),
     on: normalizeBackgroundHint(q.on, output.strict),
@@ -429,7 +436,7 @@ export function normalizeOnSolidQuery(q: OnSolidQuery): NormalizedOnSolidQuery {
     bgRole,
     usage: assertOneOf(usageValue, onSolidUsages, "onSolid usage"),
     context: assertOneOf(contextValue, contexts, "context"),
-    state: assertOneOf(stateValue, states, "state"),
+    state: assertOneOf(stateValue, COLOR_STATES, "state"),
     emphasis: assertOneOf(emphasisValue, emphases, "emphasis"),
     contrast: normalizeContrast(q.contrast),
     alpha: normalizeAlpha(q.alpha),
