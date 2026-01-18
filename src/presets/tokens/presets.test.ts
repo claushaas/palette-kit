@@ -34,15 +34,13 @@ describe("token presets", () => {
     const registries = [minimalUiTokens, radixLikeUiTokens, modernUiTokens];
 
     for (const registry of registries) {
-      const exportable = {
-        resolve: theme.resolve.bind(theme),
-        tokens: toThemeTokens(registry),
-      };
-      const css = exportThemeCss(exportable, { preferSpace: "oklch" }).css;
-      const json = exportThemeJson(exportable, { preferSpace: "oklch" }).tokens;
+      const tokens = toThemeTokens(registry);
+      const css = exportThemeCss(theme, tokens, { preferSpace: "oklch" }).css;
+      const json = exportThemeJson(theme, tokens, { preferSpace: "oklch" }).tokens;
 
       expect(css.length).toBeGreaterThan(0);
-      expect(Object.keys(json).length).toBeGreaterThan(0);
+      expect(Object.keys(json.light).length).toBeGreaterThan(0);
+      expect(Object.keys(json.dark).length).toBeGreaterThan(0);
     }
   });
 });
