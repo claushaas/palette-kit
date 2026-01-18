@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { createTheme } from "./createTheme.js";
 import type { ColorQuery } from "../types/index.js";
@@ -66,17 +66,17 @@ describe("Phase 2 helpers", () => {
   });
 
   it("theme.color throws in strict mode when inference is missing", () => {
-    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    expect(() =>
+      theme.color("custom.role", {
+        output: { strict: true },
+      }),
+    ).toThrow(/Usage is required for role/i);
 
-    try {
-      expect(() =>
-        theme.color("custom.role", {
-          output: { strict: true },
-        }),
-      ).toThrow(/Usage is required for role/i);
-    } finally {
-      spy.mockRestore();
-    }
+    expect(() =>
+      theme.color("text.custom", {
+        output: { strict: true },
+      }),
+    ).toThrow(/Surface is required for role/i);
   });
 
 });

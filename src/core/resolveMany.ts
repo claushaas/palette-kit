@@ -7,7 +7,7 @@ import type { ColorQuery } from "../types/index.js";
 /**
  * Resolve a batch of color queries while preserving input order.
  *
- * Use this when resolving many tokens at once to avoid repeated setup per call.
+ * Convenience helper to resolve multiple color queries in a single call.
  */
 export function resolveMany(queries: ColorQuery[], theme: ThemeConfig): BaseResolvedColor[] {
   const results: BaseResolvedColor[] = [];

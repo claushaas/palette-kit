@@ -93,7 +93,7 @@ export type PaletteTheme = {
    * Resolve a color role with optional inference for usage, surface, and variant.
    *
    * When `output.strict` is true, missing inference throws an error; otherwise
-   * safe defaults are used with a warning.
+   * safe defaults are used.
    */
   color: (role: ColorRole, options?: Omit<ColorQuery, "role">) => BaseResolvedColor;
   /**
