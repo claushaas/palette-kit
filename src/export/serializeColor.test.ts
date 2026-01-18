@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { serializeColor, serializeColorJson } from "./serializeColor.js";
+import { serializeColor } from "./serializeColor.js";
+import { serializeColorJson } from "../serialize/serializeColor.js";
 import * as gamut from "../engine/gamut.js";
 
 describe("serializeColor", () => {
