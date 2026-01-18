@@ -4,7 +4,7 @@ import { normalizeQuery } from "./normalize.js";
 
 describe("normalizeQuery", () => {
   it("applies defaults", () => {
-    const result = normalizeQuery({ role: "text.primary" });
+    const result = normalizeQuery({ role: "text.primary", surface: "surface" });
 
     expect(result.usage).toBe("text");
     expect(result.context).toBe("light");
@@ -18,7 +18,7 @@ describe("normalizeQuery", () => {
   });
 
   it("applies output defaults", () => {
-    const result = normalizeQuery({ role: "text.primary" });
+    const result = normalizeQuery({ role: "text.primary", surface: "surface" });
 
     expect(result.output.preferSpace).toBe("oklch");
     expect(result.output.gamutMapping).toBe("preferP3ThenCompress");
@@ -28,20 +28,64 @@ describe("normalizeQuery", () => {
   });
 
   it("infers usage from role prefixes", () => {
-    expect(normalizeQuery({ role: "icon.primary" }).usage).toBe("icon");
-    expect(normalizeQuery({ role: "border.muted" }).usage).toBe("border");
-    expect(normalizeQuery({ role: "bg.canvas" }).usage).toBe("bg");
-    expect(normalizeQuery({ role: "ring.focus" }).usage).toBe("ring");
-    expect(normalizeQuery({ role: "chart.axis.stroke" }).usage).toBe("stroke");
-    expect(normalizeQuery({ role: "chart.fill.primary" }).usage).toBe("fill");
-    expect(normalizeQuery({ role: "chart.grid.muted" }).usage).toBe("border");
-    expect(normalizeQuery({ role: "chart.label" }).usage).toBe("text");
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    try {
+      expect(normalizeQuery({ role: "icon.primary" }).usage).toBe("icon");
+      expect(normalizeQuery({ role: "border.muted" }).usage).toBe("border");
+      expect(normalizeQuery({ role: "bg.canvas" }).usage).toBe("bg");
+      expect(normalizeQuery({ role: "ring.focus" }).usage).toBe("ring");
+      expect(normalizeQuery({ role: "chart.axis.stroke" }).usage).toBe("stroke");
+      expect(normalizeQuery({ role: "chart.fill.primary" }).usage).toBe("fill");
+      expect(normalizeQuery({ role: "chart.grid.muted" }).usage).toBe("border");
+      expect(normalizeQuery({ role: "chart.label" }).usage).toBe("text");
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it("infers surface when obvious", () => {
+    expect(normalizeQuery({ role: "bg.app" }).surface).toBe("app");
+    expect(normalizeQuery({ role: "bg.surface" }).surface).toBe("surface");
+    expect(normalizeQuery({ role: "app.bg", usage: "bg" }).surface).toBe("app");
+  });
+
+  it("infers variant from role token", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    try {
+      expect(
+        normalizeQuery({ role: "success.bg", usage: "bg", surface: "surface" }).variant,
+      ).toBe("success");
+      expect(
+        normalizeQuery({ role: "warning.text", usage: "text", surface: "surface" }).variant,
+      ).toBe("warning");
+      expect(
+        normalizeQuery({ role: "danger.border", usage: "border", surface: "surface" }).variant,
+      ).toBe("danger");
+      expect(
+        normalizeQuery({ role: "category:sales.fill", usage: "fill", surface: "surface" }).variant,
+      ).toBe("category:sales");
+      expect(
+        normalizeQuery({
+          role: "chart:revenue.stroke",
+          usage: "stroke",
+          surface: "surface",
+        }).variant,
+      ).toBe("chart:revenue");
+
+      expect(
+        normalizeQuery({ role: "text.primary", usage: "text", surface: "surface" }).variant,
+      ).toBeUndefined();
+    } finally {
+      warnSpy.mockRestore();
+    }
   });
 
   it("requires usage when strict and inference fails", () => {
     expect(() =>
       normalizeQuery({ role: "brand.primary", output: { strict: true } }),
-    ).toThrowError(/usage/i);
+    ).toThrowError(/Provide usage explicitly/i);
   });
 
   it("warns when usage cannot be inferred in non-strict mode", () => {
@@ -55,26 +99,47 @@ describe("normalizeQuery", () => {
     warnSpy.mockRestore();
   });
 
+  it("requires surface when strict and inference fails", () => {
+    expect(() =>
+      normalizeQuery({ role: "text.primary", output: { strict: true } }),
+    ).toThrowError(/Provide surface explicitly/i);
+  });
+
+  it("warns when surface cannot be inferred in non-strict mode", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    expect(normalizeQuery({ role: "text.primary" }).surface).toBe("surface");
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Defaulting surface to "surface"'),
+    );
+
+    warnSpy.mockRestore();
+  });
+
   it("validates background hint color values", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
 
     expect(
-      normalizeQuery({ role: "bg.canvas", on: { kind: "color", value: "#fff" } }).on,
+      normalizeQuery({ role: "bg.canvas", surface: "surface", on: { kind: "color", value: "#fff" } })
+        .on,
     ).toEqual({ kind: "color", value: "#fff" });
     expect(
       normalizeQuery({
         role: "bg.canvas",
+        surface: "surface",
         on: { kind: "color", value: "oklch(62% 0.18 265)" },
       }).on,
     ).toEqual({ kind: "color", value: "oklch(62% 0.18 265)" });
     expect(
       normalizeQuery({
         role: "bg.canvas",
+        surface: "surface",
         on: { kind: "color", value: "color(display-p3 1 0.5 0.25)" },
       }).on,
     ).toEqual({ kind: "color", value: "color(display-p3 1 0.5 0.25)" });
     expect(
-      normalizeQuery({ role: "bg.canvas", on: { kind: "color", value: "banana" } }).on,
+      normalizeQuery({ role: "bg.canvas", surface: "surface", on: { kind: "color", value: "banana" } })
+        .on,
     ).toEqual({ kind: "color", value: "banana" });
 
     expect(warnSpy).toHaveBeenCalledTimes(3);
@@ -83,24 +148,31 @@ describe("normalizeQuery", () => {
 
   it("normalizes nested background hints", () => {
     expect(
-      normalizeQuery({ role: "bg.canvas", on: { kind: "role", role: " text.primary " } })
+      normalizeQuery({
+        role: "bg.canvas",
+        surface: "surface",
+        on: { kind: "role", role: " text.primary " },
+      })
         .on,
     ).toEqual({ kind: "role", role: "text.primary" });
-    expect(normalizeQuery({ role: "bg.canvas", on: { kind: "auto" } }).on).toEqual({
+    expect(
+      normalizeQuery({ role: "bg.canvas", surface: "surface", on: { kind: "auto" } }).on,
+    ).toEqual({
       kind: "auto",
     });
     expect(() =>
-      normalizeQuery({ role: "bg.canvas", on: { kind: "color", value: "   " } }),
+      normalizeQuery({ role: "bg.canvas", surface: "surface", on: { kind: "color", value: "   " } }),
     ).toThrowError(/color value is required/i);
     expect(() =>
       normalizeQuery({
         role: "bg.canvas",
+        surface: "surface",
         on: { kind: "color", value: "banana" },
         output: { strict: true },
       }),
     ).toThrowError(/background hint color value/i);
     expect(() =>
-      normalizeQuery({ role: "bg.canvas", on: { kind: "nope" } as never }),
+      normalizeQuery({ role: "bg.canvas", surface: "surface", on: { kind: "nope" } as never }),
     ).toThrowError(/background hint kind/i);
   });
 
