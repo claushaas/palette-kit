@@ -2,72 +2,14 @@
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { basename, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { buildConfigTemplate, isTokenPresetName, type PaletteConfig } from "./cli/config.js";
+import { CliUsageError, COMMANDS, HELP_TEXT, type ParsedArgs, parseArgs } from "./cli/args.js";
+import { buildConfigTemplate, type PaletteConfig } from "./cli/config.js";
+import { validateConfig } from "./cli/validate.js";
 import { createTheme } from "./core/createTheme.js";
 import { validateTokenRegistry } from "./core/tokenRegistry.js";
 import type { ThemeTokens } from "./export/exportTheme.js";
 import { exportThemeCss, exportThemeJson } from "./export/exportTheme.js";
 import { minimalUiTokens, modernUiTokens, radixLikeUiTokens } from "./presets/tokens/index.js";
-
-const COMMANDS = ["init", "build"] as const;
-
-type ParsedArgs = {
-  command?: string;
-  help: boolean;
-  version: boolean;
-  flags: Record<string, string | boolean>;
-};
-
-const HELP_TEXT = `palette-kit <command>
-
-Commands:
-  palette-kit init [--force] [--path <dir>]
-  palette-kit build [--config <path>] [--outDir <dir>] [--report]
-
-Options:
-  -h, --help       Show help
-  -v, --version    Show version
-`;
-
-const parseArgs = (argv: string[]): ParsedArgs => {
-  const [command, ...rest] = argv;
-  const flags: Record<string, string | boolean> = {};
-
-  let i = 0;
-  while (i < rest.length) {
-    const value = rest[i];
-    if (value === "-h" || value === "--help") {
-      flags.help = true;
-      i += 1;
-      continue;
-    }
-    if (value === "-v" || value === "--version") {
-      flags.version = true;
-      i += 1;
-      continue;
-    }
-    if (value.startsWith("--")) {
-      const key = value.slice(2);
-      const next = rest[i + 1];
-      if (next && !next.startsWith("--")) {
-        flags[key] = next;
-        i += 2;
-      } else {
-        flags[key] = true;
-        i += 1;
-      }
-      continue;
-    }
-    throw new Error(`Unknown argument: ${value}`);
-  }
-
-  return {
-    command,
-    help: Boolean(flags.help),
-    version: Boolean(flags.version),
-    flags,
-  };
-};
 
 const readPackageJson = async () => {
   const url = new URL("../package.json", import.meta.url);
@@ -109,24 +51,6 @@ const loadConfig = async (configPath: string): Promise<PaletteConfig> => {
       : "";
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Unable to load config at ${resolved}. ${message}${suffix}`);
-  }
-};
-
-const validateConfig = (config: PaletteConfig) => {
-  if (!config || typeof config !== "object") {
-    throw new Error("Config must export a default object");
-  }
-  if (!config.theme) {
-    throw new Error("Config.theme is required");
-  }
-  if (!config.theme.seeds?.light || !config.theme.seeds?.dark) {
-    throw new Error("Config.theme.seeds.light and .dark are required");
-  }
-  if (!config.tokens?.preset) {
-    throw new Error("Config.tokens.preset is required");
-  }
-  if (!isTokenPresetName(config.tokens.preset)) {
-    throw new Error(`Unsupported token preset: ${config.tokens.preset}`);
   }
 };
 
@@ -188,7 +112,7 @@ const runInit = async (flags: ParsedArgs["flags"]) => {
 
   const filePath = join(outDir, "palette.config.ts");
   if (!force && (await exists(filePath))) {
-    throw new Error(`Config already exists at ${filePath}. Use --force to overwrite.`);
+    throw new Error(`Config already exists at ${filePath}. Use --force to overwrite`);
   }
 
   const pkg = await readPackageJson();
@@ -248,7 +172,7 @@ const main = async () => {
     }
 
     if (!COMMANDS.includes(parsed.command as (typeof COMMANDS)[number])) {
-      throw new Error(`Unknown command: ${parsed.command}`);
+      throw new CliUsageError(`Unknown command: ${parsed.command}`);
     }
 
     if (parsed.command === "init") {
@@ -263,7 +187,10 @@ const main = async () => {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(message);
-    printHelp();
+    if (error instanceof CliUsageError) {
+      console.error("");
+      printHelp();
+    }
     process.exitCode = 1;
   }
 };
