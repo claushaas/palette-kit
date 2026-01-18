@@ -47,7 +47,14 @@ const surfaces: SurfaceIntent[] = [
   "transparent",
 ];
 
-const states: ColorState[] = ["default", "hover", "active", "selected", "focus", "disabled"];
+export const COLOR_STATES: readonly ColorState[] = [
+  "default",
+  "hover",
+  "active",
+  "selected",
+  "focus",
+  "disabled",
+];
 
 const emphases: ColorEmphasis[] = ["muted", "subtle", "default", "strong", "inverted"];
 
@@ -69,6 +76,8 @@ const gamutMappings: NonNullable<OutputOptions["gamutMapping"]>[] = [
   "compressChroma",
   "preferP3ThenCompress",
 ];
+
+const srgbFormats: NonNullable<OutputOptions["srgbFormat"]>[] = ["hex", "rgb", "rgba"];
 
 const formatString = (value: string | undefined) => (value ? value.trim() : undefined);
 
@@ -158,6 +167,66 @@ const inferUsageFromRole = (role: string): ColorUsage | undefined => {
   return undefined;
 };
 
+/**
+ * Infer surface intent from role naming patterns.
+ *
+ * Recognizes:
+ * - Direct surface token prefixes: `"app.*"`, `"surface.*"`, `"solid.*"`, etc.
+ * - Background patterns: `"bg.app"`, `"bg.surface"`, `"bg.solid"`, etc.
+ *
+ * @example
+ * inferSurfaceFromRole("bg.app") // "app"
+ * @example
+ * inferSurfaceFromRole("app.bg") // "app"
+ */
+const inferSurfaceFromRole = (role: string): SurfaceIntent | undefined => {
+  const normalizedRole = role.trim().toLowerCase();
+  const tokens = normalizedRole.split(".");
+  const [first, second] = tokens;
+
+  if (first && surfaces.includes(first as SurfaceIntent)) {
+    return first as SurfaceIntent;
+  }
+
+  if (first === "bg" && second && surfaces.includes(second as SurfaceIntent)) {
+    return second as SurfaceIntent;
+  }
+
+  return undefined;
+};
+
+/**
+ * Infer semantic variant from role token.
+ *
+ * Recognizes:
+ * - Semantic variants: `"neutral"`, `"accent"`, `"success"`, `"warning"`, etc.
+ * - Custom categories: `"category:*"`
+ * - Chart variants: `"chart:*"`
+ *
+ * @example
+ * inferVariantFromRole("success.bg") // "success"
+ * @example
+ * inferVariantFromRole("category:sales.fill") // "category:sales"
+ */
+const inferVariantFromRole = (role: string): SemanticVariant | undefined => {
+  const token = role.trim().split(".")[0];
+  const normalized = token?.toLowerCase();
+
+  if (!normalized) {
+    return undefined;
+  }
+
+  if (semanticVariants.includes(normalized as SemanticVariant)) {
+    return normalized as SemanticVariant;
+  }
+
+  if (/^(category|chart):.+/.test(normalized)) {
+    return normalized as SemanticVariant;
+  }
+
+  return undefined;
+};
+
 const normalizeVariant = (variant: string | undefined): SemanticVariant | undefined => {
   if (!variant) {
     return undefined;
@@ -179,6 +248,33 @@ const normalizeVariant = (variant: string | undefined): SemanticVariant | undefi
 const warn = (message: string) => {
   console.warn(message);
 };
+
+/**
+ * Cache used to deduplicate inference warnings.
+ *
+ * Notes:
+ * - This is intentionally module-scoped so repeated calls don't spam logs.
+ * - To avoid unbounded growth in long-running processes, this cache is capped
+ *   and clears itself when the cap is reached.
+ */
+const inferenceWarnings = new Set<string>();
+
+const MAX_INFERENCE_WARNINGS = 1000;
+
+const warnInferenceOnce = (key: string, message: string) => {
+  if (inferenceWarnings.has(key)) return;
+  if (inferenceWarnings.size >= MAX_INFERENCE_WARNINGS) {
+    inferenceWarnings.clear();
+  }
+  inferenceWarnings.add(key);
+  console.warn(message);
+};
+
+const missingUsageMessage = (role: string) =>
+  `Usage is required for role: "${role}". Provide usage explicitly (e.g. { usage: "text" }) or use a role prefix like "text.", "icon.", "bg.", "border.", "ring."`;
+
+const missingSurfaceMessage = (role: string) =>
+  `Surface is required for role: "${role}". Provide surface explicitly (e.g. { surface: "surface" }) or use a role pattern like "bg.app", "bg.surface", "app.*"`;
 
 const normalizeBackgroundHint = (
   hint: BackgroundHint | undefined,
@@ -315,6 +411,7 @@ const normalizeOutput = (
 ): Required<Omit<OutputOptions, "format">> => {
   const preferSpaceValue = formatString(output?.preferSpace);
   const gamutMappingValue = formatString(output?.gamutMapping);
+  const srgbFormatValue = formatString(output?.srgbFormat);
   const includeSpaces = validateIncludeSpaces(output?.includeSpaces);
 
   const preferSpace = preferSpaceValue
@@ -324,6 +421,10 @@ const normalizeOutput = (
   const gamutMapping = gamutMappingValue
     ? assertOneOf(gamutMappingValue, gamutMappings, "output gamutMapping")
     : "preferP3ThenCompress";
+
+  const srgbFormat = srgbFormatValue
+    ? assertOneOf(srgbFormatValue, srgbFormats, "output srgbFormat")
+    : "hex";
 
   if (output?.strict !== undefined && typeof output.strict !== "boolean") {
     throw new Error("Output strict must be a boolean");
@@ -345,6 +446,7 @@ const normalizeOutput = (
       ...output?.precision,
     },
     includeMeta: output?.includeMeta ?? false,
+    srgbFormat,
   };
 };
 
@@ -352,7 +454,9 @@ const normalizeOutput = (
  * Normalize a user-facing ColorQuery into a fully populated, validated structure.
  *
  * - Applies defaults for missing fields (context, surface, state, emphasis, output).
- * - Infers usage from role prefixes when not provided; in strict mode, missing usage errors.
+ * - Infers usage and surface from role naming patterns when not provided.
+ * - In strict mode, missing required fields throw actionable errors.
+ * - In non-strict mode, safe defaults are applied with explicit warnings.
  * - Validates nested objects (background hints, contrast requirements, alpha strategies).
  * - Trims string inputs and enforces allowed enum values.
  *
@@ -369,18 +473,34 @@ const normalizeOutput = (
 export function normalizeQuery(q: ColorQuery): NormalizedQuery {
   const role = normalizeRole(formatString(q.role));
   const contextValue = formatString(q.context) ?? "light";
-  const surfaceValue = formatString(q.surface) ?? "surface";
+  const inferredSurface = inferSurfaceFromRole(role);
+  const surfaceValue = formatString(q.surface) ?? inferredSurface ?? "surface";
   const stateValue = formatString(q.state) ?? "default";
   const emphasisValue = formatString(q.emphasis) ?? "default";
   const output = normalizeOutput(q.output);
   const usageValue = formatString(q.usage) ?? inferUsageFromRole(role);
+  const variantValue = formatString(q.variant) ?? inferVariantFromRole(role);
 
   if (!usageValue) {
     if (output.strict) {
-      throw new Error(`Usage is required for role: "${role}"`);
+      throw new Error(missingUsageMessage(role));
     }
 
-    warn(`Defaulting usage to "bg" for role: "${role}"`);
+    warnInferenceOnce(
+      `usage:${role}`,
+      `Defaulting usage to "bg" for role: "${role}". ${missingUsageMessage(role)}`,
+    );
+  }
+
+  if (!formatString(q.surface) && !inferredSurface) {
+    if (output.strict) {
+      throw new Error(missingSurfaceMessage(role));
+    }
+
+    warnInferenceOnce(
+      `surface:${role}`,
+      `Defaulting surface to "surface" for role: "${role}". ${missingSurfaceMessage(role)}`,
+    );
   }
 
   return {
@@ -388,9 +508,9 @@ export function normalizeQuery(q: ColorQuery): NormalizedQuery {
     usage: assertOneOf(usageValue ?? "bg", usages, "usage"),
     context: assertOneOf(contextValue, contexts, "context"),
     surface: assertOneOf(surfaceValue, surfaces, "surface"),
-    state: assertOneOf(stateValue, states, "state"),
+    state: assertOneOf(stateValue, COLOR_STATES, "state"),
     emphasis: assertOneOf(emphasisValue, emphases, "emphasis"),
-    variant: normalizeVariant(formatString(q.variant)),
+    variant: normalizeVariant(variantValue),
     on: normalizeBackgroundHint(q.on, output.strict),
     contrast: normalizeContrast(q.contrast),
     alpha: normalizeAlpha(q.alpha),
@@ -421,7 +541,7 @@ export function normalizeOnSolidQuery(q: OnSolidQuery): NormalizedOnSolidQuery {
     bgRole,
     usage: assertOneOf(usageValue, onSolidUsages, "onSolid usage"),
     context: assertOneOf(contextValue, contexts, "context"),
-    state: assertOneOf(stateValue, states, "state"),
+    state: assertOneOf(stateValue, COLOR_STATES, "state"),
     emphasis: assertOneOf(emphasisValue, emphases, "emphasis"),
     contrast: normalizeContrast(q.contrast),
     alpha: normalizeAlpha(q.alpha),

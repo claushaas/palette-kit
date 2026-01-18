@@ -1,15 +1,15 @@
 ---
 name: type-contract-auditor
-description: Audit public TypeScript types against docs/spec.md, flag mismatches, and enforce acceptance criteria (build, no circular imports).
+description: Audit public TypeScript types against src/planning/spec-v0.3.md, flag mismatches, and enforce acceptance criteria (build, no circular imports).
 ---
 
 # Type Contract Auditor
 
-Use this skill when asked to validate the public type contracts against `docs/spec.md` or to report discrepancies.
+Use this skill when asked to validate the public type contracts against `src/planning/spec-v0.3.md` or to report discrepancies.
 
 ## Workflow
 
-1. Review the type list in `docs/spec.md` and compare with `src/types`.
+1. Review the type list in `src/planning/spec-v0.3.md` and compare with `src/types`.
 2. Check for missing types, duplicate union members, or mismatched optionals.
 3. Verify supporting types like `RawColor` and `OutputOptions` align with spec notes.
 4. Flag acceptance criteria issues: build failure risk or circular imports.

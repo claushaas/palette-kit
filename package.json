@@ -1,6 +1,6 @@
 {
   "name": "@clhaas/palette-kit",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Easy way to create the color palette of your app",
   "license": "MIT",
   "author": "Claus Haas",
@@ -14,6 +14,18 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./export": {
+      "types": "./dist/export.d.ts",
+      "default": "./dist/export.js"
+    },
+    "./cli": {
+      "types": "./dist/cli.d.ts",
+      "default": "./dist/cli.js"
+    },
+    "./serialize": {
+      "types": "./dist/serialize.d.ts",
+      "default": "./dist/serialize.js"
     }
   },
   "publishConfig": {
