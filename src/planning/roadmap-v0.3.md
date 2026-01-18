@@ -207,10 +207,10 @@ Autocomplete total sem amarrar o core.
 
 ### Fase 7 — Tarefas
 
-- [ ] Gerar objeto navegável.
-- [ ] Gerar unions (`TokenName`, `ColorRole`).
-- [ ] JSDoc por token.
-- [ ] Integração com CLI build.
+- [x] Gerar objeto navegável.
+- [x] Gerar unions (`TokenName`, `ColorRole`).
+- [x] JSDoc por token.
+- [x] Integração com CLI build.
 
 ### Fase 7 — Critério de aceite
 
