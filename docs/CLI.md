@@ -1,19 +1,43 @@
 # CLI
 
-## Status in v0.2
-
-The package declares a binary in `package.json`:
+Palette Kit v0.3 ships a CLI binary:
 
 ```json
-"bin": { "palette-kit": "./dist/cli.js" }
+{
+  "bin": { "palette-kit": "./dist/cli.js" }
+}
 ```
 
-However, the repository **does not contain** `src/cli.*` or `dist/cli.js` in v0.2. As a result, there is no implementable CLI command, flags, or behavior to document.
+## Commands
 
-**Status**: declared but not shipped in this repo tag.
+### `palette-kit init`
 
-**Action**: either remove the `bin` entry from `package.json` or add a real CLI implementation.
+Creates a typed `palette.config.ts`.
 
-If you installed from npm and a CLI is available there, note that this document is **repo-tag specific** and reflects the v0.2 source tree.
+Flags:
 
-If a CLI is added in a future version, this document will be updated to match the actual implementation.
+- `--path <dir>` output directory (default: current directory)
+- `--force` overwrite existing config
+
+### `palette-kit build`
+
+Builds deterministic artifacts in `dist/palette/`:
+
+- `tokens.css`
+- `tokens.json`
+- `tokens.ts`
+- `tokens.d.ts`
+- `report.md` (optional; `--report`)
+
+Flags:
+
+- `--config <path>` config file path (default: `palette.config.ts`)
+- `--outDir <dir>` output directory (default: `dist/palette`)
+- `--report` write `report.md`
+
+## Config loading notes
+
+`palette-kit build` loads the config via ESM `import()`.
+
+- If you use a TypeScript config (`palette.config.ts`), Node needs a TS loader.
+- Alternative: use a `.mjs` config and pass `--config palette.config.mjs`.

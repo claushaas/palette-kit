@@ -1,33 +1,14 @@
 # Palette Kit
 
-A small **color engine** for generating OKLCH-based palettes from semantic queries. v0.2 exposes only the resolver and types; serializers/exporters exist in source but are not part of the published entrypoint.
+Palette Kit is a **runtime-first color engine** for generating OKLCH-based palettes from semantic queries, with optional build-time tooling (serializer, exporters, CLI, codegen).
 
-## What you get
-
-- Deterministic OKLCH scales (12 steps) from light/dark seed colors
-- Semantic resolution via `role`, `usage`, `surface`, `state`, `context`
-- `onSolid` text/icon colors with APCA/WCAG2 contrast checks
-- Strict validation for inputs (when `output.strict` is enabled)
-
-## Non-goals (v0.2)
-
-- Token registries or predefined token maps
-- Public CSS/JSON exporters
-- CLI tooling
-
-## Basic mental model
-
-Seed colors → preset curves → resolve step → state/emphasis operators → onSolid solver
-
-## Quick start (3 minutes)
-
-Install:
+## Install
 
 ```bash
 npm install @clhaas/palette-kit
 ```
 
-Create a theme and resolve a background:
+## Runtime quick start
 
 ```ts
 import { createTheme } from "@clhaas/palette-kit";
@@ -37,6 +18,7 @@ const theme = createTheme({
     light: { neutral: "#111827", accent: "#3d63dd" },
     dark: { neutral: "#111827", accent: "#3d63dd" },
   },
+  preset: "modern",
 });
 
 const bg = theme.resolve({
@@ -45,79 +27,101 @@ const bg = theme.resolve({
   surface: "app",
   context: "light",
 });
-// usage/surface/context are required unless inferred from the role
 
-console.log(bg.oklch); // { l, c, h, alpha }
-```
-
-Compute readable text on a solid background:
-
-```ts
 const onSolidText = theme.onSolid({
-  bgRole: "action.primary",
+  bgRole: "bg.app",
   usage: "text",
   context: "light",
   contrast: { model: "apca", targetLc: 75 },
 });
 ```
 
-## How to use in Web
+## Serializer (public)
 
-v0.2 returns OKLCH channel data. To use it in CSS, serialize it yourself or use internal serializers.
-
-Minimal serializer (manual):
+Use the serializer to turn resolved OKLCH into CSS/RN-ready strings:
 
 ```ts
-const toOklch = (c: { l: number; c: number; h: number; alpha?: number }) => {
-  const a = c.alpha ?? 1;
-  const alphaPart = a < 1 ? ` / ${a}` : "";
-  return `oklch(${c.l}% ${c.c} ${c.h}${alphaPart})`;
+import { createTheme } from "@clhaas/palette-kit";
+import { serializeResolved } from "@clhaas/palette-kit/serialize";
+
+const theme = createTheme({
+  seeds: {
+    light: { neutral: "#111827", accent: "#3d63dd" },
+    dark: { neutral: "#111827", accent: "#3d63dd" },
+  },
+});
+
+const resolved = theme.resolve({ role: "bg.app", usage: "bg", surface: "app" });
+const color = serializeResolved(resolved, { preferSpace: "srgb", srgbFormat: "hex" });
+
+console.log(color.value);
+```
+
+## Exporters (public, build-time)
+
+Export deterministic CSS variables and JSON tokens:
+
+```ts
+import { createTheme } from "@clhaas/palette-kit";
+import { exportThemeCss, exportThemeJson } from "@clhaas/palette-kit/export";
+
+const theme = createTheme({
+  seeds: {
+    light: { neutral: "#111827", accent: "#3d63dd" },
+    dark: { neutral: "#111827", accent: "#3d63dd" },
+  },
+});
+
+const tokens = {
+  "bg.app": { usage: "bg", surface: "app" },
+  "text.primary": { usage: "text", surface: "surface" },
 };
 
-const value = toOklch(bg.oklch);
+const { css } = exportThemeCss(theme, tokens, { includeSpaces: ["oklch", "p3"] });
+const json = exportThemeJson(theme, tokens, { includeSpaces: ["srgb"] });
 ```
 
-Internal serializer (repo-only):
+## CLI
 
-```ts
-import { serializeColor } from "../src/export/serializeColor.js";
+- `palette-kit init` creates `palette.config.ts`
+- `palette-kit build` writes `dist/palette/` artifacts (`tokens.css`, `tokens.json`, `tokens.ts`, `tokens.d.ts`)
 
-const value = serializeColor(bg.oklch, { preferSpace: "oklch" }).value;
-```
-
-## How to use in React Native
-
-React Native expects color strings. Use the same serializer strategy as above and pass `value` directly to styles.
-
-```ts
-const rnColor = toOklch(onSolidText.oklch);
-```
-
-## Glossary (minimal)
-
-- **role**: semantic name (e.g. `bg.app`, `text.primary`)
-- **usage**: category (`bg`, `text`, `border`, `ring`, ...)
-- **surface**: where it lives (`app`, `surface`, `solid`, ...)
-- **context**: `light` or `dark`
-- **state**: `default`, `hover`, `active`, ...
-- **emphasis**: `muted`, `subtle`, `default`, `strong`
-- **variant**: `neutral`, `accent`, `success`, ...
+See `docs/CLI.md` for flags and config details.
 
 ## Docs
 
-- [docs/README.md](docs/README.md)
-- [docs/_api-surface.md](docs/_api-surface.md)
-- Usage guides:
-  - [Web](docs/Usage-Web.md)
-  - [React Native](docs/Usage-ReactNative.md)
-  - [JSON](docs/Usage-JSON.md)
+- `docs/README.md`
+- `docs/_api-surface.md`
+- `docs/Exporters.md`
+- `docs/CLI.md`
+- `docs/Migration.md`
 
 ## Compatibility
 
-- Package is ESM (`"type": "module"`).
-- TypeScript types are published (`dist/index.d.ts`).
-- React Native/Expo requires string serialization (see above).
+- ESM package (`"type": "module"`).
+- CJS is not supported in v0.3; use ESM or dynamic `import()` in CJS environments.
+- Subpath imports:
+  - `@clhaas/palette-kit/serialize`
+  - `@clhaas/palette-kit/export`
+  - `@clhaas/palette-kit/cli`
+- Tree-shaking: runtime imports (`@clhaas/palette-kit`) do not bundle build-time tools (exporters/CLI).
+
+### CommonJS note
+
+```js
+// CJS workaround (dynamic import)
+(async () => {
+  const { createTheme } = await import("@clhaas/palette-kit");
+  const theme = createTheme({
+    seeds: {
+      light: { neutral: "#111827", accent: "#3d63dd" },
+      dark: { neutral: "#111827", accent: "#3d63dd" },
+    },
+  });
+  console.log(theme);
+})();
+```
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see `LICENSE`.

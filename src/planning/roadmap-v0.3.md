@@ -243,10 +243,10 @@ Finalizar o shape público do pacote.
 
 ### Fase 9 — Tarefas
 
-- [ ] Definir subpath exports.
-- [ ] Validar tree-shaking.
-- [ ] Garantir compatibilidade ESM.
-- [ ] Atualizar README.
+- [x] Definir subpath exports.
+- [x] Validar tree-shaking.
+- [x] Garantir compatibilidade ESM.
+- [x] Atualizar README.
 
 ### Fase 9 — Critério de aceite
 
