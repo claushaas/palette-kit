@@ -133,11 +133,11 @@ Fornecer caminhos prontos para adoção rápida.
 
 ### Fase 4 — Tarefas
 
-- [ ] Definir escopo de cada preset.
-- [ ] Criar tokens base.
-- [ ] Definir estados suportados.
-- [ ] Documentar intenção semântica.
-- [ ] Testar export + runtime.
+- [x] Definir escopo de cada preset.
+- [x] Criar tokens base.
+- [x] Definir estados suportados.
+- [x] Documentar intenção semântica.
+- [x] Testar export + runtime.
 
 ### Fase 4 — Critério de aceite
 
