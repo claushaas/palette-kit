@@ -261,11 +261,11 @@ Garantir qualidade antes do release.
 
 ### Fase 10 — Checklist
 
-- [ ] Testes unitários críticos.
-- [ ] Testes de snapshot (exporters).
-- [ ] Revisão de DX (autocomplete + docs).
-- [ ] Atualizar changelog.
-- [ ] Release v0.3.0.
+- [x] Testes unitários críticos.
+- [x] Testes de snapshot (exporters).
+- [x] Revisão de DX (autocomplete + docs).
+- [x] Atualizar changelog.
+- [x] Release v0.3.0.
 
 ## Resultado esperado
 
