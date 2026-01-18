@@ -3,6 +3,7 @@ import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { basename, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { CliUsageError, COMMANDS, HELP_TEXT, type ParsedArgs, parseArgs } from "./cli/args.js";
+import { generateTokenArtifacts } from "./cli/codegen/tokens.js";
 import { buildConfigTemplate, type PaletteConfig } from "./cli/config.js";
 import { validateConfig } from "./cli/validate.js";
 import { createTheme } from "./core/createTheme.js";
@@ -63,26 +64,11 @@ const tokenPresetMap = {
 const toThemeTokens = (registry: typeof minimalUiTokens): ThemeTokens =>
   Object.fromEntries(Object.entries(registry.tokens).map(([name, token]) => [name, token.query]));
 
-const writeTokensTs = async (
-  outDir: string,
-  data: ReturnType<typeof exportThemeJson>,
-  tokenNames: string[],
-) => {
-  const tokensJson = JSON.stringify(data.tokens, null, 2);
-  const metaJson = data.meta ? JSON.stringify(data.meta, null, 2) : null;
-
-  const metaLine = metaJson ? `export const meta = ${metaJson} as const;\n` : "";
-  const contents = `export const tokens = ${tokensJson} as const;\nexport const tokenNames = ${JSON.stringify(
-    tokenNames,
-    null,
-    2,
-  )} as const;\nexport type TokenName = (typeof tokenNames)[number];\n${metaLine}`;
-
-  await writeFile(join(outDir, "tokens.ts"), contents, "utf8");
-
-  const dtsContents = `export type TokenValue = {\n  value: string;\n  srgb?: string;\n  p3?: string;\n  oklch?: string;\n  alpha: number;\n  meta?: Record<string, unknown>;\n};\n\nexport type TokensByContext = {\n  light: Record<string, TokenValue>;\n  dark: Record<string, TokenValue>;\n};\n\nexport declare const tokens: TokensByContext;\nexport declare const tokenNames: readonly string[];\nexport type TokenName = (typeof tokenNames)[number];\nexport type ExportMeta = {\n  gamutMapping: string;\n  preferSpace: string;\n  includeSpaces: string[];\n  precision: { l: number; c: number; h: number; alpha: number };\n  srgbFormat: string;\n  strict: boolean;\n};\nexport declare const meta: ExportMeta | undefined;\n`;
-
-  await writeFile(join(outDir, "tokens.d.ts"), dtsContents, "utf8");
+const writeTokensCodegen = async (outDir: string, registry: typeof minimalUiTokens) => {
+  const generated = generateTokenArtifacts(registry);
+  await writeFile(join(outDir, "tokens.ts"), generated.tokensTs, "utf8");
+  await writeFile(join(outDir, "tokens.d.ts"), generated.tokensDts, "utf8");
+  return generated.tokenNames;
 };
 
 const writeReport = async (
@@ -139,11 +125,10 @@ const runBuild = async (flags: ParsedArgs["flags"]) => {
   const json = exportThemeJson(theme, tokens, config.output);
 
   await ensureDir(outDir);
-  const tokenNames = Object.keys(tokens).sort();
+  const tokenNames = await writeTokensCodegen(outDir, registry);
 
   await writeFile(join(outDir, "tokens.css"), css, "utf8");
   await writeFile(join(outDir, "tokens.json"), `${JSON.stringify(json, null, 2)}\n`, "utf8");
-  await writeTokensTs(outDir, json, tokenNames);
 
   if (report) {
     await writeReport(outDir, config, tokenNames.length, [
