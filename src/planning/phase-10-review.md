@@ -413,35 +413,35 @@ Thanks to everyone who contributed feedback and testing!
 
 ## 🎯 CHECKLIST FINAL
 
-### Checklist — Testes ✅
+### Testes (Checklist final) ✅
 
 - ✅ Todos os testes unitários passam (252/252)
 - ✅ Snapshots atualizados e validados
 - ✅ Testes de integração (QA testes presentes)
 - ✅ Performance não regrediu (1.45s para 252 testes)
 
-### Checklist — DX validation ✅
+### DX validation (Checklist final) ✅
 
 - ✅ Autocomplete funcional em VS Code
 - ✅ Hover docs aparecem
 - ✅ Go-to-definition funciona
 - ✅ Nenhum erro TypeScript no workspace
 
-### Checklist — Documentação ✅
+### Documentação (Checklist final) ✅
 
 - ✅ Changelog atualizado (v0.3.0 completo)
 - ✅ Migration guide completo (`docs/Migration.md`)
 - ✅ README reflete v0.3 (já atualizado)
 - ✅ Exemplos funcionam (imports validados)
 
-### Checklist — Pre-release ✅ / ⚠️
+### Pre-release (Checklist final) ✅ / ⚠️
 
 - ✅ Versão bumped corretamente (0.3.0)
 - ⚠️ Git tags (criar antes do publish)
 - ⚠️ Build CI verde (validar se CI configurado)
 - ⚠️ Dry-run de publish (executar antes do publish)
 
-### Checklist — Release ⚠️
+### Release (Checklist final) ⚠️
 
 - ⚠️ Publicado no npm (ação manual pendente)
 - ⚠️ GitHub release criado (ação manual pendente)
