@@ -4,7 +4,7 @@ import type { OkLchColor } from "../engine/generateScale.js";
 import type { BaseResolvedColor } from "../engine/resolveBaseColor.js";
 import type { ColorMeta, OutputOptions, ResolvedColor } from "../types/index.js";
 import { clamp } from "../utils/clamp.js";
-import { normalizeOutput, type NormalizedOutput } from "./normalizeOutput.js";
+import { type NormalizedOutput, normalizeOutput } from "./normalizeOutput.js";
 
 type SerializedColorJson = ResolvedColor;
 
