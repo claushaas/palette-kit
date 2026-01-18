@@ -54,13 +54,13 @@ Referência: `src/planning/spec-serializer-v0.3.md`.
 
 ### Fase 1 — Tarefas
 
-- [ ] Definir `ResolvedColor` público.
-- [ ] Implementar serialização OKLCH.
-- [ ] Implementar sRGB (hex / rgb / rgba).
-- [ ] Implementar Display-P3.
-- [ ] Implementar precision + strict.
-- [ ] Implementar gamut mapping (`preferP3ThenCompress`).
-- [ ] JSDoc completo (trade-offs + exemplos).
+- [x] Definir `ResolvedColor` público.
+- [x] Implementar serialização OKLCH.
+- [x] Implementar sRGB (hex / rgb / rgba).
+- [x] Implementar Display-P3.
+- [x] Implementar precision + strict.
+- [x] Implementar gamut mapping (`preferP3ThenCompress`).
+- [x] JSDoc completo (trade-offs + exemplos).
 
 ### Fase 1 — Critério de aceite
 
@@ -83,11 +83,11 @@ Reduzir boilerplate para casos comuns sem esconder o core.
 
 ### Fase 2 — Tarefas
 
-- [ ] Implementar `resolveMany`.
-- [ ] Implementar tema bound por contexto.
-- [ ] Adicionar helpers CSS.
-- [ ] Garantir typings corretos.
-- [ ] JSDoc focado em DX.
+- [x] Implementar `resolveMany`.
+- [x] Implementar tema bound por contexto.
+- [x] Adicionar helpers CSS.
+- [x] Garantir typings corretos.
+- [x] JSDoc focado em DX.
 
 ### Fase 2 — Critério de aceite
 
@@ -108,11 +108,11 @@ Introduzir tokens declarativos sem acoplar ao runtime.
 
 ### Fase 3 — Tarefas
 
-- [ ] Definir interface `TokenDefinition`.
-- [ ] Definir `TokenRegistry`.
-- [ ] Validar queries por token.
-- [ ] Resolver tokens via `theme.resolve`.
-- [ ] Garantir que tokens não carregam cor.
+- [x] Definir interface `TokenDefinition`.
+- [x] Definir `TokenRegistry`.
+- [x] Validar queries por token.
+- [x] Resolver tokens via `theme.resolve`.
+- [x] Garantir que tokens não carregam cor.
 
 ### Fase 3 — Critério de aceite
 
