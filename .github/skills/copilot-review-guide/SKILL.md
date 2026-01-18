@@ -1,6 +1,6 @@
 ---
-name: copilot-review-guide
-description: Review Palette Kit v0.3 pull requests using the official checklist and feedback template. Use when performing Copilot-assisted code reviews across phases 0-10 to verify contracts, DX, determinism, and phase-specific requirements.
+name: review-guide
+description: Review Palette Kit v0.3 changes using the official checklist and feedback template. Use when performing Copilot-assisted code reviews across phases 0-10 to verify contracts, DX, determinism, and phase-specific requirements.
 ---
 
 # Copilot Review Guide
