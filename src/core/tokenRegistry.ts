@@ -27,11 +27,11 @@ const validateTokenStates = (states: TokenDefinition["states"], name: string) =>
  * - tokens are base tokens (interactive states declared via `token.states`)
  */
 export const validateTokenDefinition = (token: TokenDefinition): void => {
-  if (!token.name.trim()) {
+  if (typeof token.name !== "string" || !token.name.trim()) {
     throw new Error("Token name is required");
   }
 
-  if (!token.query?.role?.trim()) {
+  if (typeof token.query?.role !== "string" || !token.query.role.trim()) {
     throw new Error(`Token "${token.name}" requires a query role`);
   }
 
@@ -49,7 +49,8 @@ export const validateTokenDefinition = (token: TokenDefinition): void => {
     );
   }
 
-  if (token.query.on?.kind === "color") {
+  const onKind = (token.query.on as { kind?: string } | undefined)?.kind;
+  if (onKind === "color") {
     throw new Error(
       `Token "${token.name}" must not include a literal background color hint; use { kind: "role" } or { kind: "auto" }`,
     );

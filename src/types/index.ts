@@ -34,6 +34,24 @@ export type ColorRole = string;
 export type ColorUsage = "bg" | "border" | "text" | "icon" | "ring" | "shadow" | "stroke" | "fill";
 
 /**
+ * Token-safe background hints.
+ * Tokens must not embed literal colors.
+ */
+export type TokenBackgroundHint = { kind: "auto" } | { kind: "role"; role: ColorRole };
+
+/**
+ * Token-safe query shape (Phase 3).
+ * - `output` is forbidden (export/serializer concern)
+ * - `on.kind: "color"` is forbidden (no embedded colors)
+ * - `state` must not be encoded (states are operators; declare via TokenDefinition.states)
+ */
+export type TokenQuery = Omit<ColorQuery, "output" | "on" | "state"> & {
+  output?: never;
+  on?: TokenBackgroundHint;
+  state?: never;
+};
+
+/**
  * Token-supported interactive states.
  *
  * Note: `"default"` is the base token, so it is intentionally excluded here.
@@ -114,7 +132,7 @@ export interface ColorMeta {
 export interface TokenDefinition {
   name: string;
   description?: string;
-  query: ColorQuery;
+  query: TokenQuery;
   category?: string;
   states?: TokenStates;
 }

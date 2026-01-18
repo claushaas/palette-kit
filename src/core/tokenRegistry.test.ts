@@ -59,7 +59,7 @@ describe("token registry", () => {
             usage: "bg",
             surface: "app",
             output: { strict: true },
-          },
+          } as never,
         },
       },
     };
@@ -72,7 +72,7 @@ describe("token registry", () => {
       tokens: {
         "bg.app": {
           name: "bg.app",
-          query: { role: "bg.app", usage: "bg", surface: "app", state: "hover" },
+          query: { role: "bg.app", usage: "bg", surface: "app", state: "hover" as never } as never,
         },
       },
     };
@@ -89,7 +89,7 @@ describe("token registry", () => {
             role: "bg.app",
             usage: "bg",
             surface: "app",
-            on: { kind: "color", value: "#fff" },
+            on: { kind: "color", value: "#fff" } as never,
           },
         },
       },
