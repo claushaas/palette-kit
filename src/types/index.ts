@@ -33,6 +33,19 @@ export type ColorRole = string;
 
 export type ColorUsage = "bg" | "border" | "text" | "icon" | "ring" | "shadow" | "stroke" | "fill";
 
+/**
+ * Token-supported interactive states.
+ *
+ * Note: `"default"` is the base token, so it is intentionally excluded here.
+ */
+export type TokenState = Exclude<ColorState, "default">;
+
+/**
+ * Declarative set of supported states for a token.
+ * Use `true` to mark a state as supported.
+ */
+export type TokenStates = Partial<Record<TokenState, true>>;
+
 export type BackgroundHint =
   | { kind: "auto" }
   | { kind: "role"; role: ColorRole }
@@ -87,6 +100,30 @@ export interface ColorMeta {
   clipped?: boolean;
   compressed?: boolean;
   provenance?: string;
+}
+
+/**
+ * Declarative token definition consumed by registries, exporters, CLI and codegen.
+ *
+ * Rules:
+ * - Tokens never carry actual color values.
+ * - `query.output` is forbidden; output formatting is decided by serializers/exporters.
+ * - Do not encode interactive state in `query.state`; declare supported states via `states`.
+ * - Do not embed literal background colors via `query.on: { kind: "color" }`.
+ */
+export interface TokenDefinition {
+  name: string;
+  description?: string;
+  query: ColorQuery;
+  category?: string;
+  states?: TokenStates;
+}
+
+/**
+ * Collection of base token definitions keyed by token name.
+ */
+export interface TokenRegistry {
+  tokens: Record<string, TokenDefinition>;
 }
 
 export interface ResolvedColor {
