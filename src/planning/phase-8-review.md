@@ -19,7 +19,7 @@ A implementação da Fase 8 (Inferência e Validações) está **funcionalmente 
 
 **⚠️ OBSERVAÇÃO CRÍTICA**:
 
-- **Warnings globais com estado mutável** (`inferenceWarnings` Set) pode cauar vazamento de memória em long-running processes
+- **Warnings globais com estado mutável** (`inferenceWarnings` Set) pode causar vazamento de memória em long-running processes
 - **Sugestão**: Mover para contexto ou adicionar método de reset
 
 **Sugestões menores**:
