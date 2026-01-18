@@ -1,217 +1,127 @@
 # Palette Kit
 
-Modern palette generator (OKLCH + APCA) with Radix-like steps. The library accepts seeds (initial colors) and produces light/dark scales, semantic tokens, and exporters ready for use.
+Palette Kit is a **runtime-first color engine** for generating OKLCH-based palettes from semantic queries, with optional build-time tooling (serializer, exporters, CLI, codegen).
 
-Status: WIP. The API may change while the MVP is under construction.
-
-## Installation
+## Install
 
 ```bash
 npm install @clhaas/palette-kit
 ```
 
-```bash
-yarn add @clhaas/palette-kit
-```
-
-```bash
-pnpm add @clhaas/palette-kit
-```
-
-## What the library provides
-
-- 12-step scale (light/dark) from a seed.
-- Semantic tokens for UI (`radix-like-ui` preset).
-- Alpha scales per palette slot (chromatic alpha).
-- Overlay scales (black/white alpha).
-- Deterministic text scales for light/dark backgrounds.
-- Exporters for TS, JSON, CSS vars, Tailwind, and React Native.
-- Auto anchor selection per mode (light/dark), overridable via `anchorStep`.
-- Basic contrast and gamut diagnostics.
-
-## Usage example
+## Runtime quick start
 
 ```ts
 import { createTheme } from "@clhaas/palette-kit";
 
 const theme = createTheme({
-  neutral: { source: "seed", value: "#111827" },
-  accent: { source: "seed", value: "#3d63dd" },
-  semantic: {
-    success: { source: "seed", value: "#16a34a" },
-    warning: { source: "seed", value: "#f59e0b" },
-    danger: { source: "seed", value: "#ef4444" },
+  seeds: {
+    light: { neutral: "#111827", accent: "#3d63dd" },
+    dark: { neutral: "#111827", accent: "#3d63dd" },
   },
-  tokens: { preset: "radix-like-ui" },
-  text: {
-    darkBase: "#1C1C1E",
-    lightBase: "#F5F5F7",
-  },
-  p3: true,
+  preset: "modern",
+});
+
+const bg = theme.resolve({
+  role: "bg.app",
+  usage: "bg",
+  surface: "app",
+  context: "light",
+});
+
+const onSolidText = theme.onSolid({
+  bgRole: "bg.app",
+  usage: "text",
+  context: "light",
+  contrast: { model: "apca", targetLc: 75 },
 });
 ```
 
-## Quick start
+## Serializer (public)
 
-Generate a theme and export CSS variables:
+Use the serializer to turn resolved OKLCH into CSS/RN-ready strings:
 
 ```ts
-import { createTheme, toCssVars } from "@clhaas/palette-kit";
+import { createTheme } from "@clhaas/palette-kit";
+import { serializeResolved } from "@clhaas/palette-kit/serialize";
 
 const theme = createTheme({
-  neutral: { source: "seed", value: "#111827" },
-  accent: { source: "seed", value: "#3d63dd" },
+  seeds: {
+    light: { neutral: "#111827", accent: "#3d63dd" },
+    dark: { neutral: "#111827", accent: "#3d63dd" },
+  },
 });
 
-const css = toCssVars(theme, { prefix: "pk" });
+const resolved = theme.resolve({ role: "bg.app", usage: "bg", surface: "app" });
+const color = serializeResolved(resolved, { preferSpace: "srgb", srgbFormat: "hex" });
+
+console.log(color.value);
 ```
 
-Use tokens in your app:
+## Exporters (public, build-time)
 
-```css
-:root {
-  /* paste the generated CSS vars here */
-}
+Export deterministic CSS variables and JSON tokens:
 
-body {
-  background: var(--pk-bg-app);
-  color: var(--pk-text-primary);
-}
-```
+```ts
+import { createTheme } from "@clhaas/palette-kit";
+import { exportThemeCss, exportThemeJson } from "@clhaas/palette-kit/export";
 
-## Step-by-step (install -> usage -> types)
-
-1) Install:
-
-```bash
-npm install @clhaas/palette-kit
-```
-
-2) Create a config file (`palette.config.mjs`):
-
-```js
-/** @type {import("@clhaas/palette-kit").CreateThemeOptions} */
-export default {
-  neutral: { source: "seed", value: "#111827" },
-  accent: { source: "seed", value: "#3d63dd" },
-  semantic: {
-    success: { source: "seed", value: "#16a34a" },
-    warning: { source: "seed", value: "#f59e0b" },
-    danger: { source: "seed", value: "#ef4444" },
+const theme = createTheme({
+  seeds: {
+    light: { neutral: "#111827", accent: "#3d63dd" },
+    dark: { neutral: "#111827", accent: "#3d63dd" },
   },
-  tokens: { preset: "radix-like-ui" },
-  alpha: { enabled: true },
-  text: {
-    darkBase: "#1C1C1E",
-    lightBase: "#F5F5F7",
-  },
-  p3: true,
+});
+
+const tokens = {
+  "bg.app": { usage: "bg", surface: "app" },
+  "text.primary": { usage: "text", surface: "surface" },
 };
+
+const { css } = exportThemeCss(theme, tokens, { includeSpaces: ["oklch", "p3"] });
+const json = exportThemeJson(theme, tokens, { includeSpaces: ["srgb"] });
 ```
 
-3) Generate a typed theme file (includes token name types):
+## CLI
 
-```bash
-npx palette-kit generate --out src/theme.ts
-```
+- `palette-kit init` creates `palette.config.ts`
+- `palette-kit build` writes `dist/palette/` artifacts (`tokens.css`, `tokens.json`, `tokens.ts`, `tokens.d.ts`)
 
-4) Export CSS vars (for web apps):
+See `docs/CLI.md` for flags and config details.
 
-```ts
-import { toCssVars } from "@clhaas/palette-kit";
-import { theme } from "./theme";
-
-const css = toCssVars(theme, { prefix: "pk" });
-// write the string into a .css file or inject it at build time
-```
-
-5) Use the generated types:
-
-```ts
-import { theme, ThemeTokenMap, ThemeTokenName } from "./theme";
-
-const tokens: ThemeTokenMap = theme.tokens.light;
-const tokenName: ThemeTokenName = "bg.app";
-```
-
-## Alpha, overlay, and text examples
-
-```ts
-const accentAlpha = theme.alpha?.accent.light[5];
-const overlay = theme.overlay.black[9];
-const textOnLight = theme.tokens.light["text.dark.primary"];
-const textOnDark = theme.tokens.dark["text.light.primary"];
-```
-
-## Migration note (alpha)
-
-Alpha scales are now generated per palette slot. If you previously used:
-
-```ts
-theme.alpha?.light[5];
-```
-
-Update to:
-
-```ts
-theme.alpha?.accent.light[5];
-```
-
-CSS variables were also updated from `--pk-alpha-<step>` to `--pk-alpha-<slot>-<step>`.
-
-## React Native + Expo
-
-Use the React Native exporter and `useColorScheme()`:
-
-```ts
-import { useMemo } from "react";
-import { useColorScheme } from "react-native";
-import { createTheme, toReactNative } from "@clhaas/palette-kit";
-
-const theme = createTheme({
-  neutral: { source: "seed", value: "#111827" },
-  accent: { source: "seed", value: "#3d63dd" },
-  p3: true,
-});
-
-export function usePalette() {
-  const scheme = useColorScheme();
-  const palette = useMemo(() => toReactNative(theme, { includeP3: true }), []);
-  return scheme === "dark" ? palette.dark : palette.light;
-}
-```
-
-See `examples/expo` for a full example.
-
-Note: React Native does not support `color(display-p3 ...)` strings as drop-in colors. The `p3` field is provided as data for platforms that can handle wide color via native APIs.
-
-## Principles
-
-- Tokens by intent, not by color.
-- Fixed steps (1-12) for UI consistency.
-- OKLCH generation, contrast resolved with APCA.
-
-## Docs and plans
+## Docs
 
 - `docs/README.md`
-- `docs/concepts.md`
-- `docs/api.md`
-- `docs/tokens.md`
-- `docs/contrast.md`
-- `docs/alpha.md`
-- `docs/text.md`
-- `docs/overlays.md`
-- `docs/Why.md`
-- `docs/spec-implementation.md`
-- `docs/plan-tests.md`
-- `docs/plan-docs.md`
+- `docs/_api-surface.md`
+- `docs/Exporters.md`
+- `docs/CLI.md`
+- `docs/Migration.md`
 
-## Short roadmap
+## Compatibility
 
-1) Generate scales from seeds (light/dark).
-2) Tokens and basic exporters.
-3) Contrast and alpha scale.
+- ESM package (`"type": "module"`).
+- CJS is not supported in v0.3; use ESM or dynamic `import()` in CJS environments.
+- Subpath imports:
+  - `@clhaas/palette-kit/serialize`
+  - `@clhaas/palette-kit/export`
+  - `@clhaas/palette-kit/cli`
+- Tree-shaking: runtime imports (`@clhaas/palette-kit`) do not bundle build-time tools (exporters/CLI).
+
+### CommonJS note
+
+```js
+// CJS workaround (dynamic import)
+(async () => {
+  const { createTheme } = await import("@clhaas/palette-kit");
+  const theme = createTheme({
+    seeds: {
+      light: { neutral: "#111827", accent: "#3d63dd" },
+      dark: { neutral: "#111827", accent: "#3d63dd" },
+    },
+  });
+  console.log(theme);
+})();
+```
 
 ## License
 
-MIT
+MIT — see `LICENSE`.
