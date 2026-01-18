@@ -225,10 +225,10 @@ Reduzir configuração obrigatória sem perder segurança.
 
 ### Fase 8 — Tarefas
 
-- [ ] Inferir `usage` por prefixo.
-- [ ] Inferir `surface` quando óbvio.
-- [ ] Implementar strict vs non-strict.
-- [ ] Mensagens de erro didáticas.
+- [x] Inferir `usage` por prefixo.
+- [x] Inferir `surface` quando óbvio.
+- [x] Implementar strict vs non-strict.
+- [x] Mensagens de erro didáticas.
 
 ### Fase 8 — Critério de aceite
 
