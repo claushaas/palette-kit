@@ -26,6 +26,10 @@ Use this skill whenever implementing a roadmap phase. It enforces the agreed ste
 - Keep docs updated when required by the phase (e.g., spec references).
 - Do not add unrelated refactors.
 - If editing `.md` files, follow the markdownlint rules (use the markdownlint-writer skill).
+- Do not expand scope beyond what is explicitly listed in the phase.
+- If an improvement is identified but out of scope, document it and stop.
+- Prefer adding new files over modifying existing ones unless explicitly required.
+- Avoid moving files or renaming symbols without spec justification.
 
 4) Validate in order
 
@@ -51,11 +55,27 @@ Use this skill whenever implementing a roadmap phase. It enforces the agreed ste
 - Push the branch.
 - Open a PR with base `v0.3` and a clear summary.
 
+## DX Quality Gate (mandatory)
+
+Before producing the patch:
+
+- All new public APIs MUST:
+  - have complete TypeScript autocomplete
+  - include clear JSDoc explaining:
+    - intent
+    - defaults
+    - inferred vs explicit behavior
+- If an API is correct but awkward to discover or use, stop and revise.
+- DX regressions are considered phase failures, even if tests pass.
+
 ## Guardrails
 
 - If you notice unexpected changes you did not make, stop and ask how to proceed.
 - Never amend commits unless explicitly requested.
 - Do not run destructive git commands.
+- Do not reinterpret or redesign specs.
+- All architectural and API decisions are considered frozen for the phase.
+- If the spec is ambiguous or incomplete, stop and ask before implementing.
 
 ## Output checklist
 
@@ -64,3 +84,5 @@ Always end the phase work (pre-confirmation) with:
 - Tests/validation results summary.
 - Patch path.
 - A prompt asking for confirmation to commit/push/PR.
+- Confirmation that all phase goals are satisfied and no extra features were added.
+- Short note explaining how the implementation maps to the spec requirements.
