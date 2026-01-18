@@ -11,7 +11,7 @@ Apply the v0.3 review checklist to code reviews and return actionable feedback w
 
 ## Workflow
 
-1. Load the checklist reference: `references/copilot-review-guide-v0.3.md`.
+1. Load the checklist reference: `references/review-guide-v0.3.md`.
 2. Always run the "Criterios gerais" first, then the current phase checklist.
 3. Flag any "O que NAO deve acontecer" violations as blockers.
 4. Use the provided feedback template to structure the review.
