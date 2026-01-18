@@ -4,7 +4,12 @@ import { createTheme } from "../core/createTheme.js";
 import * as gamut from "../engine/gamut.js";
 import { exportThemeCss, exportThemeJson, type ThemeTokens } from "./exportTheme.js";
 
-const buildTheme = () => {
+type ExportFixture = {
+  resolve: ReturnType<typeof createTheme>["resolve"];
+  tokens: ThemeTokens;
+};
+
+const buildTheme = (): ExportFixture => {
   const theme = createTheme({
     seeds: {
       light: { neutral: "#111827", accent: "#3d63dd" },
@@ -15,19 +20,16 @@ const buildTheme = () => {
   const tokens: ThemeTokens = {
     "text.primary": {
       usage: "text",
-      context: "light",
       surface: "surface",
       emphasis: "default",
     },
     "bg.app": {
       usage: "bg",
-      context: "light",
       surface: "app",
     },
     "custom.alias": {
       role: "text.primary",
       usage: "text",
-      context: "light",
       surface: "surface",
     },
   };
@@ -47,92 +49,94 @@ describe("exportTheme", () => {
       },
     });
 
-    const exportable = { resolve: theme.resolve.bind(theme), tokens: {} };
-
-    expect(() => exportThemeCss(exportable)).toThrow(/Theme tokens are required for export/i);
-    expect(() => exportThemeJson(exportable)).toThrow(/Theme tokens are required for export/i);
+    expect(() => exportThemeCss(theme, {})).toThrow(/Theme tokens are required for export/i);
+    expect(() => exportThemeJson(theme, {})).toThrow(/Theme tokens are required for export/i);
   });
 
-  it("exports CSS vars with prefix and deterministic ordering", () => {
+  it("exports deterministic CSS with @supports overrides", () => {
     const theme = buildTheme();
-    const { css } = exportThemeCss(theme, { preferSpace: "oklch" });
-
-    expect(css.includes("--pk-bg-app:")).toBe(true);
-    expect(css.includes("--pk-text-primary:")).toBe(true);
-    expect(css.includes("--pk-custom-alias:")).toBe(true);
-    expect(css.indexOf("--pk-bg-app:")).toBeLessThan(css.indexOf("--pk-text-primary:"));
-    expect(css.endsWith("\n")).toBe(true);
-  });
-
-  it("adds includeSpaces suffixes in CSS export", () => {
-    const theme = buildTheme();
-    const { css } = exportThemeCss(theme, {
+    const { css } = exportThemeCss(theme, theme.tokens, {
       preferSpace: "oklch",
-      includeSpaces: ["srgb", "p3", "oklch"],
+      includeSpaces: ["p3", "oklch"],
     });
 
-    expect(css.includes("--pk-bg-app-srgb:")).toBe(true);
-    expect(css.includes("--pk-bg-app-p3:")).toBe(true);
-    expect(css.includes("--pk-bg-app-oklch:")).toBe(true);
-  });
-
-  it("exports JSON tokens with preferred space and extras", () => {
-    const theme = buildTheme();
-    const { tokens } = exportThemeJson(theme, {
-      preferSpace: "p3",
-      includeSpaces: ["srgb", "oklch"],
-    });
-
-    expect(tokens["bg.app"].value.startsWith("color(display-p3 ")).toBe(true);
-    expect(typeof tokens["bg.app"].value).toBe("string");
-    expect(tokens["bg.app"].srgb?.startsWith("#")).toBe(true);
-    expect(typeof tokens["bg.app"].srgb).toBe("string");
-    expect(tokens["bg.app"].oklch?.startsWith("oklch(")).toBe(true);
-    expect(typeof tokens["bg.app"].oklch).toBe("string");
-    expect(JSON.stringify(tokens)).not.toMatch(/channels|space|raw/);
+    expect(css).toMatchSnapshot();
   });
 
   it("includes meta when requested and omits when not", () => {
     const theme = buildTheme();
-    const withMeta = exportThemeJson(theme, { includeMeta: true });
-    expect(withMeta.tokens["bg.app"].meta?.gamutMapping).toBe("preferP3ThenCompress");
+
+    const withMeta = exportThemeJson(theme, theme.tokens, { includeMeta: true });
+    expect(withMeta.tokens.light["bg.app"].meta?.gamutMapping).toBe("preferP3ThenCompress");
     expect(withMeta.meta).toEqual({
       gamutMapping: "preferP3ThenCompress",
       preferSpace: "oklch",
       includeSpaces: [],
       precision: { l: 1, c: 3, h: 1, alpha: 2 },
+      srgbFormat: "hex",
       strict: false,
     });
 
-    const withoutMeta = exportThemeJson(theme, { includeMeta: false });
-    expect(withoutMeta.tokens["bg.app"].meta).toBeUndefined();
+    const withoutMeta = exportThemeJson(theme, theme.tokens, { includeMeta: false });
+    expect(withoutMeta.tokens.light["bg.app"].meta).toBeUndefined();
   });
 
   it("includes export meta for CSS when requested", () => {
     const theme = buildTheme();
-    const { meta } = exportThemeCss(theme, { includeMeta: true });
+    const { meta } = exportThemeCss(theme, theme.tokens, { includeMeta: true });
 
     expect(meta).toEqual({
       gamutMapping: "preferP3ThenCompress",
       preferSpace: "oklch",
       includeSpaces: [],
       precision: { l: 1, c: 3, h: 1, alpha: 2 },
+      srgbFormat: "hex",
       strict: false,
     });
   });
 
+  it("exports deterministic JSON with light/dark contexts", () => {
+    const theme = buildTheme();
+    const { tokens } = exportThemeJson(theme, theme.tokens, {
+      preferSpace: "oklch",
+      includeSpaces: ["srgb"],
+    });
+
+    expect(tokens).toMatchSnapshot();
+  });
+
+  it("keeps ordering stable regardless of token map order", () => {
+    const theme = buildTheme();
+    const shuffled: ThemeTokens = {
+      "custom.alias": theme.tokens["custom.alias"],
+      "bg.app": theme.tokens["bg.app"],
+      "text.primary": theme.tokens["text.primary"],
+    };
+
+    const cssA = exportThemeCss(theme, theme.tokens, { preferSpace: "oklch" }).css;
+    const cssB = exportThemeCss(theme, shuffled, { preferSpace: "oklch" }).css;
+    const jsonA = exportThemeJson(theme, theme.tokens, { preferSpace: "oklch" }).tokens;
+    const jsonB = exportThemeJson(theme, shuffled, { preferSpace: "oklch" }).tokens;
+
+    expect(cssA).toBe(cssB);
+    expect(jsonA).toEqual(jsonB);
+  });
+
   it("throws when strict preferred space cannot be serialized", () => {
     const theme = buildTheme();
-    const spy = vi.spyOn(gamut, "toGamutRgb").mockReturnValue(null);
+    const original = gamut.toGamutRgb;
+    const spy = vi
+      .spyOn(gamut, "toGamutRgb")
+      .mockImplementation((color, target) => (target === "p3" ? null : original(color, target)));
 
     try {
       expect(() =>
-        exportThemeCss(theme, {
-          preferSpace: "srgb",
-          includeSpaces: ["srgb"],
+        exportThemeCss(theme, theme.tokens, {
+          preferSpace: "p3",
+          includeSpaces: ["p3"],
           strict: true,
         }),
-      ).toThrow(/Unable to serialize preferred space: srgb/i);
+      ).toThrow(/Unable to serialize preferred space: p3/i);
     } finally {
       spy.mockRestore();
     }

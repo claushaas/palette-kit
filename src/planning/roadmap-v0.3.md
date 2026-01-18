@@ -157,16 +157,17 @@ Gerar artefatos determinísticos para build-time.
 
 ### Fase 5 — Tarefas
 
-- [ ] Definir opções de export.
-- [ ] Implementar CSS vars com fallback.
-- [ ] Implementar JSON estruturado.
-- [ ] Garantir ordem determinística.
-- [ ] Testes de snapshot.
+- [x] Definir opções de export.
+- [x] Implementar CSS vars com fallback.
+- [x] Implementar JSON estruturado.
+- [x] Garantir ordem determinística.
+- [x] Testes de snapshot.
 
 ### Fase 5 — Critério de aceite
 
 - Outputs reproduzíveis.
 - Sem dependência do CLI.
+- Status: concluida.
 
 ## Fase 6 — CLI tooling
 
