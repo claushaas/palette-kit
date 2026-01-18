@@ -15,6 +15,14 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./export": {
+      "types": "./dist/export.d.ts",
+      "default": "./dist/export.js"
+    },
+    "./cli": {
+      "types": "./dist/cli.d.ts",
+      "default": "./dist/cli.js"
+    },
     "./serialize": {
       "types": "./dist/serialize.d.ts",
       "default": "./dist/serialize.js"
