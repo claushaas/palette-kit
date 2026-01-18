@@ -398,8 +398,6 @@ See [Migration Guide](docs/Migration.md) for upgrade instructions.
 
 Thanks to everyone who contributed feedback and testing!
 
-```txt
-
 ---
 
 ## ✅ VALIDAÇÕES NEGATIVAS
@@ -415,31 +413,36 @@ Thanks to everyone who contributed feedback and testing!
 
 ## 🎯 CHECKLIST FINAL
 
-### Testes ✅
+### Checklist — Testes ✅
+
 - ✅ Todos os testes unitários passam (252/252)
 - ✅ Snapshots atualizados e validados
 - ✅ Testes de integração (QA testes presentes)
 - ✅ Performance não regrediu (1.45s para 252 testes)
 
-### DX validation ✅
+### Checklist — DX validation ✅
+
 - ✅ Autocomplete funcional em VS Code
 - ✅ Hover docs aparecem
 - ✅ Go-to-definition funciona
 - ✅ Nenhum erro TypeScript no workspace
 
-### Documentação ✅
+### Checklist — Documentação ✅
+
 - ✅ Changelog atualizado (v0.3.0 completo)
 - ✅ Migration guide completo (`docs/Migration.md`)
 - ✅ README reflete v0.3 (já atualizado)
 - ✅ Exemplos funcionam (imports validados)
 
-### Pre-release ✅ / ⚠️
+### Checklist — Pre-release ✅ / ⚠️
+
 - ✅ Versão bumped corretamente (0.3.0)
 - ⚠️ Git tags (criar antes do publish)
 - ⚠️ Build CI verde (validar se CI configurado)
 - ⚠️ Dry-run de publish (executar antes do publish)
 
-### Release ⚠️
+### Checklist — Release ⚠️
+
 - ⚠️ Publicado no npm (ação manual pendente)
 - ⚠️ GitHub release criado (ação manual pendente)
 - ⚠️ Announcement preparado (opcional)
@@ -451,6 +454,7 @@ Thanks to everyone who contributed feedback and testing!
 **Status**: ✅ **APROVADO PARA RELEASE**
 
 **Implementação completa** que:
+
 - Atende todos os critérios obrigatórios da Fase 10
 - Testes 100% passando (252 testes)
 - Build limpo sem erros
@@ -463,6 +467,7 @@ Thanks to everyone who contributed feedback and testing!
 **🚀 Próximos passos para release**:
 
 1. **Validação final**:
+
    ```bash
    npm run build
    npm test
