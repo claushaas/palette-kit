@@ -73,6 +73,7 @@ describe("exportTheme", () => {
       preferSpace: "oklch",
       includeSpaces: [],
       precision: { l: 1, c: 3, h: 1, alpha: 2 },
+      srgbFormat: "hex",
       strict: false,
     });
 
@@ -89,6 +90,7 @@ describe("exportTheme", () => {
       preferSpace: "oklch",
       includeSpaces: [],
       precision: { l: 1, c: 3, h: 1, alpha: 2 },
+      srgbFormat: "hex",
       strict: false,
     });
   });

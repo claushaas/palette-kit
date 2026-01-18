@@ -24,6 +24,7 @@ export type ExportMeta = {
   preferSpace: NonNullable<OutputOptions["preferSpace"]>;
   includeSpaces: NonNullable<OutputOptions["includeSpaces"]>;
   precision: Required<NonNullable<OutputOptions["precision"]>>;
+  srgbFormat: NonNullable<OutputOptions["srgbFormat"]>;
   strict: boolean;
 };
 
@@ -55,6 +56,7 @@ const buildExportMeta = (output: ReturnType<typeof normalizeExportOutput>): Expo
   preferSpace: output.preferSpace,
   includeSpaces: output.includeSpaces,
   precision: output.precision,
+  srgbFormat: output.srgbFormat,
   strict: output.strict,
 });
 
@@ -87,6 +89,15 @@ const buildTokenMeta = (name: string, token: ThemeToken, context?: ColorContext)
   ...(token.emphasis ? { emphasis: token.emphasis } : {}),
   ...(token.on ? { on: token.on } : {}),
   ...(token.contrast ? { contrast: token.contrast } : {}),
+});
+
+const buildTokenValue = (serialized: TokenValue): TokenValue => ({
+  value: serialized.value,
+  ...(serialized.srgb !== undefined ? { srgb: serialized.srgb } : {}),
+  ...(serialized.p3 !== undefined ? { p3: serialized.p3 } : {}),
+  ...(serialized.oklch !== undefined ? { oklch: serialized.oklch } : {}),
+  alpha: serialized.alpha,
+  ...(serialized.meta !== undefined ? { meta: serialized.meta } : {}),
 });
 
 const toCssVarName = (name: string) => name.replace(/\./g, "-");
@@ -124,7 +135,7 @@ export const exportThemeCss = (
     // Base fallback MUST be sRGB (no silent OKLCH fallback).
     const baseSrgb = serializeColor(
       resolved.oklch,
-      { ...normalized, preferSpace: "srgb", includeSpaces: [], strict: true },
+      { ...normalized, preferSpace: "srgb", includeSpaces: [], strict: normalized.strict },
       meta,
     ).value;
 
@@ -213,14 +224,14 @@ export const exportThemeJson = (
       const meta = normalized.includeMeta ? buildTokenMeta(name, token, context) : undefined;
       const serialized = serializeColorJson(resolved.oklch, normalized, meta);
 
-      const entry: TokenValue = {
+      const entry = buildTokenValue({
         value: serialized.value,
         srgb: serialized.srgb,
         p3: serialized.p3,
         oklch: serialized.oklch,
         alpha: serialized.alpha,
         meta: serialized.meta,
-      };
+      });
 
       if (context === "light") {
         lightTokens[name] = entry;
