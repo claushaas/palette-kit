@@ -182,12 +182,12 @@ Facilitar adoção em projetos médios e grandes.
 
 ### Fase 6 — Tarefas
 
-- [ ] Implementar `init`.
-- [ ] Gerar `palette.config.ts`.
-- [ ] Implementar `build`.
-- [ ] Integrar exporters.
-- [ ] Gerar artefatos em `dist/palette/`.
-- [ ] Flags básicas (no magic).
+- [x] Implementar `init`.
+- [x] Gerar `palette.config.ts`.
+- [x] Implementar `build`.
+- [x] Integrar exporters.
+- [x] Gerar artefatos em `dist/palette/`.
+- [x] Flags básicas (no magic).
 
 ### Fase 6 — Critério de aceite
 
