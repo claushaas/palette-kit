@@ -1,7 +1,7 @@
 import type { OkLchColor } from "../engine/generateScale.js";
+import { serializeColorJson } from "../serialize/serializeColor.js";
 import type { ColorMeta, ColorQuery, OutputOptions } from "../types/index.js";
 import { serializeColor } from "./serializeColor.js";
-import { serializeColorJson } from "../serialize/serializeColor.js";
 
 export type ThemeToken = Omit<ColorQuery, "role" | "output"> & { role?: string };
 export type ThemeTokens = Record<string, ThemeToken>;
