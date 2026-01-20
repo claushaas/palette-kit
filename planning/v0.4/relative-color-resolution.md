@@ -1,0 +1,256 @@
+# Palette Kit v0.4 — Relative Color Resolution (On-Surface Contrast)
+
+## Purpose
+
+This document formalizes **relative color resolution** in Palette Kit v0.4.
+
+Its goal is to define how colors that require **contrast guarantees** (such as text, icons, and other visual vocabulary)
+are resolved **in relation to an already resolved color**, instead of being resolved in isolation.
+
+This mechanism is essential to correctly handle contrast in light and dark contexts
+without introducing implicit heuristics or duplicated semantic tokens.
+
+---
+
+## Core Principle
+
+**Contrast is not an intrinsic property of a color.**
+
+Contrast exists **only as a relationship between two colors**.
+
+As a consequence:
+
+- A foreground color cannot be correctly resolved without knowing the background it sits on.
+- Any system that resolves text colors without reference to their surface is fundamentally incomplete.
+
+Palette Kit addresses this by introducing **explicit relational resolution**.
+
+---
+
+## Conceptual Model
+
+Relative resolution introduces a new concept:
+
+> Resolve this color **on top of another resolved color**.
+
+This relationship is explicit, typed, and deterministic.
+
+It does not replace existing axes (Usage, Intent, State).
+It composes with them.
+
+---
+
+## High-Level API Concept
+
+Example usage:
+
+```ts
+const fillColor = resolver({
+  usage: "fill",
+  intent: "neutral"
+})
+
+const textOnFill = resolver({
+  usage: "visualVocabulary",
+  intent: "neutral",
+  on: fillColor
+})
+```
+
+In this model:
+
+- `fillColor` is resolved absolutely
+- `textOnFill` is resolved **relatively**, using `fillColor` as its reference surface
+
+---
+
+## What the `on` Relationship Represents
+
+The `on` property represents:
+
+- a **luminance reference**
+- a **contrast baseline**
+- a **physical surface**, not a semantic role
+
+It answers the question:
+
+> “Resolve this color so that it is perceptually valid *on top of* this other color.”
+
+---
+
+## Resolution Pipeline (Relative)
+
+When `on` is provided, the resolver follows this pipeline:
+
+```text
+Resolve base color (Usage + Intent)
+        ↓
+Apply usage-specific physical constraints
+        ↓
+Measure contrast against reference surface
+        ↓
+Select direction of luminance adjustment (L ↑ or L ↓)
+        ↓
+Adjust luminance until contrast target is met
+        ↓
+If needed, reduce chroma (never increase)
+        ↓
+Validate contrast invariants
+        ↓
+Return resolved color
+```
+
+No step in this pipeline is optional.
+
+---
+
+## Directional Luminance Resolution
+
+A key property of this system is that the resolver does **not assume**:
+
+- light text on dark backgrounds
+- dark text on light backgrounds
+
+Instead, it:
+
+1. Measures contrast in both luminance directions
+2. Selects the direction (increase or decrease of L) that reaches the contrast target first
+3. Applies the smallest possible luminance delta
+
+This guarantees:
+
+- minimal visual distortion
+- predictable results
+- no hard-coded “light vs dark” logic
+
+---
+
+## Hue and Chroma Policy
+
+### Hue
+
+- Hue **must remain constant** during relative resolution
+- Hue shifts are never used to satisfy contrast
+
+This preserves semantic consistency and color harmony.
+
+### Chroma
+
+- Chroma is preserved whenever possible
+- If contrast cannot be achieved by luminance alone:
+  - chroma may be **reduced**
+  - chroma is never increased
+  - reduction must be minimal and monotonic
+
+This ensures gamut safety and perceptual stability.
+
+---
+
+## Explicit Non-Goals
+
+Relative resolution must **never**:
+
+- change hue
+- use alpha for text or icons
+- encode contrast as an intent
+- introduce implicit thresholds
+- guess user preferences
+
+All behavior must be explainable through this document.
+
+---
+
+## Relationship to Existing Axes
+
+Relative resolution is **orthogonal** to existing axes.
+
+- **Usage** defines physical constraints
+- **Intent** defines semantic direction
+- **State** defines temporal modifiers
+- **Context** defines environment
+- **Relation (`on`)** defines contrast reference
+
+No axis absorbs the responsibility of another.
+
+---
+
+## Why Contrast Is Not an Intent
+
+Contrast does not answer *why* a color exists.
+
+It answers *whether two colors are perceptually separable*.
+
+Treating contrast as intent leads to:
+
+- semantic pollution
+- duplicated tokens (`textOnLight`, `textOnDark`)
+- hidden heuristics
+
+Palette Kit explicitly avoids this by modeling contrast as a **physical relationship**.
+
+---
+
+## Generalization Beyond Text
+
+Although text is the most common case, this mechanism is generic.
+
+It applies equally to:
+
+- icons on fills
+- outlines on surfaces
+- visual indicators on cards
+- badges on images
+- future media-based surfaces
+
+Relative resolution is not a text feature.
+It is a **core color system capability**.
+
+---
+
+## Resolution Guarantees
+
+The resolver must guarantee that:
+
+- contrast targets are always met when mathematically possible
+- results are deterministic
+- no implicit assumptions are made about light or dark themes
+- the same inputs always produce the same outputs
+- failures are explicit and actionable
+
+---
+
+## Example Walkthrough
+
+### Input
+
+```ts
+usage: "visualVocabulary"
+intent: "neutral"
+on: fillColor
+```
+
+### Steps
+
+1. Resolve base hue from intent
+2. Apply usage constraints (no alpha, contrast required)
+3. Measure contrast against `fillColor`
+4. Adjust luminance upward or downward as needed
+5. Reduce chroma only if necessary
+6. Validate contrast
+7. Return resolved color
+
+---
+
+## Final Summary
+
+Relative color resolution allows Palette Kit to:
+
+- solve contrast correctly
+- remain physically honest
+- avoid semantic hacks
+- scale to complex UI scenarios
+
+Contrast is treated as what it truly is:
+a **relationship**, not a property.
+
+This document defines the **relative resolution contract** for Palette Kit v0.4.
