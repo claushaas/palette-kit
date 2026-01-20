@@ -1,92 +1,81 @@
 ---
 name: phase-implementation-runbook
-description: Enforce the phase implementation workflow for Palette Kit v0.3 phases. Use when implementing a roadmap phase, creating a phase branch, validating the lint/typecheck/test/build pipeline, generating a patch for review, or preparing commit/push/PR steps.
+description: Enforce the Palette Kit v0.4 small-phase workflow. Use when working on any v0.4 phase implementation, validating docs/tests, packaging a patch, or preparing a commit/PR tied to the playbook.
 ---
 
 # Phase Implementation Runbook
 
-Use this skill whenever implementing a roadmap phase. It enforces the agreed step-by-step process and adds guardrails for clean reviews.
+Use this skill whenever following the Palette Kit v0.4 Implementation Playbook (`planning/v0.4/v0.4-implementation-playbook.md`). It keeps the work aligned with the playbook’s 16 small phases, the v0.4 SPEC (`planning/v0.4/v0.4-palette-kit-spec.md`), and the related axis/reference docs under `planning/v0.4/`.
+
+## Key references (read before coding)
+
+1. `planning/v0.4/v0.4-implementation-playbook.md` – linear phases, goals, stubs, “must nots,” and guardrails.
+2. `planning/v0.4/v0.4-palette-kit-spec.md` – normative contracts, axes, and resolver guarantees.
+3. The axis-specific doc for the phase you are working on (usage, relational, resolver pipeline, etc.).
 
 ## Workflow (must follow in order)
 
-1) Preflight and scope
+1. **Preflight and scope**
 
-- Read the target phase from `src/planning/roadmap-v0.3.md` and any referenced specs.
-- Confirm branch name format: `phase-<number>-<short-slug>`.
-- Check `git status -sb` and call out unrelated changes before proceeding.
-- If unrelated changes are present, stop and ask how to proceed.
+- Identify the numbered phase (0–16) from the playbook and review its “Goal,” “Must implement,” “May stub,” and “Must NOT” sections.
+- Confirm the branch name format `phase-<number>-<short-slug>` and that you start from `v0.3` (or current release branch).
+- Run `git status -sb` and surface any unrelated changes before making edits; pause if their presence needs clarification.
 
-2) Create branch
+2. **Branch creation**
 
-- Create the branch from `v0.3` (or current branch if already on `v0.3`).
-- Prefer `git switch -c phase-<number>-<short-slug>` for branch creation.
-- Verify with `git status -sb`.
+- Create a new branch from `v0.3` using `git switch -c phase-<number>-<short-slug>` (or `git checkout -b …`) and double-check `git status -sb`.
+- Keep the phase number/slug visible so reviewers can confirm ordering.
 
-3) Implement the phase
+3. **Implement the phase**
 
-- Make only changes required for the phase.
-- Keep docs updated when required by the phase (e.g., spec references).
-- Do not add unrelated refactors.
-- If editing `.md` files, follow the markdownlint rules (use the markdownlint-writer skill).
-- Do not expand scope beyond what is explicitly listed in the phase.
-- If an improvement is identified but out of scope, document it and stop.
-- Prefer adding new files over modifying existing ones unless explicitly required.
-- Avoid moving files or renaming symbols without spec justification.
+- Make only the changes explicitly required by the phase. Keep scope minimal, aligned with the playbook’s topological ordering, and avoid mixing axes or inferring behavior.
+- Follow markdownlint rules (use `markdownlint-writer` skill) and keep TypeScript contracts intact (use `type-contract-auditor` when unsure).
+- If an improvement is outside the current phase, note it (issue, TODO, or phase reference) and defer it rather than sneaking it in.
+- Prefer adding new files for the phase; avoid modifying earlier layers unless the phase explicitly lists those files.
 
-4) Validate in order
+4. **Validation (in order)**
 
-- Run these commands in an order that surfaces fast failures first:
-  1. `npm run lint:md` (if docs touched)
+- Run commands sequentially, stopping at the first failure:
+  1. `npm run lint:md` (only when docs touched)
   2. `npm run lint`
   3. `npm run typecheck`
   4. `npm run test`
   5. `npm run build`
-- If any step fails, fix and rerun from the failing step onward.
-- If a command is not applicable, note it explicitly as "not run" in the report.
+- If a step fails, fix and rerun starting from that step. If you intentionally skip a command, annotate “not run (\<reason\>)” in your report.
 
-5) Summarize changes and produce diff patch for review
+5. **Document, summarize, produce patch**
 
-- Capture a quick summary with `git diff --stat`.
-- Generate a patch file for external review, e.g.:
-  - `git diff > /tmp/phase-<number>-<short-slug>.patch`
-- Report the patch path and wait for explicit confirmation to commit and push.
+- Update any phase documentation that references the files you touched (e.g., resolver reference, axis deep dive) so diagrams/spec links stay accurate.
+- Capture a summary (`git diff --stat`) and produce a patch file for reviewers: `git diff > /tmp/phase-<number>-<short-slug>.patch` (or equivalent) and note its path.
 
-6) After confirmation: commit, push, PR
+6. **Post-patch (after explicit approval)**
 
-- Craft Conventional Commit message(s) in English.
-- Commit only the phase-related changes.
-- Push the branch.
-- Open a PR with base `v0.3` and a clear summary.
+- Commit only the phase-related changes using Conventional Commit format and English.
+- Push the branch and open a PR targeting `v0.3`, referencing the phase title and playbook step.
+- In the PR, list the phase(s) effected, confirm no future phases were merged, and cite the implementation checklist (tests run, docs updated, guardrails satisfied).
 
-## DX Quality Gate (mandatory)
+## DX Quality Gates
 
-Before producing the patch:
-
-- All new public APIs MUST:
-  - have complete TypeScript autocomplete
-  - include clear JSDoc explaining:
-    - intent
-    - defaults
-    - inferred vs explicit behavior
-- If an API is correct but awkward to discover or use, stop and revise.
-- DX regressions are considered phase failures, even if tests pass.
+- All new public APIs must provide exact TypeScript autocomplete and clear JSDoc describing intent, defaults, and which behaviors are explicit versus inferred.
+- If an API seems awkward or hard to discover, pause and improve the developer DX before proceeding.
+- DX regressions count as phase failures even when tests pass.
 
 ## Guardrails
 
-- If you notice unexpected changes you did not make, stop and ask how to proceed.
 - Never amend commits unless explicitly requested.
-- Do not run destructive git commands.
-- Do not reinterpret or redesign specs.
-- All architectural and API decisions are considered frozen for the phase.
-- If the spec is ambiguous or incomplete, stop and ask before implementing.
+- Avoid destructive Git commands (`git reset --hard`, `git checkout --`, etc.).
+- Do not reinterpret or redesign the SPEC; the playbook already defines the contract.
+- Respect the small-phase linear ordering; merging future phases or skipping back is not allowed.
+- If you encounter unexpected changes you didn’t make, stop and ask before continuing.
+- If a spec detail is unclear, re-read the playbook/spec and ask rather than improvising.
 
-## Output checklist
+## Output checklist (pre-approval)
 
-Always end the phase work (pre-confirmation) with:
+Before asking for confirmation, document:
 
-- Tests/validation results summary.
-- Patch path.
-- A prompt asking for confirmation to commit/push/PR.
-- Confirmation that all phase goals are satisfied and no extra features were added.
-- Confirmation that no architectural or API decisions were changed.
-- Short note explaining how the implementation maps to the spec requirements.
+- The validation summary (commands run + “not run” notes).
+- Patch path (e.g., `/tmp/phase-<number>-<short-slug>.patch`).
+- A question prompting the reviewer for commit/push/PR approval.
+- Confirmation the phase goals are met without extra features.
+- Confirmation no architectural/API decisions were altered.
+- A brief note mapping how the implementation satisfies the playbook requirements (phase number + goal).
