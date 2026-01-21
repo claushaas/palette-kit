@@ -40,7 +40,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint:biome": "biome check --unsafe --write",
-    "lint:md": "markdownlint \"**/*.md\" --ignore node_modules",
+    "lint:md": "markdownlint \"**/*.md\" --ignore node_modules --fix",
     "lint": "npm run lint:biome && npm run lint:md && npm run typecheck",
     "update": "npx npm-check-updates -i"
   },
