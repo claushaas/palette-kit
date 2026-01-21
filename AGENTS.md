@@ -38,8 +38,6 @@ If something is unclear, **stop and ask before proceeding**.
 
 ## 5. Environment and setup
 
-> Only execute commands explicitly listed here.
-
 - Install dependencies:
 
   ```text
