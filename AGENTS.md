@@ -1,16 +1,24 @@
 # AGENTS
 
-Guidance for agents working in this repo, derived from `docs/spec.md` (phases 0 and 1).
+Guidance for agents working in this repo. Keep this aligned with the actual library
+surface in `src/` and the current planning docs in `planning/v0.4`.
 
-## Phase 0: Structure and dependencies
+## Idioma das respostas
 
-- Keep the folder layout under `src/` aligned with the spec: `core`, `engine`, `contrast`, `operators`, `export`, `presets`, `types`, `utils`.
-- Keep the required dependencies available: `culori` and an APCA implementation (`apca-w3` is acceptable).
+- Sempre responder em português (pt-BR), independentemente do idioma dos documentos ou da mensagem do usuário.
+- Todo conteúdo escrito no repositório deve ser em inglês.
 
-## Phase 1: Types and contracts
+## Estrutura e dependências
 
-- Public types live in `src/types`. Implement these without business logic:
-  `ColorContext`, `SurfaceIntent`, `ColorState`, `ColorEmphasis`, `SemanticVariant`,
-  `ColorUsage`, `ColorRole`, `BackgroundHint`, `ContrastRequirement`, `AlphaStrategy`,
-  `OutputOptions`, `ColorQuery`, `OnSolidQuery`, `ResolvedColor`, `ColorMeta`.
-- Acceptance criteria: build must pass and there must be no circular imports.
+- Mantenha o layout de pastas sob `src/` alinhado com a spec: `core`, `engine`, `contrast`, `operators`, `export`, `presets`, `types`, `utils`.
+- Dependências obrigatórias: `culori` e uma implementação de APCA (`apca-w3` é aceitável).
+
+## Tipos públicos e contratos
+
+- Tipos públicos vivem em `src/types/index.ts`. Implementar estes tipos sem lógica de negócio:
+  `CssColorString`, `ColorSpace`, `ColorContext`, `SurfaceIntent`, `ColorState`,
+  `ColorEmphasis`, `SemanticVariant`, `ColorRole`, `ColorUsage`, `TokenBackgroundHint`,
+  `TokenQuery`, `TokenState`, `TokenStates`, `BackgroundHint`, `ContrastRequirement`,
+  `AlphaStrategy`, `OutputOptions`, `RawColor`, `ColorMeta`, `TokenDefinition`,
+  `TokenRegistry`, `ResolvedColor`, `ColorQuery`, `OnSolidQuery`, `SemanticColorTheme`.
+- Critérios de aceitação: build deve passar e não pode haver imports circulares.
