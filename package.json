@@ -7,25 +7,10 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "bin": {
-    "palette-kit": "dist/cli.js"
-  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    },
-    "./export": {
-      "types": "./dist/export.d.ts",
-      "default": "./dist/export.js"
-    },
-    "./cli": {
-      "types": "./dist/cli.d.ts",
-      "default": "./dist/cli.js"
-    },
-    "./serialize": {
-      "types": "./dist/serialize.d.ts",
-      "default": "./dist/serialize.js"
     }
   },
   "packageManager": "pnpm@10.33.2",
@@ -35,7 +20,6 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "clean": "rm -rf dist",
-    "generate:theme": "tsx -e \"import { createTheme, toTs } from './src/index.ts'; import { writeFileSync } from 'node:fs'; const theme = createTheme({ neutral: { source: 'seed', value: '#111827' }, accent: { source: 'seed', value: '#3d63dd' }, semantic: { success: { source: 'seed', value: '#16a34a' }, warning: { source: 'seed', value: '#f59e0b' }, danger: { source: 'seed', value: '#ef4444' } }, tokens: { preset: 'radix-like-ui' }, alpha: { enabled: true, background: { light: '#ffffff', dark: '#111111' } }, contrast: { textPrimary: 75, textSecondary: 60 }, p3: true }); const ts = toTs(theme); writeFileSync('docs/theme.generated.ts', ts);\"",
     "prepublishOnly": "npm run build",
     "test": "vitest run",
     "test:watch": "vitest",
