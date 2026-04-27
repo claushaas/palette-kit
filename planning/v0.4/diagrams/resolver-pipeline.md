@@ -3,8 +3,8 @@ graph TD
   Input["Resolve Options"]
 
   Validate["Type Validation"]
-  SelectStrategy["Select Usage Strategy"]
   ApplyIntent["Apply Intent<br/>(Hue / Base Chroma)"]
+  SelectStrategy["Select Usage Strategy"]
   ApplyLevel["Apply Level Curve"]
   ApplyRelation["Apply Relation<br/>(on / over / under)"]
   ApplyState["Apply State Deltas"]
@@ -12,9 +12,9 @@ graph TD
   Output["Resolved Color"]
 
   Input --> Validate
-  Validate --> SelectStrategy
-  SelectStrategy --> ApplyIntent
-  ApplyIntent --> ApplyLevel
+  Validate --> ApplyIntent
+  ApplyIntent --> SelectStrategy
+  SelectStrategy --> ApplyLevel
   ApplyLevel --> ApplyRelation
   ApplyRelation --> ApplyState
   ApplyState --> ApplyContext
