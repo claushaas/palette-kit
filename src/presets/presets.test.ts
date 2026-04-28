@@ -159,6 +159,6 @@ describe("resolver preset configs", () => {
   });
 
   it("does not expose preset APIs from the public entrypoint", () => {
-    expect(Object.keys(publicApi)).toEqual([]);
+    expect(Object.keys(publicApi)).toEqual(["createPaletteKit"]);
   });
 });

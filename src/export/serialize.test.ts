@@ -81,6 +81,6 @@ describe("OKLCH serialization", () => {
   });
 
   it("keeps serializer APIs internal to the package entrypoint", () => {
-    expect(Object.keys(publicApi)).toEqual([]);
+    expect(Object.keys(publicApi)).toEqual(["createPaletteKit"]);
   });
 });

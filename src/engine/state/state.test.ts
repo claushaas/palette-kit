@@ -89,6 +89,6 @@ describe("state deltas", () => {
   });
 
   it("does not expose state APIs from the public entrypoint", () => {
-    expect(Object.keys(publicApi)).toEqual([]);
+    expect(Object.keys(publicApi)).toEqual(["createPaletteKit"]);
   });
 });

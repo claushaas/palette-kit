@@ -179,6 +179,6 @@ describe("relation application hooks", () => {
   });
 
   it("does not expose relation APIs from the public entrypoint", () => {
-    expect(Object.keys(publicApi)).toEqual([]);
+    expect(Object.keys(publicApi)).toEqual(["createPaletteKit"]);
   });
 });
