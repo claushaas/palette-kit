@@ -1,19 +1,11 @@
 import { normalizeOklch, type OklchInput } from "../core/oklch.js";
 import { oklabToLinearRgb, oklchToOklab } from "../operators/convert.js";
-
-export type ColorOutput = "oklch" | "oklab" | "srgb" | "p3" | "hex" | "rgba";
+import type { ColorOutput, RgbaColor } from "./types.js";
 
 export type GamutStrategy = "clip";
 
 export type SerializationOptions = Readonly<{
   gamutStrategy?: GamutStrategy;
-}>;
-
-export type RgbaColor = Readonly<{
-  r: number;
-  g: number;
-  b: number;
-  a: number;
 }>;
 
 export type ColorSerializer<T> = (color: OklchInput, options?: SerializationOptions) => T;
