@@ -37,10 +37,11 @@ Output serialization happens after resolution.
 ## Public Outputs
 
 - `oklch`: normalized OKLCH object.
+- `oklab`: OKLab object.
+- `srgb`: clipped 8-bit sRGB object.
+- `p3`: clipped 8-bit Display-P3 object.
 - `hex`: serialized sRGB hex string.
 - `rgba`: serialized sRGB object.
-
-`oklab`, `srgb`, and `p3` are typed but not serialized in v0.4 yet.
 
 ## Not Public in v0.4
 

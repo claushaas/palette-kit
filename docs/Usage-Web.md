@@ -63,4 +63,4 @@ const text = palette.resolve({
 
 - `fill`, `lines`, and `overlays` require `level`.
 - `state !== "default"` requires `stateDirection`.
-- `oklab`, `srgb`, and `p3` are not serialized yet in v0.4.
+- `hex`, `rgba`, `srgb`, and `p3` are available for platform delivery.

@@ -1,11 +1,11 @@
-import type { UsageStrategy } from "./strategy.js";
+import type { UsageStrategy } from './strategy.js';
 
 export const fillUsageStrategy = Object.freeze({
-  usage: "fill",
-  resolve(input) {
-    return Object.freeze({
-      usage: "fill",
-      intent: input.intent,
-    });
-  },
-} satisfies UsageStrategy<"fill">);
+	resolve(input) {
+		return Object.freeze({
+			intent: input.intent,
+			usage: 'fill',
+		});
+	},
+	usage: 'fill',
+} satisfies UsageStrategy<'fill'>);

@@ -20,9 +20,8 @@ It depends on `output`.
 
 ## Are `oklab`, `srgb`, and `p3` supported?
 
-They are part of the type contract, but they are not serialized in the current
-v0.4 implementation. Requesting them at runtime throws an unsupported output
-error.
+Yes. `oklab` returns an OKLab object. `srgb` and `p3` return RGB-like objects
+with `{ r, g, b, alpha }`.
 
 ## Is there a CLI?
 

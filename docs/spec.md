@@ -54,11 +54,14 @@ The resolver is deterministic and resolves internally in OKLCH.
 ## Implemented Outputs
 
 - `oklch`
+- `oklab`
+- `srgb`
+- `p3`
 - `hex`
 - `rgba`
 
-`oklab`, `srgb`, and `p3` are part of the type contract but are not serialized in
-the current v0.4 implementation.
+RGB-like outputs use clipped 8-bit channels. `p3` uses Display-P3 conversion
+and the current explicit clip gamut strategy.
 
 ## Implemented Guarantees
 
@@ -74,7 +77,6 @@ the current v0.4 implementation.
 - Presets are internal only.
 - `resolverConfig` is internal only.
 - Contrast enforcement is not implemented as public behavior yet.
-- Display-P3 serialization is not implemented yet.
 - CLI and exporters are not public in v0.4.
 
 ## References

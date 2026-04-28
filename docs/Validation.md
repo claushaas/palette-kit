@@ -89,6 +89,5 @@ Valid output names:
 - `hex`
 - `rgba`
 
-Runtime serialization currently supports `oklch`, `hex`, and `rgba`.
-
-`oklab`, `srgb`, and `p3` throw unsupported output errors in v0.4.
+Runtime serialization supports all valid output names. RGB-like outputs use
+explicit clip gamut handling.

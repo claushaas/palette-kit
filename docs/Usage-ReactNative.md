@@ -60,4 +60,4 @@ const hex = palette.resolve({
 
 - Palette Kit does not inspect platform color scheme automatically.
 - Provide `context` or `systemDefaultContext` explicitly.
-- `p3` is typed but not serialized in v0.4 yet.
+- `rgba` is usually the most direct React Native output.

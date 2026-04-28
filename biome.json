@@ -1,43 +1,63 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.13/schema.json",
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "space",
-    "indentWidth": 2,
-    "lineWidth": 100
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true
-    }
-  },
-  "files": {
-    "ignoreUnknown": true,
-    "includes": [
-      "**/*.js",
-      "**/*.ts",
-      "**/*.tsx",
-      "**/*.css",
-      "**/*.scss",
-      "**/*.html",
-      "**/*.json",
-      "**/*.md",
-      "!**/supabase/functions",
-      "!**/node_modules",
-      "!**/dist",
-      "!**/build",
-      "!**/coverage",
-      "!**/ios",
-      "!**/android",
-      "!**/.git/",
-      "!**/.vscode",
-      "!**/*.d.ts",
-      "!**/*.spec.ts",
-      "!**/*.test.ts",
-      "!**/.github",
-      "!**/examples",
-      "!**/tests"
-    ]
-  }
+	"$schema": "https://biomejs.dev/schemas/2.4.13/schema.json",
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "on",
+				"useSortedAttributes": "on",
+				"useSortedKeys": "on",
+				"useSortedProperties": "on"
+			}
+		}
+	},
+	"files": {
+		"ignoreUnknown": true,
+		"includes": [
+			"**/*.js",
+			"**/*.ts",
+			"**/*.tsx",
+			"**/*.css",
+			"**/*.scss",
+			"**/*.html",
+			"**/*.json",
+			"**/*.md",
+			"!**/node_modules",
+			"!**/dist",
+			"!**/build",
+			"!**/coverage",
+			"!**/.git/",
+			"!**/.vscode",
+			"!**/.react-router",
+			"!**/*.d.ts",
+			"!**/*.spec.ts",
+			"!**/.github",
+			"!**/.rnstorybook"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab"
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single"
+		}
+	},
+	"linter": {
+		"domains": {
+			"react": "all"
+		},
+		"enabled": true,
+		"rules": {
+			"performance": {
+				"noDynamicNamespaceImportAccess": "off"
+			},
+			"recommended": true
+		}
+	},
+	"vcs": {
+		"clientKind": "git",
+		"enabled": true,
+		"useIgnoreFile": true
+	}
 }

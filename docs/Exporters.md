@@ -22,10 +22,11 @@ const tokens = {
 ## Supported Runtime Outputs
 
 - `oklch`
+- `oklab`
+- `srgb`
+- `p3`
 - `hex`
 - `rgba`
-
-`oklab`, `srgb`, and `p3` are typed but not serialized yet.
 
 ## Future Work
 

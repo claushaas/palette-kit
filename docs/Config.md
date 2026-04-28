@@ -68,11 +68,11 @@ If no context can be resolved, `palette.resolve` throws.
 Runtime support in the current v0.4 implementation:
 
 - `oklch`: supported
+- `oklab`: supported
+- `srgb`: supported
+- `p3`: supported
 - `hex`: supported
 - `rgba`: supported
-- `oklab`: typed, not serialized yet
-- `srgb`: typed, not serialized yet
-- `p3`: typed, not serialized yet
 
 ## Presets and Resolver Config
 

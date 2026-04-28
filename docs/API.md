@@ -109,13 +109,13 @@ If none is available, resolution throws.
 | Output | Runtime status |
 | --- | --- |
 | `oklch` | Returns normalized OKLCH object |
+| `oklab` | Returns OKLab object |
+| `srgb` | Returns `{ r, g, b, alpha }` |
+| `p3` | Returns Display-P3 `{ r, g, b, alpha }` |
 | `hex` | Serialized to `#rrggbb` |
 | `rgba` | Serialized to `{ r, g, b, a }` |
-| `oklab` | Typed, not serialized in v0.4 yet |
-| `srgb` | Typed, not serialized in v0.4 yet |
-| `p3` | Typed, not serialized in v0.4 yet |
 
-Unsupported serialized outputs throw an explicit Palette Kit error.
+RGB-like outputs use clipped 8-bit channels.
 
 ## Public Types
 
@@ -132,6 +132,7 @@ The package root reexports:
 - `Context`
 - `ColorOutput`
 - `OklchColor`
+- `RgbColor`
 - `RgbaColor`
 - `IntentDefinition`
 

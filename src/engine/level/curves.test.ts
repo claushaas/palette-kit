@@ -1,56 +1,73 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
 
-import { defaultLevelCurves } from "./curves.js";
-import { LEVELS, type Level } from "./level.js";
+import { defaultLevelCurves } from './curves.js';
+import { LEVELS, type Level } from './level.js';
 
 const fillTargets = [98, 96, 94, 91, 88, 84, 79, 73, 66];
 const linesTargets = [96, 95, 94, 92, 90, 88, 86, 84, 82];
 const invalidLevelError = 'Invalid level "0". Expected an integer from 1 to 9.';
 
-const valuesFor = (curve: (level: Level) => number) => LEVELS.map((level) => curve(level));
+const valuesFor = (curve: (level: Level) => number) =>
+	LEVELS.map((level) => curve(level));
 
 const isStrictlyDecreasing = (values: readonly number[]) =>
-  values.every((value, index) => index === 0 || value < values[index - 1]);
+	values.every((value, index) => index === 0 || value < values[index - 1]);
 
-describe("default level curves", () => {
-  it("freezes the default curve config", () => {
-    expect(Object.isFrozen(defaultLevelCurves)).toBe(true);
-  });
+describe('default level curves', () => {
+	it('freezes the default curve config', () => {
+		expect(Object.isFrozen(defaultLevelCurves)).toBe(true);
+	});
 
-  it("returns fill targets by level", () => {
-    expect(valuesFor(defaultLevelCurves.fill)).toEqual(fillTargets);
-  });
+	it('returns fill targets by level', () => {
+		expect(valuesFor(defaultLevelCurves.fill)).toEqual(fillTargets);
+	});
 
-  it("returns compressed lines targets by level", () => {
-    expect(valuesFor(defaultLevelCurves.lines)).toEqual(linesTargets);
-  });
+	it('returns compressed lines targets by level', () => {
+		expect(valuesFor(defaultLevelCurves.lines)).toEqual(linesTargets);
+	});
 
-  it("keeps fill and lines curves monotonic decreasing", () => {
-    expect(isStrictlyDecreasing(valuesFor(defaultLevelCurves.fill))).toBe(true);
-    expect(isStrictlyDecreasing(valuesFor(defaultLevelCurves.lines))).toBe(true);
-  });
+	it('keeps fill and lines curves monotonic decreasing', () => {
+		expect(isStrictlyDecreasing(valuesFor(defaultLevelCurves.fill))).toBe(true);
+		expect(isStrictlyDecreasing(valuesFor(defaultLevelCurves.lines))).toBe(
+			true,
+		);
+	});
 
-  it("compresses lines variation relative to fill", () => {
-    const fillVariation = defaultLevelCurves.fill(1) - defaultLevelCurves.fill(9);
-    const linesVariation = defaultLevelCurves.lines(1) - defaultLevelCurves.lines(9);
+	it('compresses lines variation relative to fill', () => {
+		const fillVariation =
+			defaultLevelCurves.fill(1) - defaultLevelCurves.fill(9);
+		const linesVariation =
+			defaultLevelCurves.lines(1) - defaultLevelCurves.lines(9);
 
-    expect(linesVariation).toBeLessThan(fillVariation);
-  });
+		expect(linesVariation).toBeLessThan(fillVariation);
+	});
 
-  it("returns frozen overlay targets with monotonic increasing luminance deltas", () => {
-    const overlayResults = LEVELS.map((level) => defaultLevelCurves.overlays(level));
+	it('returns frozen overlay targets with monotonic increasing luminance deltas', () => {
+		const overlayResults = LEVELS.map((level) =>
+			defaultLevelCurves.overlays(level),
+		);
 
-    expect(overlayResults.map((result) => result.luminanceDelta)).toEqual(LEVELS);
-    expect(overlayResults.every((result) => Object.isFrozen(result))).toBe(true);
-  });
+		expect(overlayResults.map((result) => result.luminanceDelta)).toEqual(
+			LEVELS,
+		);
+		expect(overlayResults.every((result) => Object.isFrozen(result))).toBe(
+			true,
+		);
+	});
 
-  it("rejects invalid levels without fallback", () => {
-    expect(() => defaultLevelCurves.fill(0 as Level)).toThrow(invalidLevelError);
-    expect(() => defaultLevelCurves.lines(0 as Level)).toThrow(invalidLevelError);
-    expect(() => defaultLevelCurves.overlays(0 as Level)).toThrow(invalidLevelError);
-  });
+	it('rejects invalid levels without fallback', () => {
+		expect(() => defaultLevelCurves.fill(0 as Level)).toThrow(
+			invalidLevelError,
+		);
+		expect(() => defaultLevelCurves.lines(0 as Level)).toThrow(
+			invalidLevelError,
+		);
+		expect(() => defaultLevelCurves.overlays(0 as Level)).toThrow(
+			invalidLevelError,
+		);
+	});
 
-  it("does not define visual vocabulary level curves", () => {
-    expect(Object.hasOwn(defaultLevelCurves, "visualVocabulary")).toBe(false);
-  });
+	it('does not define visual vocabulary level curves', () => {
+		expect(Object.hasOwn(defaultLevelCurves, 'visualVocabulary')).toBe(false);
+	});
 });

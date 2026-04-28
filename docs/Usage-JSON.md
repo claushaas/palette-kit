@@ -36,4 +36,4 @@ const json = JSON.stringify(tokens, null, 2);
 
 - There is no public exporter subpath in v0.4.
 - `hex` and `rgba` are supported runtime outputs.
-- `oklab`, `srgb`, and `p3` are typed but not serialized yet.
+- `oklch`, `oklab`, `srgb`, and `p3` are also supported runtime outputs.
