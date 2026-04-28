@@ -21,6 +21,34 @@
 			"types": "./dist/index.d.ts"
 		}
 	},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE",
+		"CHANGELOG.md",
+		"docs/README.md",
+		"docs/API.md",
+		"docs/Config.md",
+		"docs/Concepts.md",
+		"docs/Architecture.md",
+		"docs/Validation.md",
+		"docs/FAQ.md",
+		"docs/Usage-Web.md",
+		"docs/Usage-ReactNative.md",
+		"docs/Usage-JSON.md",
+		"docs/CLI.md",
+		"docs/Exporters.md",
+		"docs/Tokens.md",
+		"docs/Diagnostics.md",
+		"docs/Alpha.md",
+		"docs/Overlays.md",
+		"docs/Text.md",
+		"docs/Why.md",
+		"docs/Migration.md",
+		"docs/spec.md",
+		"docs/_api-surface.md",
+		"docs/snippets/serialize-oklch.md"
+	],
 	"license": "MIT",
 	"main": "dist/index.js",
 	"name": "@clhaas/palette-kit",
@@ -42,5 +70,5 @@
 	},
 	"type": "module",
 	"types": "dist/index.d.ts",
-	"version": "0.3.0"
+	"version": "0.4.0"
 }

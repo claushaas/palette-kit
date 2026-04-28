@@ -25,11 +25,13 @@ This keeps meaning separate from presentation and environment.
 - Context is explicit and never inferred.
 - Level is explicit and never inferred.
 - Output is applied after resolution.
-- `hex` and `rgba` are supported delivery formats.
+- `on` enforces APCA contrast explicitly.
+- `hex`, `rgba`, `oklab`, `srgb`, and `p3` are supported delivery formats.
+- Presets and resolver config are explicit public configuration.
 - CLI and exporters are not public.
 
 ## Trade-Off
 
-The current v0.4 branch favors a small, auditable API over a broad convenience
-surface. Helpers, presets, exporters, and advanced output handling can be added
-later without changing the resolver model.
+The current v0.4 branch favors an auditable API over broad convenience tooling.
+CLI commands, token exporters, and codegen can be added later without changing
+the resolver model.

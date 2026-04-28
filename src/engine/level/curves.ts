@@ -1,9 +1,10 @@
+import type { Context } from '../context/context.js';
 import type { Usage } from '../usage/strategy.js';
 import { assertLevel, type Level } from './level.js';
 
 export type LevelDrivenUsage = Exclude<Usage, 'visualVocabulary'>;
 
-export type LevelCurve<T> = (level: Level) => T;
+export type LevelCurve<T> = (level: Level, context: Context) => T;
 
 export type FillLevelCurve = LevelCurve<number>;
 
@@ -57,17 +58,17 @@ const overlayLevelTargets = Object.freeze({
 	9: Object.freeze({ luminanceDelta: 9 }),
 } satisfies Record<Level, OverlayLevelResult>);
 
-export const defaultLevelCurves = Object.freeze({
-	fill(level) {
+export const defaultLevelCurves: LevelCurveConfig = Object.freeze({
+	fill(level, _context) {
 		assertLevel(level);
 		return fillLevelTargets[level];
 	},
-	lines(level) {
+	lines(level, _context) {
 		assertLevel(level);
 		return linesLevelTargets[level];
 	},
-	overlays(level) {
+	overlays(level, _context) {
 		assertLevel(level);
 		return overlayLevelTargets[level];
 	},
-} satisfies LevelCurveConfig);
+});

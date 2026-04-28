@@ -19,10 +19,12 @@ const scrim = palette.resolve({
 
 ## Current Behavior
 
-The current v0.4 resolver keeps overlay behavior structural:
+The current v0.4 resolver applies configured relation behavior:
 
 - base lightness is `50`;
-- alpha remains `1`;
-- relation hooks validate structure but do not apply visual depth yet.
+- `over` applies alpha from `relationParams.over.baseAlphaByLevel`;
+- `under` applies alpha from `relationParams.under.baseAlphaByLevel`;
+- `under` also reduces lightness by
+  `relationParams.under.luminanceReduction`;
 
-This is intentional for the current implementation stage.
+`over` and `under` do not enforce contrast.

@@ -9,8 +9,8 @@ branch.
 import { createPaletteKit } from "@clhaas/palette-kit";
 ```
 
-Only `createPaletteKit` is exported as runtime API. Public TypeScript types are
-also reexported from the package root.
+The package root exports `createPaletteKit` and the official resolver preset
+configs. Public TypeScript types are also reexported from the package root.
 
 ## createPaletteKit
 
@@ -25,6 +25,7 @@ intent registry once and keeps context and output defaults explicit.
 const palette = createPaletteKit({
   context: "light",
   output: "oklch",
+  preset: "neutral",
   intents: {
     brand: { hue: 260, chroma: 0.14 },
     neutral: { hue: 0, chroma: 0 },
@@ -74,6 +75,10 @@ const text = palette.resolve({
 | `visualVocabulary` | Forbidden | `on` required |
 | `lines` | Required | `on` optional |
 | `overlays` | Required | `over` or `under` optional |
+
+`on` enforces APCA contrast. The default target is Lc 60. If the resolver cannot
+meet the target after the configured luminance shift and chroma reduction, it
+throws.
 
 ## State Rules
 
@@ -135,6 +140,10 @@ The package root reexports:
 - `RgbColor`
 - `RgbaColor`
 - `IntentDefinition`
+- `ResolverPresetName`
+- `ResolverConfig`
+- `RelationParamsConfig`
+- `ChromaConfig`
 
 ## Not Public in v0.4
 
@@ -142,6 +151,5 @@ The package root reexports:
 - Validators
 - Internal resolver helpers
 - Serializer functions
-- Preset configs
 - CLI
 - Subpath exporters

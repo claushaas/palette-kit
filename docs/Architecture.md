@@ -14,8 +14,8 @@ Resolution is deterministic and side-effect free.
 
 - `core`: OKLCH model and intent registry.
 - `engine`: usage, level, state, relation, context, and resolver pipeline.
-- `export`: output typing and current `hex` / `rgba` serializers.
-- `presets`: internal resolver presets, not public API.
+- `export`: output typing and serializers.
+- `presets`: official resolver presets and config merge helpers.
 - `types`: public type contracts reexported by the package root.
 - `utils`: structured internal errors.
 
@@ -27,7 +27,7 @@ The internal resolver:
 2. looks up the registered intent;
 3. selects the usage strategy;
 4. applies level for level-driven usages;
-5. applies relation validation and hooks;
+5. applies relation validation and behavior;
 6. applies explicit state deltas;
 7. applies structural context hooks;
 8. returns normalized OKLCH.
@@ -47,8 +47,6 @@ Output serialization happens after resolution.
 
 - CLI
 - subpath exporters
-- preset selection
-- resolver config overrides
 - serializer functions
 - registry helpers
 

@@ -9,10 +9,14 @@ planning specification lives in
 The package root exposes:
 
 - `createPaletteKit`
+- `softResolverConfig`
+- `neutralResolverConfig`
+- `strongResolverConfig`
+- `defaultResolverConfig`
 - public TypeScript types
 
-The package root does not expose CLI commands, subpath exporters, preset configs,
-serializer functions, validators, or internal resolver helpers.
+The package root does not expose CLI commands, subpath exporters, serializer
+functions, validators, or internal resolver helpers.
 
 ## Public Configuration
 
@@ -33,6 +37,8 @@ The public config supports:
 - `context`
 - `systemDefaultContext`
 - `output`
+- `preset`
+- `resolverConfig`
 
 ## Resolver Axes
 
@@ -71,12 +77,12 @@ and the current explicit clip gamut strategy.
 - Level is explicit and never inferred.
 - Non-default state requires `stateDirection`.
 - Forbidden axis combinations throw.
+- `on` enforces APCA contrast with a default Lc 60 target.
+- `over` applies configured alpha by level.
+- `under` applies configured alpha and luminance reduction by level.
 
 ## Current Limitations
 
-- Presets are internal only.
-- `resolverConfig` is internal only.
-- Contrast enforcement is not implemented as public behavior yet.
 - CLI and exporters are not public in v0.4.
 
 ## References

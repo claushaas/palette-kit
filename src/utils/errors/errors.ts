@@ -5,6 +5,7 @@ export type PaletteKitErrorCategory =
 	| 'serialization';
 
 export type PaletteKitErrorCode =
+	| 'CONTRAST_UNSATISFIABLE'
 	| 'UNKNOWN_INTENT'
 	| 'MISSING_REQUIRED_AXIS'
 	| 'FORBIDDEN_AXIS_COMBINATION'
@@ -103,4 +104,15 @@ export const createUnsupportedOutputError = (
 		'serialization',
 		message ?? `Unsupported color output "${output}" in Phase 10 serializer.`,
 		{ output },
+	);
+
+export const createContrastUnsatisfiableError = (
+	contrast: number,
+	target: number,
+) =>
+	new PaletteKitError(
+		'CONTRAST_UNSATISFIABLE',
+		'resolution',
+		`Unable to satisfy APCA contrast target ${target}. Best contrast was ${contrast}.`,
+		{ contrast, target },
 	);

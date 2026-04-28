@@ -1,10 +1,20 @@
-import { isOklchColor, type OklchColor } from '../../core/oklch.js';
+import { resolveOnContrast } from '../../contrast/contrast.js';
+import {
+	isOklchColor,
+	normalizeOklch,
+	type OklchColor,
+} from '../../core/oklch.js';
+import {
+	defaultResolverConfig,
+	type ResolverConfig,
+} from '../../presets/presets.js';
 import {
 	createForbiddenAxisCombinationError,
 	createInvalidRelationTargetError,
 	createMissingRequiredAxisError,
 	createMultipleRelationsError,
 } from '../../utils/errors/errors.js';
+import type { Level } from '../level/level.js';
 import { assertUsage, type Usage } from '../usage/strategy.js';
 
 export const RELATIONS = Object.freeze(['on', 'over', 'under'] as const);
@@ -29,6 +39,8 @@ export type ResolvedRelation<R extends Relation = Relation> = Readonly<{
 export type RelationApplicationInput = Readonly<{
 	usage: Usage;
 	color: RelationTarget;
+	level?: Level;
+	resolverConfig?: ResolverConfig;
 	relations?: RelationOptions;
 }>;
 
@@ -40,6 +52,8 @@ export type RelationApplicationResult = Readonly<{
 export type RelationApplicationHookInput = Readonly<{
 	color: RelationTarget;
 	relation: ResolvedRelation;
+	level?: Level;
+	resolverConfig: ResolverConfig;
 }>;
 
 export type RelationApplicationHook = (
@@ -159,19 +173,49 @@ export function validateRelationOptions(
 export const relationApplicationHooks = Object.freeze({
 	on(input) {
 		return Object.freeze({
-			color: input.color,
+			color: resolveOnContrast({
+				color: input.color,
+				config: {
+					chromaLimits: input.resolverConfig.chromaLimits,
+					on: input.resolverConfig.relationParams.on,
+				},
+				target: input.relation.target,
+			}),
 			relation: input.relation,
 		});
 	},
 	over(input) {
+		const alpha =
+			input.level === undefined
+				? input.color.alpha
+				: input.resolverConfig.relationParams.over.baseAlphaByLevel[
+						input.level
+					];
+
 		return Object.freeze({
-			color: input.color,
+			color: normalizeOklch({
+				...input.color,
+				alpha,
+			}),
 			relation: input.relation,
 		});
 	},
 	under(input) {
+		const alpha =
+			input.level === undefined
+				? input.color.alpha
+				: input.resolverConfig.relationParams.under.baseAlphaByLevel[
+						input.level
+					];
+		const luminanceReduction =
+			input.resolverConfig.relationParams.under.luminanceReduction;
+
 		return Object.freeze({
-			color: input.color,
+			color: normalizeOklch({
+				...input.color,
+				alpha,
+				l: Math.max(0, input.color.l - luminanceReduction),
+			}),
 			relation: input.relation,
 		});
 	},
@@ -197,6 +241,8 @@ export function applyRelation(
 
 	return relationApplicationHooks[relation.relation]({
 		color: input.color,
+		level: input.level,
 		relation,
+		resolverConfig: input.resolverConfig ?? defaultResolverConfig,
 	});
 }

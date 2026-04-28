@@ -89,7 +89,7 @@ const goldenCases = [
 			alpha: 1,
 			c: 0,
 			h: 0,
-			l: 95,
+			l: 59,
 			space: 'oklch',
 		} satisfies OklchColor),
 		name: 'divider line',
@@ -97,10 +97,10 @@ const goldenCases = [
 	},
 	{
 		expected: Object.freeze({
-			alpha: 1,
+			alpha: 0.06,
 			c: 0,
 			h: 0,
-			l: 50,
+			l: 42,
 			space: 'oklch',
 		} satisfies OklchColor),
 		name: 'overlay',
@@ -121,14 +121,14 @@ describe('golden cases', () => {
 			lightPalette.resolve({
 				intent: 'brand',
 				usage: 'visualVocabulary',
-			}),
+			} as never),
 		).toThrow('Relation "on" is required for usage "visualVocabulary".');
 
 		expect(() =>
 			lightPalette.resolve({
 				intent: 'brand',
 				usage: 'fill',
-			}),
+			} as never),
 		).toThrow('Level is required for usage "fill".');
 	});
 });
@@ -211,7 +211,7 @@ describe('output independence invariants', () => {
 				intent: 'brand',
 				output: 'hex',
 				usage: 'fill',
-			}),
+			} as never),
 		).toThrow('Level is required for usage "fill".');
 
 		expect(() =>
@@ -219,7 +219,7 @@ describe('output independence invariants', () => {
 				intent: 'brand',
 				output: 'hex',
 				usage: 'visualVocabulary',
-			}),
+			} as never),
 		).toThrow('Relation "on" is required for usage "visualVocabulary".');
 	});
 });

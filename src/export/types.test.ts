@@ -120,6 +120,12 @@ describe('output typing', () => {
 	});
 
 	it('does not expose output typing APIs from the public entrypoint', () => {
-		expect(Object.keys(publicApi)).toEqual(['createPaletteKit']);
+		expect(Object.keys(publicApi)).toEqual([
+			'createPaletteKit',
+			'defaultResolverConfig',
+			'neutralResolverConfig',
+			'softResolverConfig',
+			'strongResolverConfig',
+		]);
 	});
 });

@@ -13,6 +13,12 @@ import {
 	type ResolveOutput,
 	resolveOutput,
 } from './export/types.js';
+import {
+	defaultResolverConfig,
+	getResolverPresetConfig,
+	mergeResolverConfig,
+	type ResolverConfig,
+} from './presets/presets.js';
 import type {
 	PaletteKit,
 	PaletteKitConfig,
@@ -50,6 +56,7 @@ function createResolveFunction<
 	paletteContext: Context | undefined,
 	systemDefaultContext: Context | undefined,
 	paletteOutput: PaletteOutput | undefined,
+	resolverConfig: ResolverConfig,
 ) {
 	return <const ResolverOutput extends ColorOutput = PaletteOutput>(
 		options: PaletteResolveOptions<I, ResolverOutput>,
@@ -66,6 +73,7 @@ function createResolveFunction<
 			on: options.on,
 			over: options.over,
 			paletteContext,
+			resolverConfig,
 			resolverContext: options.context,
 			state: options.state,
 			stateDirection: options.stateDirection,
@@ -91,6 +99,14 @@ export function createPaletteKit<
 	validateOptionalContext(config.context);
 	validateOptionalContext(config.systemDefaultContext);
 	validateOptionalOutput(config.output);
+	const presetConfig =
+		config.preset === undefined
+			? defaultResolverConfig
+			: getResolverPresetConfig(config.preset);
+	const resolverConfig = mergeResolverConfig(
+		presetConfig,
+		config.resolverConfig,
+	);
 
 	const intentRegistry = createIntentRegistry(
 		config.intents as Record<I, IntentDefinition>,
@@ -102,6 +118,7 @@ export function createPaletteKit<
 			config.context,
 			config.systemDefaultContext,
 			config.output,
+			resolverConfig,
 		),
 	}) as PaletteKit<I, PaletteOutput>;
 }

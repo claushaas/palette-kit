@@ -13,7 +13,12 @@ export type StateDeltaDirection = 'increase' | 'decrease';
 
 export type StateDeltaTable = Readonly<Record<State, number>>;
 
-export const defaultStateDeltas = Object.freeze({
+export type StateDeltaConfig = Readonly<{
+	luminance: StateDeltaTable;
+	alpha: StateDeltaTable;
+}>;
+
+export const defaultStateLuminanceDeltas = Object.freeze({
 	active: 6,
 	default: 0,
 	disabled: 10,
@@ -21,6 +26,20 @@ export const defaultStateDeltas = Object.freeze({
 	hover: 3,
 	selected: 5,
 } satisfies StateDeltaTable);
+
+export const defaultStateAlphaDeltas = Object.freeze({
+	active: 0,
+	default: 0,
+	disabled: 0,
+	focus: 0,
+	hover: 0,
+	selected: 0,
+} satisfies StateDeltaTable);
+
+export const defaultStateDeltas = Object.freeze({
+	alpha: defaultStateAlphaDeltas,
+	luminance: defaultStateLuminanceDeltas,
+} satisfies StateDeltaConfig);
 
 const stateList = STATES.join(', ');
 
@@ -45,6 +64,7 @@ export function applyStateDelta(
 	value: number,
 	state: State,
 	direction: StateDeltaDirection,
+	deltas: StateDeltaTable = defaultStateDeltas.luminance,
 ): number {
 	if (!Number.isFinite(value)) {
 		throw new Error('State delta value must be a finite number.');
@@ -52,7 +72,7 @@ export function applyStateDelta(
 
 	assertState(state);
 
-	const delta = defaultStateDeltas[state];
+	const delta = deltas[state];
 
 	if (state === 'default') {
 		return clampPercentage(value);

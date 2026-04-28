@@ -34,8 +34,15 @@ manually from `palette.resolve`.
 
 ## Are presets public?
 
-No. `soft`, `neutral`, and `strong` preset configs exist internally, but
-`createPaletteKit` does not expose `preset` or `resolverConfig` yet.
+Yes. `soft`, `neutral`, and `strong` are public resolver presets. The package
+root also exports the preset config objects.
+
+`createPaletteKit` accepts `preset` and explicit `resolverConfig` overrides.
+
+## Does `on` enforce contrast?
+
+Yes. `on` enforces APCA contrast with a default Lc 60 target and fails
+explicitly if the target cannot be satisfied.
 
 ## Does Palette Kit detect dark mode?
 

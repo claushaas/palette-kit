@@ -30,5 +30,8 @@ const text = palette.resolve({
 
 ## Current Behavior
 
-Contrast enforcement is not implemented as public behavior in the current v0.4
-branch. The resolver validates the relation and returns deterministic OKLCH.
+`on` enforces APCA contrast. The default target is Lc 60.
+
+The resolver first adjusts OKLCH lightness while preserving hue. If luminance
+alone is insufficient, it may reduce chroma within the configured limits. If the
+target still cannot be reached, resolution throws.

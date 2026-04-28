@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-
+import { measureApcaContrast } from './contrast/contrast.js';
 import * as publicApi from './index.js';
 import {
 	createPaletteKit,
+	neutralResolverConfig,
 	type OklchColor,
 	type PaletteResolveOutput,
 	type RgbaColor,
@@ -28,8 +29,14 @@ const brandFillOptions = {
 } as const;
 
 describe('public Palette Kit API', () => {
-	it('exports createPaletteKit as the only runtime API', () => {
-		expect(Object.keys(publicApi)).toEqual(['createPaletteKit']);
+	it('exports the public v0.4 runtime API', () => {
+		expect(Object.keys(publicApi)).toEqual([
+			'createPaletteKit',
+			'defaultResolverConfig',
+			'neutralResolverConfig',
+			'softResolverConfig',
+			'strongResolverConfig',
+		]);
 	});
 
 	it('creates an immutable palette with a resolve method', () => {
@@ -112,22 +119,22 @@ describe('public Palette Kit API', () => {
 		).toThrow(
 			'Unknown usage "chart". Expected one of: fill, visualVocabulary, lines, overlays.',
 		);
-		expect(() => palette.resolve({ intent: 'brand', usage: 'fill' })).toThrow(
-			'Level is required for usage "fill".',
-		);
+		expect(() =>
+			palette.resolve({ intent: 'brand', usage: 'fill' } as never),
+		).toThrow('Level is required for usage "fill".');
 		expect(() =>
 			palette.resolve({
 				intent: 'brand',
 				level: 2,
 				on: surface,
 				usage: 'visualVocabulary',
-			}),
+			} as never),
 		).toThrow('Level is not allowed for usage "visualVocabulary".');
 		expect(() =>
-			palette.resolve({ intent: 'brand', usage: 'visualVocabulary' }),
+			palette.resolve({ intent: 'brand', usage: 'visualVocabulary' } as never),
 		).toThrow('Relation "on" is required for usage "visualVocabulary".');
 		expect(() =>
-			palette.resolve({ ...brandFillOptions, state: 'hover' }),
+			palette.resolve({ ...brandFillOptions, state: 'hover' } as never),
 		).toThrow('stateDirection is required when state is not "default".');
 	});
 
@@ -147,6 +154,36 @@ describe('public Palette Kit API', () => {
 			l: 50,
 			space: 'oklch',
 		} satisfies OklchColor);
+		expect(Math.abs(measureApcaContrast(text, surface))).toBeGreaterThanOrEqual(
+			60,
+		);
+	});
+
+	it('uses preset and resolverConfig as public resolver configuration', () => {
+		const softPalette = createPaletteKit({
+			context: 'light',
+			intents,
+			preset: 'soft',
+		});
+		const strongPalette = createPaletteKit({
+			context: 'light',
+			intents,
+			preset: 'strong',
+		});
+		const overridePalette = createPaletteKit({
+			context: 'light',
+			intents,
+			resolverConfig: {
+				levelCurves: {
+					fill: () => 77,
+				},
+			},
+		});
+
+		expect(softPalette.resolve(brandFillOptions).l).toBe(94);
+		expect(strongPalette.resolve(brandFillOptions).l).toBe(87);
+		expect(overridePalette.resolve(brandFillOptions).l).toBe(77);
+		expect(Object.isFrozen(neutralResolverConfig)).toBe(true);
 	});
 
 	it('supports OKLab, sRGB, and Display-P3 outputs', () => {
@@ -199,5 +236,37 @@ describe('public Palette Kit API', () => {
 		expect(srgbColor.alpha).toBe(1);
 		expect(p3Color.alpha).toBe(1);
 		expect(hexColor).toBe('#aae2ff');
+	});
+
+	it('rejects invalid resolve options at the public type level', () => {
+		const palette = createPaletteKit({ context: 'light', intents });
+		const surface = palette.resolve(surfaceOptions);
+		const expectTypeErrors = () => {
+			// @ts-expect-error fill requires level.
+			palette.resolve({ intent: 'brand', usage: 'fill' });
+			// @ts-expect-error visualVocabulary requires on.
+			palette.resolve({ intent: 'brand', usage: 'visualVocabulary' });
+			// @ts-expect-error visualVocabulary forbids level.
+			palette.resolve({
+				intent: 'brand',
+				level: 1,
+				on: surface,
+				usage: 'visualVocabulary',
+			});
+			// @ts-expect-error overlays forbids on.
+			palette.resolve({
+				intent: 'brand',
+				level: 1,
+				on: surface,
+				usage: 'overlays',
+			});
+			// @ts-expect-error non-default states require stateDirection.
+			palette.resolve({
+				...brandFillOptions,
+				state: 'hover',
+			});
+		};
+
+		expect(expectTypeErrors).toBeTypeOf('function');
 	});
 });

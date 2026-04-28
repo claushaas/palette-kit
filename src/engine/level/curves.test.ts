@@ -7,8 +7,8 @@ const fillTargets = [98, 96, 94, 91, 88, 84, 79, 73, 66];
 const linesTargets = [96, 95, 94, 92, 90, 88, 86, 84, 82];
 const invalidLevelError = 'Invalid level "0". Expected an integer from 1 to 9.';
 
-const valuesFor = (curve: (level: Level) => number) =>
-	LEVELS.map((level) => curve(level));
+const valuesFor = (curve: (level: Level, context: 'light') => number) =>
+	LEVELS.map((level) => curve(level, 'light'));
 
 const isStrictlyDecreasing = (values: readonly number[]) =>
 	values.every((value, index) => index === 0 || value < values[index - 1]);
@@ -35,16 +35,17 @@ describe('default level curves', () => {
 
 	it('compresses lines variation relative to fill', () => {
 		const fillVariation =
-			defaultLevelCurves.fill(1) - defaultLevelCurves.fill(9);
+			defaultLevelCurves.fill(1, 'light') - defaultLevelCurves.fill(9, 'light');
 		const linesVariation =
-			defaultLevelCurves.lines(1) - defaultLevelCurves.lines(9);
+			defaultLevelCurves.lines(1, 'light') -
+			defaultLevelCurves.lines(9, 'light');
 
 		expect(linesVariation).toBeLessThan(fillVariation);
 	});
 
 	it('returns frozen overlay targets with monotonic increasing luminance deltas', () => {
 		const overlayResults = LEVELS.map((level) =>
-			defaultLevelCurves.overlays(level),
+			defaultLevelCurves.overlays(level, 'light'),
 		);
 
 		expect(overlayResults.map((result) => result.luminanceDelta)).toEqual(
@@ -56,13 +57,13 @@ describe('default level curves', () => {
 	});
 
 	it('rejects invalid levels without fallback', () => {
-		expect(() => defaultLevelCurves.fill(0 as Level)).toThrow(
+		expect(() => defaultLevelCurves.fill(0 as Level, 'light')).toThrow(
 			invalidLevelError,
 		);
-		expect(() => defaultLevelCurves.lines(0 as Level)).toThrow(
+		expect(() => defaultLevelCurves.lines(0 as Level, 'light')).toThrow(
 			invalidLevelError,
 		);
-		expect(() => defaultLevelCurves.overlays(0 as Level)).toThrow(
+		expect(() => defaultLevelCurves.overlays(0 as Level, 'light')).toThrow(
 			invalidLevelError,
 		);
 	});

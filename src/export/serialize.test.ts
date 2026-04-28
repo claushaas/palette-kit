@@ -171,6 +171,12 @@ describe('OKLCH serialization', () => {
 	});
 
 	it('keeps serializer APIs internal to the package entrypoint', () => {
-		expect(Object.keys(publicApi)).toEqual(['createPaletteKit']);
+		expect(Object.keys(publicApi)).toEqual([
+			'createPaletteKit',
+			'defaultResolverConfig',
+			'neutralResolverConfig',
+			'softResolverConfig',
+			'strongResolverConfig',
+		]);
 	});
 });

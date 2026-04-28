@@ -6,10 +6,10 @@ The public runtime surface is intentionally small:
 
 - `createPaletteKit`
 - `palette.resolve`
+- official resolver preset configs
 
 The package root also reexports public TypeScript types. Internal modules,
-serializers, presets, registries, validators, and resolver helpers are not
-public API.
+serializers, registries, validators, and resolver helpers are not public API.
 
 ## Start Here
 

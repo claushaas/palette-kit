@@ -5,6 +5,10 @@ This report reflects the current v0.4 branch package root.
 ## Runtime Exports
 
 - `createPaletteKit`
+- `defaultResolverConfig`
+- `neutralResolverConfig`
+- `softResolverConfig`
+- `strongResolverConfig`
 
 ## Type Exports
 
@@ -19,8 +23,13 @@ This report reflects the current v0.4 branch package root.
 - `Context`
 - `ColorOutput`
 - `OklchColor`
+- `RgbColor`
 - `RgbaColor`
 - `IntentDefinition`
+- `ResolverPresetName`
+- `ResolverConfig`
+- `RelationParamsConfig`
+- `ChromaConfig`
 
 ## Public Package Exports
 
@@ -42,4 +51,3 @@ Only the root export is public:
 - intent registry helpers
 - internal resolver helpers
 - serializer functions
-- preset configs

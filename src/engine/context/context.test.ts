@@ -116,6 +116,12 @@ describe('context curve hooks', () => {
 	});
 
 	it('does not expose context APIs from the public entrypoint', () => {
-		expect(Object.keys(publicApi)).toEqual(['createPaletteKit']);
+		expect(Object.keys(publicApi)).toEqual([
+			'createPaletteKit',
+			'defaultResolverConfig',
+			'neutralResolverConfig',
+			'softResolverConfig',
+			'strongResolverConfig',
+		]);
 	});
 });

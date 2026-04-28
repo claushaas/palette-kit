@@ -36,18 +36,28 @@ describe('state validation', () => {
 	it('freezes canonical states and default deltas', () => {
 		expect(Object.isFrozen(STATES)).toBe(true);
 		expect(Object.isFrozen(defaultStateDeltas)).toBe(true);
+		expect(Object.isFrozen(defaultStateDeltas.luminance)).toBe(true);
+		expect(Object.isFrozen(defaultStateDeltas.alpha)).toBe(true);
 	});
 });
 
 describe('state deltas', () => {
 	it('defines the default luminance delta magnitudes', () => {
-		expect(defaultStateDeltas).toEqual({
+		expect(defaultStateDeltas.luminance).toEqual({
 			active: 6,
 			default: 0,
 			disabled: 10,
 			focus: 4,
 			hover: 3,
 			selected: 5,
+		});
+		expect(defaultStateDeltas.alpha).toEqual({
+			active: 0,
+			default: 0,
+			disabled: 0,
+			focus: 0,
+			hover: 0,
+			selected: 0,
 		});
 	});
 
@@ -91,6 +101,12 @@ describe('state deltas', () => {
 	});
 
 	it('does not expose state APIs from the public entrypoint', () => {
-		expect(Object.keys(publicApi)).toEqual(['createPaletteKit']);
+		expect(Object.keys(publicApi)).toEqual([
+			'createPaletteKit',
+			'defaultResolverConfig',
+			'neutralResolverConfig',
+			'softResolverConfig',
+			'strongResolverConfig',
+		]);
 	});
 });

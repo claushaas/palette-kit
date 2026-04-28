@@ -3,9 +3,10 @@ import {
 	type LevelCurveConfig,
 	type OverlayLevelResult,
 } from '../engine/level/curves.js';
-import { assertLevel, type Level } from '../engine/level/level.js';
+import { assertLevel, LEVELS, type Level } from '../engine/level/level.js';
 import {
 	defaultStateDeltas,
+	type StateDeltaConfig,
 	type StateDeltaTable,
 } from '../engine/state/state.js';
 
@@ -17,15 +18,76 @@ export const RESOLVER_PRESETS = Object.freeze([
 
 export type ResolverPresetName = (typeof RESOLVER_PRESETS)[number];
 
+export type RelationLevelAlphaTable = Readonly<Record<Level, number>>;
+
+export type RelationParamsConfig = Readonly<{
+	on: Readonly<{
+		contrastTarget: number;
+		maxLuminanceShift: number;
+	}>;
+	over: Readonly<{
+		baseAlphaByLevel: RelationLevelAlphaTable;
+	}>;
+	under: Readonly<{
+		baseAlphaByLevel: RelationLevelAlphaTable;
+		luminanceReduction: number;
+	}>;
+}>;
+
+export type ChromaConfig = Readonly<{
+	maxReduction: number;
+	reductionStep: number;
+}>;
+
 export type ResolverConfig = Readonly<{
 	levelCurves: LevelCurveConfig;
-	stateDeltas: StateDeltaTable;
+	stateDeltas: StateDeltaConfig;
+	relationParams: RelationParamsConfig;
+	chromaLimits: ChromaConfig;
 }>;
+
+export type ResolverConfigOverrides = Readonly<{
+	levelCurves?: Partial<LevelCurveConfig>;
+	stateDeltas?: Readonly<{
+		luminance?: Partial<StateDeltaTable>;
+		alpha?: Partial<StateDeltaTable>;
+	}>;
+	relationParams?: Readonly<{
+		on?: Partial<RelationParamsConfig['on']>;
+		over?: Readonly<{
+			baseAlphaByLevel?: Partial<RelationLevelAlphaTable>;
+		}>;
+		under?: Readonly<{
+			baseAlphaByLevel?: Partial<RelationLevelAlphaTable>;
+			luminanceReduction?: number;
+		}>;
+	}>;
+	chromaLimits?: Partial<ChromaConfig>;
+}>;
+
+const DEFAULT_CONTRAST_TARGET = 60;
+const DEFAULT_MAX_LUMINANCE_SHIFT = 60;
+const DEFAULT_CHROMA_MAX_REDUCTION = 1;
+const DEFAULT_CHROMA_REDUCTION_STEP = 0.01;
 
 const presetList = RESOLVER_PRESETS.join(', ');
 
 const formatInvalidResolverPresetError = (value: unknown) =>
 	`Unknown resolver preset "${String(value)}". Expected one of: ${presetList}.`;
+
+const assertFiniteConfigNumber = (name: string, value: number) => {
+	if (!Number.isFinite(value)) {
+		throw new Error(`${name} must be a finite number.`);
+	}
+};
+
+const assertNonNegativeConfigNumber = (name: string, value: number) => {
+	assertFiniteConfigNumber(name, value);
+
+	if (value < 0) {
+		throw new Error(`${name} must be greater than or equal to 0.`);
+	}
+};
 
 const createNumberLevelCurve = (targets: Readonly<Record<Level, number>>) =>
 	Object.freeze((level: Level): number => {
@@ -51,6 +113,139 @@ const createLevelCurveConfig = (
 		lines: createNumberLevelCurve(linesTargets),
 		overlays: createOverlayLevelCurve(overlayTargets),
 	});
+
+const createAlphaTable = (
+	values: Readonly<Record<Level, number>>,
+): RelationLevelAlphaTable =>
+	Object.freeze(
+		LEVELS.reduce(
+			(table, level) => {
+				const value = values[level];
+				assertNonNegativeConfigNumber(`relation alpha level ${level}`, value);
+				table[level] = value;
+				return table;
+			},
+			{} as Record<Level, number>,
+		),
+	);
+
+const mergeAlphaTable = (
+	base: RelationLevelAlphaTable,
+	override: Partial<RelationLevelAlphaTable> | undefined,
+): RelationLevelAlphaTable =>
+	createAlphaTable(
+		LEVELS.reduce(
+			(table, level) => {
+				table[level] = override?.[level] ?? base[level];
+				return table;
+			},
+			{} as Record<Level, number>,
+		),
+	);
+
+const mergeStateDeltaTable = (
+	base: StateDeltaTable,
+	override: Partial<StateDeltaTable> | undefined,
+): StateDeltaTable => {
+	const table = {
+		active: override?.active ?? base.active,
+		default: override?.default ?? base.default,
+		disabled: override?.disabled ?? base.disabled,
+		focus: override?.focus ?? base.focus,
+		hover: override?.hover ?? base.hover,
+		selected: override?.selected ?? base.selected,
+	} satisfies StateDeltaTable;
+
+	for (const [state, value] of Object.entries(table)) {
+		assertNonNegativeConfigNumber(`stateDeltas.${state}`, value);
+	}
+
+	return Object.freeze(table);
+};
+
+const createRelationParamsConfig = (
+	params: RelationParamsConfig,
+): RelationParamsConfig => {
+	assertNonNegativeConfigNumber(
+		'relationParams.on.contrastTarget',
+		params.on.contrastTarget,
+	);
+	assertNonNegativeConfigNumber(
+		'relationParams.on.maxLuminanceShift',
+		params.on.maxLuminanceShift,
+	);
+	assertNonNegativeConfigNumber(
+		'relationParams.under.luminanceReduction',
+		params.under.luminanceReduction,
+	);
+
+	return Object.freeze({
+		on: Object.freeze({ ...params.on }),
+		over: Object.freeze({
+			baseAlphaByLevel: createAlphaTable(params.over.baseAlphaByLevel),
+		}),
+		under: Object.freeze({
+			baseAlphaByLevel: createAlphaTable(params.under.baseAlphaByLevel),
+			luminanceReduction: params.under.luminanceReduction,
+		}),
+	});
+};
+
+const createChromaConfig = (config: ChromaConfig): ChromaConfig => {
+	assertNonNegativeConfigNumber(
+		'chromaLimits.maxReduction',
+		config.maxReduction,
+	);
+	assertNonNegativeConfigNumber(
+		'chromaLimits.reductionStep',
+		config.reductionStep,
+	);
+
+	if (config.reductionStep === 0) {
+		throw new Error('chromaLimits.reductionStep must be greater than 0.');
+	}
+
+	return Object.freeze({ ...config });
+};
+
+const baseRelationParams = createRelationParamsConfig({
+	on: {
+		contrastTarget: DEFAULT_CONTRAST_TARGET,
+		maxLuminanceShift: DEFAULT_MAX_LUMINANCE_SHIFT,
+	},
+	over: {
+		baseAlphaByLevel: createAlphaTable({
+			1: 0.04,
+			2: 0.08,
+			3: 0.12,
+			4: 0.18,
+			5: 0.24,
+			6: 0.3,
+			7: 0.36,
+			8: 0.42,
+			9: 0.5,
+		}),
+	},
+	under: {
+		baseAlphaByLevel: createAlphaTable({
+			1: 0.06,
+			2: 0.1,
+			3: 0.16,
+			4: 0.22,
+			5: 0.3,
+			6: 0.38,
+			7: 0.46,
+			8: 0.54,
+			9: 0.62,
+		}),
+		luminanceReduction: 8,
+	},
+});
+
+const baseChromaLimits = createChromaConfig({
+	maxReduction: DEFAULT_CHROMA_MAX_REDUCTION,
+	reductionStep: DEFAULT_CHROMA_REDUCTION_STEP,
+});
 
 const softFillLevelTargets = Object.freeze({
 	1: 98,
@@ -125,45 +320,82 @@ const strongOverlayLevelTargets = Object.freeze({
 } satisfies Record<Level, OverlayLevelResult>);
 
 const softStateDeltas = Object.freeze({
-	active: 4,
-	default: 0,
-	disabled: 6,
-	focus: 3,
-	hover: 2,
-	selected: 3,
-} satisfies StateDeltaTable);
+	alpha: Object.freeze({
+		active: 0,
+		default: 0,
+		disabled: 0,
+		focus: 0,
+		hover: 0,
+		selected: 0,
+	} satisfies StateDeltaTable),
+	luminance: Object.freeze({
+		active: 4,
+		default: 0,
+		disabled: 6,
+		focus: 3,
+		hover: 2,
+		selected: 3,
+	} satisfies StateDeltaTable),
+} satisfies StateDeltaConfig);
 
 const strongStateDeltas = Object.freeze({
-	active: 8,
-	default: 0,
-	disabled: 14,
-	focus: 5,
-	hover: 4,
-	selected: 7,
-} satisfies StateDeltaTable);
+	alpha: Object.freeze({
+		active: 0,
+		default: 0,
+		disabled: 0,
+		focus: 0,
+		hover: 0,
+		selected: 0,
+	} satisfies StateDeltaTable),
+	luminance: Object.freeze({
+		active: 8,
+		default: 0,
+		disabled: 14,
+		focus: 5,
+		hover: 4,
+		selected: 7,
+	} satisfies StateDeltaTable),
+} satisfies StateDeltaConfig);
 
-export const softResolverConfig = Object.freeze({
+const createResolverConfig = (config: ResolverConfig): ResolverConfig =>
+	Object.freeze({
+		chromaLimits: createChromaConfig(config.chromaLimits),
+		levelCurves: Object.freeze({ ...config.levelCurves }),
+		relationParams: createRelationParamsConfig(config.relationParams),
+		stateDeltas: Object.freeze({
+			alpha: mergeStateDeltaTable(config.stateDeltas.alpha, undefined),
+			luminance: mergeStateDeltaTable(config.stateDeltas.luminance, undefined),
+		}),
+	});
+
+export const softResolverConfig = createResolverConfig({
+	chromaLimits: baseChromaLimits,
 	levelCurves: createLevelCurveConfig(
 		softFillLevelTargets,
 		softLinesLevelTargets,
 		softOverlayLevelTargets,
 	),
+	relationParams: baseRelationParams,
 	stateDeltas: softStateDeltas,
-} satisfies ResolverConfig);
+});
 
-export const neutralResolverConfig = Object.freeze({
+export const neutralResolverConfig = createResolverConfig({
+	chromaLimits: baseChromaLimits,
 	levelCurves: defaultLevelCurves,
+	relationParams: baseRelationParams,
 	stateDeltas: defaultStateDeltas,
-} satisfies ResolverConfig);
+});
 
-export const strongResolverConfig = Object.freeze({
+export const strongResolverConfig = createResolverConfig({
+	chromaLimits: baseChromaLimits,
 	levelCurves: createLevelCurveConfig(
 		strongFillLevelTargets,
 		strongLinesLevelTargets,
 		strongOverlayLevelTargets,
 	),
+	relationParams: baseRelationParams,
 	stateDeltas: strongStateDeltas,
-} satisfies ResolverConfig);
+});
 
 export const defaultResolverConfig = neutralResolverConfig;
 
@@ -193,4 +425,63 @@ export function assertResolverPresetName(
 export function getResolverPresetConfig(preset: unknown): ResolverConfig {
 	assertResolverPresetName(preset);
 	return resolverPresetConfigs[preset];
+}
+
+export function mergeResolverConfig(
+	base: ResolverConfig,
+	overrides: ResolverConfigOverrides | undefined,
+): ResolverConfig {
+	if (overrides === undefined) {
+		return base;
+	}
+
+	return createResolverConfig({
+		chromaLimits: {
+			maxReduction:
+				overrides.chromaLimits?.maxReduction ?? base.chromaLimits.maxReduction,
+			reductionStep:
+				overrides.chromaLimits?.reductionStep ??
+				base.chromaLimits.reductionStep,
+		},
+		levelCurves: {
+			fill: overrides.levelCurves?.fill ?? base.levelCurves.fill,
+			lines: overrides.levelCurves?.lines ?? base.levelCurves.lines,
+			overlays: overrides.levelCurves?.overlays ?? base.levelCurves.overlays,
+		},
+		relationParams: {
+			on: {
+				contrastTarget:
+					overrides.relationParams?.on?.contrastTarget ??
+					base.relationParams.on.contrastTarget,
+				maxLuminanceShift:
+					overrides.relationParams?.on?.maxLuminanceShift ??
+					base.relationParams.on.maxLuminanceShift,
+			},
+			over: {
+				baseAlphaByLevel: mergeAlphaTable(
+					base.relationParams.over.baseAlphaByLevel,
+					overrides.relationParams?.over?.baseAlphaByLevel,
+				),
+			},
+			under: {
+				baseAlphaByLevel: mergeAlphaTable(
+					base.relationParams.under.baseAlphaByLevel,
+					overrides.relationParams?.under?.baseAlphaByLevel,
+				),
+				luminanceReduction:
+					overrides.relationParams?.under?.luminanceReduction ??
+					base.relationParams.under.luminanceReduction,
+			},
+		},
+		stateDeltas: {
+			alpha: mergeStateDeltaTable(
+				base.stateDeltas.alpha,
+				overrides.stateDeltas?.alpha,
+			),
+			luminance: mergeStateDeltaTable(
+				base.stateDeltas.luminance,
+				overrides.stateDeltas?.luminance,
+			),
+		},
+	});
 }

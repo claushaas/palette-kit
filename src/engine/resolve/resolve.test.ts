@@ -188,6 +188,12 @@ describe('resolveColor', () => {
 	});
 
 	it('does not expose resolver APIs from the public entrypoint', () => {
-		expect(Object.keys(publicApi)).toEqual(['createPaletteKit']);
+		expect(Object.keys(publicApi)).toEqual([
+			'createPaletteKit',
+			'defaultResolverConfig',
+			'neutralResolverConfig',
+			'softResolverConfig',
+			'strongResolverConfig',
+		]);
 	});
 });

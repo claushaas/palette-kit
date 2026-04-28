@@ -13,6 +13,13 @@ import type {
 	RgbColor as InternalRgbColor,
 	ResolveOutput,
 } from '../export/types.js';
+import type {
+	ChromaConfig,
+	RelationParamsConfig,
+	ResolverConfig,
+	ResolverConfigOverrides,
+	ResolverPresetName,
+} from '../presets/presets.js';
 
 /** Semantic usage axis used by the resolver. */
 export type Usage = InternalUsage;
@@ -44,6 +51,15 @@ export type RgbColor = InternalRgbColor;
 /** Intent registry entry supplied at palette creation. */
 export type IntentDefinition = InternalIntentDefinition;
 
+/** Public resolver preset names. */
+/** Public resolver configuration override shape. */
+export type {
+	ChromaConfig,
+	RelationParamsConfig,
+	ResolverConfig,
+	ResolverPresetName,
+};
+
 /** Public return type for a selected resolver output format. */
 export type PaletteResolveOutput<O extends ColorOutput = 'oklch'> =
 	ResolveOutput<O>;
@@ -64,36 +80,34 @@ export type PaletteKitConfig<
 
 	/** Palette-level output used when a resolver call does not override it. */
 	output?: PaletteOutput;
+
+	/** Public resolver preset. Defaults to `neutral`. */
+	preset?: ResolverPresetName;
+
+	/** Explicit resolver configuration overrides merged on top of the preset. */
+	resolverConfig?: ResolverConfigOverrides;
 }>;
 
-/** Options accepted by `palette.resolve`. */
-export type PaletteResolveOptions<
-	I extends string = string,
-	ResolverOutput extends ColorOutput = ColorOutput,
-> = Readonly<{
-	/** Resolver usage axis. */
-	usage: Usage;
+type RelationTarget = OklchColor;
 
+type DefaultStateOptions = Readonly<{
+	state?: 'default';
+	stateDirection?: StateDeltaDirection;
+}>;
+
+type NonDefaultStateOptions = Readonly<{
+	state: Exclude<State, 'default'>;
+	stateDirection: StateDeltaDirection;
+}>;
+
+type StateOptions = DefaultStateOptions | NonDefaultStateOptions;
+
+type BaseResolveOptions<
+	I extends string,
+	ResolverOutput extends ColorOutput,
+> = Readonly<{
 	/** Registered semantic intent name. */
 	intent: I;
-
-	/** Required for fill, lines, and overlays; forbidden for visualVocabulary. */
-	level?: Level;
-
-	/** Relation target for text, icons, and other on-surface vocabulary. */
-	on?: OklchColor;
-
-	/** Relation target for overlay-like colors. */
-	over?: OklchColor;
-
-	/** Relation target for underlay-like colors. */
-	under?: OklchColor;
-
-	/** Optional interaction state. Defaults to `default`. */
-	state?: State;
-
-	/** Required when `state` is not `default`; never inferred. */
-	stateDirection?: StateDeltaDirection;
 
 	/** Resolver-level context override. */
 	context?: Context;
@@ -101,6 +115,54 @@ export type PaletteResolveOptions<
 	/** Resolver-level output override. */
 	output?: ResolverOutput;
 }>;
+
+type FillResolveOptions = Readonly<{
+	usage: 'fill';
+	level: Level;
+	on?: RelationTarget;
+	over?: never;
+	under?: never;
+}>;
+
+type LinesResolveOptions = Readonly<{
+	usage: 'lines';
+	level: Level;
+	on?: RelationTarget;
+	over?: never;
+	under?: never;
+}>;
+
+type VisualVocabularyResolveOptions = Readonly<{
+	usage: 'visualVocabulary';
+	on: RelationTarget;
+	level?: never;
+	over?: never;
+	under?: never;
+}>;
+
+type OverlayRelationOptions =
+	| Readonly<{ over?: RelationTarget; under?: never }>
+	| Readonly<{ under?: RelationTarget; over?: never }>
+	| Readonly<{ over?: undefined; under?: undefined }>;
+
+type OverlaysResolveOptions = Readonly<{
+	usage: 'overlays';
+	level: Level;
+	on?: never;
+}> &
+	OverlayRelationOptions;
+
+type UsageResolveOptions =
+	| FillResolveOptions
+	| LinesResolveOptions
+	| VisualVocabularyResolveOptions
+	| OverlaysResolveOptions;
+
+/** Options accepted by `palette.resolve`. */
+export type PaletteResolveOptions<
+	I extends string = string,
+	ResolverOutput extends ColorOutput = ColorOutput,
+> = BaseResolveOptions<I, ResolverOutput> & UsageResolveOptions & StateOptions;
 
 /** Immutable public Palette Kit instance. */
 export type PaletteKit<

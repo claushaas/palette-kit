@@ -76,5 +76,46 @@ Runtime support in the current v0.4 implementation:
 
 ## Presets and Resolver Config
 
-Resolver presets exist internally in v0.4, but `preset` and `resolverConfig` are
-not public `createPaletteKit` options yet.
+`preset` is optional and defaults to `"neutral"`.
+
+```ts
+createPaletteKit({
+  context: "light",
+  preset: "soft",
+  intents,
+});
+```
+
+Public presets:
+
+- `soft`
+- `neutral`
+- `strong`
+
+`resolverConfig` explicitly overrides the selected preset.
+
+```ts
+createPaletteKit({
+  context: "light",
+  preset: "neutral",
+  intents,
+  resolverConfig: {
+    relationParams: {
+      on: { contrastTarget: 75 },
+    },
+    stateDeltas: {
+      luminance: { hover: 4 },
+    },
+  },
+});
+```
+
+Supported resolver config sections:
+
+- `levelCurves`
+- `stateDeltas`
+- `relationParams`
+- `chromaLimits`
+
+The default `on` contrast target is APCA Lc 60. `over` and `under` alpha values
+are configured per level.

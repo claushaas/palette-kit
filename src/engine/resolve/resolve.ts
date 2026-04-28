@@ -5,6 +5,10 @@ import {
 } from '../../core/intent-registry.js';
 import { normalizeOklch, type OklchColor } from '../../core/oklch.js';
 import {
+	defaultResolverConfig,
+	type ResolverConfig,
+} from '../../presets/presets.js';
+import {
 	createForbiddenAxisCombinationError,
 	createMissingRequiredAxisError,
 } from '../../utils/errors/errors.js';
@@ -13,7 +17,6 @@ import {
 	createContextCurveHook,
 	resolveContext,
 } from '../context/context.js';
-import { defaultLevelCurves } from '../level/curves.js';
 import { assertLevel, type Level } from '../level/level.js';
 import {
 	applyRelation,
@@ -45,6 +48,7 @@ export type ResolveColorOptions = Readonly<{
 	resolverContext?: unknown;
 	paletteContext?: unknown;
 	systemDefaultContext?: unknown;
+	resolverConfig?: ResolverConfig;
 }>;
 
 export type ResolvedColorAxes = Readonly<{
@@ -93,13 +97,18 @@ const resolveLevel = (usage: Usage, level: unknown): Level | undefined => {
 	return level;
 };
 
-const resolveBaseLightness = (usage: Usage, level: Level | undefined) => {
+const resolveBaseLightness = (
+	usage: Usage,
+	level: Level | undefined,
+	context: Context,
+	resolverConfig: ResolverConfig,
+) => {
 	if (usage === 'fill') {
-		return defaultLevelCurves.fill(level as Level);
+		return resolverConfig.levelCurves.fill(level as Level, context);
 	}
 
 	if (usage === 'lines') {
-		return defaultLevelCurves.lines(level as Level);
+		return resolverConfig.levelCurves.lines(level as Level, context);
 	}
 
 	return 50;
@@ -127,6 +136,7 @@ const resolveStateDirection = (
 
 export function resolveColor(options: ResolveColorOptions): ResolvedColor {
 	assertUsage(options.usage);
+	const resolverConfig = options.resolverConfig ?? defaultResolverConfig;
 
 	const stateInput = options.state ?? 'default';
 	assertState(stateInput);
@@ -140,7 +150,12 @@ export function resolveColor(options: ResolveColorOptions): ResolvedColor {
 	const level = resolveLevel(options.usage, options.level);
 	const intent = getIntent(options.intentRegistry, options.intent);
 	const usageResult = getUsageStrategy(options.usage).resolve({ intent });
-	const baseLightness = resolveBaseLightness(options.usage, level);
+	const baseLightness = resolveBaseLightness(
+		options.usage,
+		level,
+		context,
+		resolverConfig,
+	);
 
 	const baseColor = normalizeOklch({
 		alpha: 1,
@@ -151,11 +166,13 @@ export function resolveColor(options: ResolveColorOptions): ResolvedColor {
 
 	const relationResult = applyRelation({
 		color: baseColor,
+		level,
 		relations: {
 			on: options.on,
 			over: options.over,
 			under: options.under,
 		},
+		resolverConfig,
 		usage: options.usage,
 	});
 
@@ -167,6 +184,7 @@ export function resolveColor(options: ResolveColorOptions): ResolvedColor {
 		relationResult.color.l,
 		stateInput,
 		stateDirection,
+		resolverConfig.stateDeltas.luminance,
 	);
 	const contextDelta = contextCurve(context);
 	const color = Object.freeze(

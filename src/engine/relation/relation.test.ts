@@ -177,6 +177,42 @@ describe('relation application hooks', () => {
 		expect(Object.isFrozen(result)).toBe(true);
 	});
 
+	it('applies over alpha from resolver relation params', () => {
+		const result = applyRelation({
+			color: baseColor,
+			level: 4,
+			relations: { over: targetColor },
+			usage: 'overlays',
+		});
+
+		expect(result.color).toEqual({
+			alpha: 0.18,
+			c: 0.1,
+			h: 250,
+			l: 50,
+			space: 'oklch',
+		});
+		expect(result.relation).toEqual({ relation: 'over', target: targetColor });
+	});
+
+	it('applies under alpha and luminance reduction from resolver relation params', () => {
+		const result = applyRelation({
+			color: baseColor,
+			level: 4,
+			relations: { under: targetColor },
+			usage: 'overlays',
+		});
+
+		expect(result.color).toEqual({
+			alpha: 0.22,
+			c: 0.1,
+			h: 250,
+			l: 42,
+			space: 'oklch',
+		});
+		expect(result.relation).toEqual({ relation: 'under', target: targetColor });
+	});
+
 	it('rejects invalid input colors', () => {
 		expect(() =>
 			applyRelation({
@@ -193,6 +229,12 @@ describe('relation application hooks', () => {
 	});
 
 	it('does not expose relation APIs from the public entrypoint', () => {
-		expect(Object.keys(publicApi)).toEqual(['createPaletteKit']);
+		expect(Object.keys(publicApi)).toEqual([
+			'createPaletteKit',
+			'defaultResolverConfig',
+			'neutralResolverConfig',
+			'softResolverConfig',
+			'strongResolverConfig',
+		]);
 	});
 });
