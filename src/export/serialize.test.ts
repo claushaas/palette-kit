@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import * as publicApi from "../index.js";
+import { PaletteKitError } from "../utils/errors/errors.js";
 import {
   serializeColor,
   serializeOklchToHex,
@@ -73,6 +74,7 @@ describe("OKLCH serialization", () => {
     expect(() => serializeColor({ l: 50, c: 0, h: 0 }, "p3")).toThrow(
       'Unsupported color output "p3" in Phase 10 serializer.',
     );
+    expect(() => serializeColor({ l: 50, c: 0, h: 0 }, "p3")).toThrow(PaletteKitError);
     expect(() => serializeColor({ l: 50, c: 0, h: 0 }, "oklab")).toThrow(
       'Unsupported color output "oklab" in Phase 10 serializer.',
     );

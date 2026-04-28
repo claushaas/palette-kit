@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { OklchColor } from "../core/oklch.js";
 import * as publicApi from "../index.js";
+import { PaletteKitError } from "../utils/errors/errors.js";
 import {
   assertColorOutput,
   isColorOutput,
@@ -32,6 +33,7 @@ describe("output validation", () => {
 
   it("throws a clear error for invalid outputs", () => {
     expect(() => assertColorOutput("css")).toThrow(invalidOutputError);
+    expect(() => assertColorOutput("css")).toThrow(PaletteKitError);
   });
 
   it("freezes canonical outputs", () => {

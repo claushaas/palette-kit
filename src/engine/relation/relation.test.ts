@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import * as publicApi from "../../index.js";
 import { normalizeOklch, type OklchColor } from "../../core/oklch.js";
+import { PaletteKitError } from "../../utils/errors/errors.js";
 import {
   applyRelation,
   assertRelation,
@@ -67,6 +68,7 @@ describe("relation compatibility", () => {
     expect(() => validateRelationOptions("visualVocabulary")).toThrow(
       'Relation "on" is required for usage "visualVocabulary".',
     );
+    expect(() => validateRelationOptions("visualVocabulary")).toThrow(PaletteKitError);
   });
 
   it("accepts allowed relations", () => {
@@ -96,6 +98,9 @@ describe("relation compatibility", () => {
     expect(() => validateRelationOptions("fill", { over: targetColor })).toThrow(
       'Relation "over" is not allowed for usage "fill".',
     );
+    expect(() => validateRelationOptions("fill", { over: targetColor })).toThrow(
+      PaletteKitError,
+    );
     expect(() => validateRelationOptions("lines", { under: targetColor })).toThrow(
       'Relation "under" is not allowed for usage "lines".',
     );
@@ -111,12 +116,18 @@ describe("relation compatibility", () => {
     expect(() => validateRelationOptions("fill", { on: targetColor, over: targetColor })).toThrow(
       "Only one relation may be provided. Received: on, over.",
     );
+    expect(() => validateRelationOptions("fill", { on: targetColor, over: targetColor })).toThrow(
+      PaletteKitError,
+    );
   });
 
   it("rejects invalid relation targets", () => {
     expect(() =>
       validateRelationOptions("fill", { on: { space: "rgb" } } as unknown as RelationOptions),
     ).toThrow('Relation "on" target must be a normalized OKLCH color.');
+    expect(() =>
+      validateRelationOptions("fill", { on: { space: "rgb" } } as unknown as RelationOptions),
+    ).toThrow(PaletteKitError);
   });
 });
 
@@ -159,6 +170,12 @@ describe("relation application hooks", () => {
         color: { space: "oklch", l: 101, c: 0, h: 0, alpha: 1 } as OklchColor,
       }),
     ).toThrow("Relation input color must be a normalized OKLCH color.");
+    expect(() =>
+      applyRelation({
+        usage: "fill",
+        color: { space: "oklch", l: 101, c: 0, h: 0, alpha: 1 } as OklchColor,
+      }),
+    ).toThrow(PaletteKitError);
   });
 
   it("does not expose relation APIs from the public entrypoint", () => {

@@ -1,3 +1,5 @@
+import { createUnresolvedContextError } from "../../utils/errors/errors.js";
+
 export const CONTEXTS = Object.freeze(["light", "dark"] as const);
 
 export type Context = (typeof CONTEXTS)[number];
@@ -47,9 +49,7 @@ export function resolveContext({
     return systemDefaultContext;
   }
 
-  throw new Error(
-    "Context could not be resolved. Provide resolverContext, paletteContext, or systemDefaultContext.",
-  );
+  throw createUnresolvedContextError();
 }
 
 export function createContextCurveHook<T>(values: ContextCurveValues<T>): ContextCurveHook<T> {

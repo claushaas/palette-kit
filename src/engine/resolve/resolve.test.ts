@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { createIntentRegistry } from "../../core/intent-registry.js";
 import { isOklchColor, normalizeOklch } from "../../core/oklch.js";
 import * as publicApi from "../../index.js";
+import { PaletteKitError } from "../../utils/errors/errors.js";
 import { resolveColor, type ResolveColorOptions } from "./resolve.js";
 
 const intentRegistry = createIntentRegistry({
@@ -47,6 +48,7 @@ describe("resolveColor", () => {
     expect(() => resolve({ intent: "refund" })).toThrow(
       'Unknown intent "refund". Did you forget to register it in the Intent Registry?',
     );
+    expect(() => resolve({ intent: "refund" })).toThrow(PaletteKitError);
   });
 
   it("throws for unknown usages", () => {
@@ -59,6 +61,7 @@ describe("resolveColor", () => {
     expect(() => resolve({ usage: "fill", level: undefined })).toThrow(
       'Level is required for usage "fill".',
     );
+    expect(() => resolve({ usage: "fill", level: undefined })).toThrow(PaletteKitError);
     expect(() => resolve({ usage: "lines", level: undefined })).toThrow(
       'Level is required for usage "lines".',
     );
@@ -70,6 +73,9 @@ describe("resolveColor", () => {
   it("rejects level for visual vocabulary", () => {
     expect(() => resolve({ usage: "visualVocabulary", level: 3, on: surface })).toThrow(
       'Level is not allowed for usage "visualVocabulary".',
+    );
+    expect(() => resolve({ usage: "visualVocabulary", level: 3, on: surface })).toThrow(
+      PaletteKitError,
     );
   });
 
@@ -100,6 +106,7 @@ describe("resolveColor", () => {
     expect(() => resolve({ level: 4, state: "hover" })).toThrow(
       'stateDirection is required when state is not "default".',
     );
+    expect(() => resolve({ level: 4, state: "hover" })).toThrow(PaletteKitError);
   });
 
   it("applies explicit state directions to lightness", () => {

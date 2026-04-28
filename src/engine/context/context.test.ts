@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import * as publicApi from "../../index.js";
+import { PaletteKitError } from "../../utils/errors/errors.js";
 import {
   assertContext,
   CONTEXTS,
@@ -72,6 +73,7 @@ describe("context precedence", () => {
     expect(() => resolveContext({})).toThrow(
       "Context could not be resolved. Provide resolverContext, paletteContext, or systemDefaultContext.",
     );
+    expect(() => resolveContext({})).toThrow(PaletteKitError);
   });
 });
 

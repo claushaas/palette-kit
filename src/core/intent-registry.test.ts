@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { PaletteKitError } from "../utils/errors/errors.js";
 import { createIntentRegistry, getIntent, hasIntent } from "./intent-registry.js";
 
 describe("createIntentRegistry", () => {
@@ -96,5 +97,6 @@ describe("intent lookup", () => {
     expect(() => getIntent(registry, "refund")).toThrow(
       'Unknown intent "refund". Did you forget to register it in the Intent Registry?',
     );
+    expect(() => getIntent(registry, "refund")).toThrow(PaletteKitError);
   });
 });

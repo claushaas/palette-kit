@@ -1,5 +1,9 @@
 import { getIntent, type IntentName, type IntentRegistry } from "../../core/intent-registry.js";
 import { normalizeOklch, type OklchColor } from "../../core/oklch.js";
+import {
+  createForbiddenAxisCombinationError,
+  createMissingRequiredAxisError,
+} from "../../utils/errors/errors.js";
 import { type Context, createContextCurveHook, resolveContext } from "../context/context.js";
 import { defaultLevelCurves } from "../level/curves.js";
 import { assertLevel, type Level } from "../level/level.js";
@@ -61,14 +65,14 @@ function assertStateDeltaDirection(value: unknown): asserts value is StateDeltaD
 const resolveLevel = (usage: Usage, level: unknown): Level | undefined => {
   if (usage === "visualVocabulary") {
     if (level !== undefined) {
-      throw new Error('Level is not allowed for usage "visualVocabulary".');
+      throw createForbiddenAxisCombinationError("Level", "visualVocabulary");
     }
 
     return undefined;
   }
 
   if (level === undefined) {
-    throw new Error(`Level is required for usage "${usage}".`);
+    throw createMissingRequiredAxisError("Level", usage);
   }
 
   assertLevel(level);
@@ -96,7 +100,11 @@ const resolveStateDirection = (
   }
 
   if (stateDirection === undefined) {
-    throw new Error('stateDirection is required when state is not "default".');
+    throw createMissingRequiredAxisError(
+      "stateDirection",
+      "state",
+      'stateDirection is required when state is not "default".',
+    );
   }
 
   assertStateDeltaDirection(stateDirection);

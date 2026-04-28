@@ -1,4 +1,10 @@
 import { isOklchColor, type OklchColor } from "../../core/oklch.js";
+import {
+  createForbiddenAxisCombinationError,
+  createInvalidRelationTargetError,
+  createMissingRequiredAxisError,
+  createMultipleRelationsError,
+} from "../../utils/errors/errors.js";
 import { assertUsage, type Usage } from "../usage/strategy.js";
 
 export const RELATIONS = Object.freeze(["on", "over", "under"] as const);
@@ -91,7 +97,7 @@ function assertRelationTarget(
   target: unknown,
 ): asserts target is RelationTarget {
   if (!isOklchColor(target)) {
-    throw new Error(`Relation "${relation}" target must be a normalized OKLCH color.`);
+    throw createInvalidRelationTargetError(relation);
   }
 }
 
@@ -107,9 +113,7 @@ export function validateRelationOptions(
   const providedRelations = getProvidedRelations(relations);
 
   if (providedRelations.length > 1) {
-    throw new Error(
-      `Only one relation may be provided. Received: ${providedRelations.join(", ")}.`,
-    );
+    throw createMultipleRelationsError(providedRelations);
   }
 
   const requiredRelation = RELATIONS.find(
@@ -118,7 +122,7 @@ export function validateRelationOptions(
 
   if (providedRelations.length === 0) {
     if (requiredRelation !== undefined) {
-      throw new Error(`Relation "${requiredRelation}" is required for usage "${usage}".`);
+      throw createMissingRequiredAxisError(`Relation "${requiredRelation}"`, usage);
     }
 
     return undefined;
@@ -132,7 +136,7 @@ export function validateRelationOptions(
   const availability = relationCompatibility[usage][relation];
 
   if (availability === "forbidden") {
-    throw new Error(`Relation "${relation}" is not allowed for usage "${usage}".`);
+    throw createForbiddenAxisCombinationError(`Relation "${relation}"`, usage);
   }
 
   const target = relations[relation];
@@ -167,7 +171,10 @@ export const relationApplicationHooks = Object.freeze({
 
 export function applyRelation(input: RelationApplicationInput): RelationApplicationResult {
   if (!isOklchColor(input.color)) {
-    throw new Error("Relation input color must be a normalized OKLCH color.");
+    throw createInvalidRelationTargetError(
+      "input",
+      "Relation input color must be a normalized OKLCH color.",
+    );
   }
 
   const relation = validateRelationOptions(input.usage, input.relations);

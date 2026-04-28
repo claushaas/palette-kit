@@ -1,5 +1,6 @@
 import { normalizeOklch, type OklchInput } from "../core/oklch.js";
 import { oklabToLinearRgb, oklchToOklab } from "../operators/convert.js";
+import { createUnsupportedOutputError } from "../utils/errors/errors.js";
 import type { ColorOutput, RgbaColor } from "./types.js";
 
 export type GamutStrategy = "clip";
@@ -66,5 +67,5 @@ export function serializeColor(
     return serializeOklchToRgba(color, options);
   }
 
-  throw new Error(`Unsupported color output "${output}" in Phase 10 serializer.`);
+  throw createUnsupportedOutputError(output);
 }

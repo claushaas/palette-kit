@@ -1,3 +1,5 @@
+import { createUnknownIntentError } from "../utils/errors/errors.js";
+
 export type IntentName = string;
 
 export type IntentDefinition = {
@@ -81,9 +83,7 @@ export function getIntent<I extends string>(
   intent: IntentName,
 ): Readonly<IntentDefinition> {
   if (!hasIntent(registry, intent)) {
-    throw new Error(
-      `Unknown intent "${intent}". Did you forget to register it in the Intent Registry?`,
-    );
+    throw createUnknownIntentError(intent);
   }
 
   return registry.intents[intent];

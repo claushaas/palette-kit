@@ -1,5 +1,6 @@
 import type { OklchColor } from "../core/oklch.js";
 import type { OklabColor } from "../operators/convert.js";
+import { createUnsupportedOutputError } from "../utils/errors/errors.js";
 
 export const OUTPUTS = Object.freeze(["oklch", "oklab", "srgb", "p3", "hex", "rgba"] as const);
 
@@ -55,7 +56,7 @@ export function isColorOutput(value: unknown): value is ColorOutput {
 
 export function assertColorOutput(value: unknown): asserts value is ColorOutput {
   if (!isColorOutput(value)) {
-    throw new Error(formatInvalidOutputError(value));
+    throw createUnsupportedOutputError(String(value), formatInvalidOutputError(value));
   }
 }
 
