@@ -1,35 +1,39 @@
-# Usage (JSON)
+# Usage: JSON
 
-Palette Kit v0.2 does not expose a public JSON exporter. If you need token JSON, build it manually from `theme.resolve` or `theme.onSolid`.
-
-## Example: minimal JSON map
-
-Minimal OKLCH serializer:
-
-- [docs/snippets/serialize-oklch.md](./snippets/serialize-oklch.md)
+Palette Kit v0.4 does not expose a public JSON exporter. Build JSON manually
+from `palette.resolve` outputs.
 
 ```ts
-import { createTheme } from "@clhaas/palette-kit";
+import { createPaletteKit } from "@clhaas/palette-kit";
 
-const theme = createTheme({
-  seeds: {
-    light: { neutral: "#111827", accent: "#3d63dd" },
-    dark: { neutral: "#111827", accent: "#3d63dd" },
+const palette = createPaletteKit({
+  context: "light",
+  intents: {
+    brand: { hue: 260, chroma: 0.14 },
+    neutral: { hue: 0, chroma: 0 },
   },
 });
 
-// Assumes `toOklch` from the snippet above.
 const tokens = {
-  "bg.app": toOklch(
-    theme.resolve({ role: "bg.app", usage: "bg", surface: "app", context: "light" }).oklch,
-  ),
-  "text.primary": toOklch(
-    theme.resolve({ role: "text.primary", usage: "text", surface: "surface", context: "light" })
-      .oklch,
-  ),
+  "surface.default": palette.resolve({
+    usage: "fill",
+    intent: "neutral",
+    level: 2,
+    output: "hex",
+  }),
+  "brand.default": palette.resolve({
+    usage: "fill",
+    intent: "brand",
+    level: 4,
+    output: "hex",
+  }),
 };
 
 const json = JSON.stringify(tokens, null, 2);
 ```
 
-If you need multi-space outputs (sRGB/P3), use your own conversion utilities. v0.2 does not expose them publicly.
+## Notes
+
+- There is no public exporter subpath in v0.4.
+- `hex` and `rgba` are supported runtime outputs.
+- `oklab`, `srgb`, and `p3` are typed but not serialized yet.

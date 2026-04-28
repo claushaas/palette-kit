@@ -1,27 +1,40 @@
 # Tokens
 
-v0.2 does not expose a public token registry or token export API. Instead, **roles are plain strings** and are interpreted by the resolver.
+Palette Kit v0.4 does not expose a public token registry or token exporter.
 
-## Role naming conventions (from resolver)
+The current model resolves colors from axes. Applications may store the resolved
+values as tokens if they need build artifacts.
 
-`engine/resolveBaseColor.ts` infers variants from role prefixes:
+```ts
+const tokens = {
+  "surface.default": palette.resolve({
+    usage: "fill",
+    intent: "neutral",
+    level: 2,
+    output: "hex",
+  }),
+};
+```
 
-- `action.*` → `accent`
-- `bg.*`, `surface.*`, `border.*`, `text.*` → `neutral`
+## Important Constraint
 
-Examples of roles used in tests and docs:
+Palette Kit does not require semantic names to encode usage, state, relation, or
+context. Keep those dimensions in resolver options.
 
-- `bg.app`
-- `surface.card`
-- `text.primary`
-- `action.primary`
-- `focus.ring`
-- `overlay.scrim`
+Prefer:
 
-## Usage + surface drive step selection
+```ts
+palette.resolve({
+  usage: "fill",
+  intent: "brand",
+  level: 4,
+  state: "hover",
+  stateDirection: "increase",
+});
+```
 
-`usage` and `surface` together decide which scale step is chosen. This is the main driver of the resulting OKLCH.
+Avoid designing intent names such as:
 
-## Exported tokens (internal)
-
-There is an **internal** exporter module in `src/export/exportTheme.ts`, but it is **not exported** through `package.json` in v0.2. See [Exporters](./Exporters.md) for details.
+```text
+brandFillHoverOnDark
+```

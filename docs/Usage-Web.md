@@ -1,56 +1,66 @@
-# Usage (Web)
+# Usage: Web
 
-This guide shows the **public API-only** path for using Palette Kit in web apps.
-
-## 1) Create a theme
+Use `createPaletteKit` from the package root.
 
 ```ts
-import { createTheme } from "@clhaas/palette-kit";
+import { createPaletteKit } from "@clhaas/palette-kit";
 
-const theme = createTheme({
-  seeds: {
-    light: { neutral: "#111827", accent: "#3d63dd" },
-    dark: { neutral: "#111827", accent: "#3d63dd" },
+const palette = createPaletteKit({
+  context: "light",
+  intents: {
+    brand: { hue: 260, chroma: 0.14 },
+    neutral: { hue: 0, chroma: 0 },
   },
 });
 ```
 
-## 2) Resolve a color
+## Resolve OKLCH
 
 ```ts
-const bg = theme.resolve({
-  role: "bg.app",
-  usage: "bg",
-  surface: "app",
-  context: "light",
+const surface = palette.resolve({
+  usage: "fill",
+  intent: "neutral",
+  level: 2,
 });
 ```
 
-`bg.oklch` is an OKLCH channel object:
+The default output is a normalized OKLCH object.
 
 ```ts
-// { l: number; c: number; h: number; alpha?: number }
-console.log(bg.oklch);
+surface.space; // "oklch"
+surface.l; // number in 0..100
+surface.c; // number >= 0
+surface.h; // number in [0, 360)
+surface.alpha; // number in 0..1
 ```
 
-## 3) Serialize for CSS
-
-v0.2 does **not** export a serializer. Use the minimal OKLCH serializer snippet:
-
-- [docs/snippets/serialize-oklch.md](./snippets/serialize-oklch.md)
+## Resolve Hex
 
 ```ts
-// Assumes `toOklch` from the snippet above.
-const cssValue = toOklch(bg.oklch);
+const background = palette.resolve({
+  usage: "fill",
+  intent: "brand",
+  level: 4,
+  output: "hex",
+});
+
+document.documentElement.style.setProperty("--brand-bg", background);
 ```
 
-## 4) Apply as CSS variables
+## Resolve Related Text
 
 ```ts
-document.documentElement.style.setProperty("--pk-bg-app", cssValue);
+const text = palette.resolve({
+  usage: "visualVocabulary",
+  intent: "brand",
+  on: surface,
+});
 ```
 
-### Notes
+`visualVocabulary` requires `on` and forbids `level`.
 
-- v0.2 does **not** provide a public sRGB fallback serializer.
-- If you need hex/`rgb()` output, bring your own OKLCH → sRGB converter.
+## Notes
+
+- `fill`, `lines`, and `overlays` require `level`.
+- `state !== "default"` requires `stateDirection`.
+- `oklab`, `srgb`, and `p3` are not serialized yet in v0.4.

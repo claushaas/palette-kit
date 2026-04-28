@@ -1,50 +1,32 @@
 # Exporters
 
-Palette Kit v0.3 exposes build-time exporters as a public subpath:
+Palette Kit v0.4 does not expose public CSS or JSON exporters.
 
-- `@clhaas/palette-kit/export`
+There is no public exporter subpath.
 
-The runtime entrypoint (`@clhaas/palette-kit`) remains runtime-first (no exporter reexports) for tree-shaking and predictable bundles.
+## Current Public Path
 
-## APIs
-
-- `exportThemeCss(theme, tokens, output?)`
-- `exportThemeJson(theme, tokens, output?)`
-
-Both exporters accept `OutputOptions` (preferSpace/includeSpaces/gamutMapping/strict/precision/includeMeta/srgbFormat) and output deterministic, sorted results.
-
-## Example
+Build exported artifacts manually from `palette.resolve`.
 
 ```ts
-import { createTheme } from "@clhaas/palette-kit";
-import { exportThemeCss, exportThemeJson } from "@clhaas/palette-kit/export";
-
-const theme = createTheme({
-  seeds: {
-    light: { neutral: "#111827", accent: "#3d63dd" },
-    dark: { neutral: "#111827", accent: "#3d63dd" },
-  },
-  preset: "modern",
-});
-
 const tokens = {
-  "bg.app": { usage: "bg", surface: "app" },
-  "text.primary": { usage: "text", surface: "surface" },
+  "brand.surface": palette.resolve({
+    usage: "fill",
+    intent: "brand",
+    level: 4,
+    output: "hex",
+  }),
 };
-
-const { css, meta: cssMeta } = exportThemeCss(theme, tokens, {
-  includeSpaces: ["oklch", "p3"],
-  srgbFormat: "hex",
-  includeMeta: true,
-});
-
-const json = exportThemeJson(theme, tokens, {
-  includeSpaces: ["srgb"],
-  includeMeta: true,
-});
 ```
 
-## Output shape
+## Supported Runtime Outputs
 
-- CSS uses `:root { ... }` plus progressive `@supports` overrides.
-- JSON returns `{ tokens: { light: ..., dark: ... }, meta? }` with deterministic token ordering.
+- `oklch`
+- `hex`
+- `rgba`
+
+`oklab`, `srgb`, and `p3` are typed but not serialized yet.
+
+## Future Work
+
+Public exporters may be added after the minimal v0.4 resolver surface is stable.

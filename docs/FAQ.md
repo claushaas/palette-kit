@@ -1,26 +1,44 @@
 # FAQ
 
-## Does v0.2 return CSS color strings?
+## What is the public API in v0.4?
 
-No. The public API (`createTheme`) returns OKLCH channel data (`BaseResolvedColor.oklch`). String serialization exists only in internal modules.
+The public runtime API is `createPaletteKit` from the package root.
+
+```ts
+import { createPaletteKit } from "@clhaas/palette-kit";
+```
+
+The palette instance exposes `palette.resolve`.
+
+## Does Palette Kit return CSS strings?
+
+It depends on `output`.
+
+- `output: "oklch"` returns a normalized OKLCH object.
+- `output: "hex"` returns a `#rrggbb` string.
+- `output: "rgba"` returns `{ r, g, b, a }`.
+
+## Are `oklab`, `srgb`, and `p3` supported?
+
+They are part of the type contract, but they are not serialized in the current
+v0.4 implementation. Requesting them at runtime throws an unsupported output
+error.
 
 ## Is there a CLI?
 
-`package.json` declares a `palette-kit` binary, but there is no CLI implementation in the repo v0.2.
+No. There is no public CLI in the v0.4 branch.
 
 ## Can I export CSS variables or JSON tokens?
 
-Exporters exist in `src/export/`, but they are not publicly exported by the package. See [Exporters](./Exporters.md) for internal usage.
+There is no public exporter subpath in v0.4. Build CSS, JSON, or token files
+manually from `palette.resolve`.
 
-## What color spaces are supported?
+## Are presets public?
 
-Public types allow `srgb`, `p3`, and `oklch` in `OutputOptions`. `oklab` is not present in v0.2.
+No. `soft`, `neutral`, and `strong` preset configs exist internally, but
+`createPaletteKit` does not expose `preset` or `resolverConfig` yet.
 
-## Which preset curves are available?
+## Does Palette Kit detect dark mode?
 
-Two presets are implemented internally:
-
-- `modern` (default)
-- `radixLike`
-
-These are selected via `createTheme({ preset: "modern" | "radixLike" })`.
+No. Context is explicit. Provide `context`, resolver-level `context`, or
+`systemDefaultContext`.

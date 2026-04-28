@@ -1,51 +1,80 @@
-# Config
+# Configuration
 
-This file documents the configuration object accepted by `createTheme`.
-
-## Theme config shape
+`createPaletteKit` accepts a small explicit configuration object.
 
 ```ts
-import { createTheme } from "@clhaas/palette-kit";
+import { createPaletteKit } from "@clhaas/palette-kit";
 
-createTheme({
-  seeds: {
-    light: { neutral: "#111827", accent: "#3d63dd" },
-    dark: { neutral: "#111827", accent: "#3d63dd" },
+const palette = createPaletteKit({
+  context: "light",
+  output: "oklch",
+  intents: {
+    brand: { hue: 260, chroma: 0.14 },
+    neutral: { hue: 0, chroma: 0 },
   },
-  variants: {
-    "category:food": "#ef4444",
-  },
-  preset: "modern",
 });
 ```
 
-### `seeds` (required)
+## intents
 
 ```ts
-{
-  light: { neutral: string; accent: string };
-  dark: { neutral: string; accent: string };
-}
+Record<string, { hue: number; chroma: number }>
 ```
 
-Seed values are **hex strings** only (`#RGB`, `#RRGGBB`, or `#RRGGBBAA`). This is enforced by `utils/parseColor`.
+`intents` is required. Intent names must be flat strings:
 
-### `variants` (optional)
+- not empty
+- no whitespace
+- no `.`
+
+`hue` must be finite and is normalized to `[0, 360)`. `chroma` must be finite
+and greater than or equal to `0`.
+
+## context
 
 ```ts
-Record<string, string>
+"light" | "dark"
 ```
 
-If a `SemanticVariant` like `category:*` or `chart:*` is requested and exists in `variants`, it is used as the seed. Otherwise it falls back to `accent`.
+`context` is optional at palette creation. It becomes the default environment
+for resolver calls.
 
-### `preset` (optional)
+Palette Kit never reads `prefers-color-scheme`, the DOM, or platform state.
 
-- `"modern"` (default)
-- `"radixLike"`
+## systemDefaultContext
 
-Presets define OKLCH lightness/chroma curves per surface.
+```ts
+"light" | "dark"
+```
 
-## Defaults (from code)
+`systemDefaultContext` is an optional host-provided fallback.
 
-- `preset`: `"modern"`
-- `variants`: `{}`
+Context precedence:
+
+1. Resolver-level `context`
+2. Palette-level `context`
+3. `systemDefaultContext`
+
+If no context can be resolved, `palette.resolve` throws.
+
+## output
+
+```ts
+"oklch" | "oklab" | "srgb" | "p3" | "hex" | "rgba"
+```
+
+`output` is optional and defaults to `oklch`.
+
+Runtime support in the current v0.4 implementation:
+
+- `oklch`: supported
+- `hex`: supported
+- `rgba`: supported
+- `oklab`: typed, not serialized yet
+- `srgb`: typed, not serialized yet
+- `p3`: typed, not serialized yet
+
+## Presets and Resolver Config
+
+Resolver presets exist internally in v0.4, but `preset` and `resolverConfig` are
+not public `createPaletteKit` options yet.

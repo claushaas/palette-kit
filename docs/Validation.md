@@ -1,65 +1,94 @@
-# Validation & Errors
+# Validation
 
-This document lists **observable runtime errors** in v0.2 based on the code. It focuses on public entrypoints (`createTheme` → `theme.resolve` / `theme.onSolid`). Internal exporter errors are called out explicitly.
+This document lists observable validation behavior in the current v0.4 branch.
 
-## Input validation (public)
+## Intent Registry
 
-### Color roles and usage
+Intent names must be flat strings:
 
-- `role` is required for `theme.resolve` and must be non-empty.
-- `usage` is required for `theme.onSolid` (`text` or `icon`).
-- For `theme.resolve`, if `usage` is omitted:
-  - it is inferred from the role prefix when possible
-  - **if `output.strict` is true and usage can’t be inferred**, an error is thrown
+- not empty
+- no whitespace
+- no `.`
 
-### Variants
+Intent values must include finite numeric `hue` and `chroma`. Chroma must be
+greater than or equal to `0`.
 
-- `variant` must be a known variant (`neutral`, `accent`, `success`, etc.) or a string matching `category:*` / `chart:*`.
-- Invalid variants throw an error in normalization.
+Unknown intents throw:
 
-### Background hints
+```text
+Unknown intent "<name>". Did you forget to register it in the Intent Registry?
+```
 
-- `on: { kind: "color", value: "#hex" }` requires a non-empty value.
-- If `output.strict` is true and the color is not a valid hex, an error is thrown.
-- If `output.strict` is false, invalid hex values log a warning and are accepted as-is.
+## Usage
 
-### Contrast requirements
+Valid usages:
 
-- APCA targets (`targetLc`, `minLc`, `maxLc`) must be numbers and must be internally consistent.
-- WCAG2 contrast requires `minRatio` (or legacy `ratio`).
-- Unknown contrast model values throw.
+- `fill`
+- `visualVocabulary`
+- `lines`
+- `overlays`
 
-### Alpha strategy
+Unknown usages throw a message listing the valid usages.
 
-- `alpha.mode: "fixed"` requires `alpha` to be a number between 0 and 1.
-- `alpha.mode` must be one of `none | fixed | solveOnBackground`.
+## Level
 
-### Output options
+Valid levels are integers from `1` to `9`.
 
-- `output.strict` and `output.includeMeta` must be booleans.
+Level rules:
 
-## onSolid-specific constraints (public)
+- `fill`, `lines`, and `overlays` require `level`.
+- `visualVocabulary` forbids `level`.
 
-- `onSolid` does **not** support `alpha.mode: "solveOnBackground"`.
-  - If `output.strict` is true, it throws.
-  - If `output.strict` is false, it warns and falls back to a fixed alpha.
-- If the contrast solver cannot reach the requested target and `output.strict` is true, it throws:
-  - `Contrast solver failed (...)`
-- `onSolid` can also throw if a required background is missing in the solver.
+## Relations
 
-## parseColor errors (public, via theme seeds)
+Only one relation may be provided per resolve call.
 
-Seed colors are parsed by `parseColor` when creating a theme. The following inputs throw:
+Relation rules:
 
-- Invalid hex formats (length or characters)
-- OKLCH inputs with invalid chroma values
-- Any input that cannot be converted to RGB/OKLCH
+- `visualVocabulary` requires `on`.
+- `overlays` forbids `on`.
+- `fill` and `lines` allow `on`.
 
-## Internal exporter errors (not public API)
+Relation targets must be normalized OKLCH colors.
 
-If you use internal exporters/serializers from `src/export/`, you may see:
+## State
 
-- `Unable to serialize preferred space: srgb|p3` when `output.strict` is true and conversion fails
-- `Unable to convert color to <target>` or `Unable to clamp chroma for <target>` from gamut mapping
+Valid states:
 
-These are internal-only in v0.2 and not part of the public entrypoint.
+- `default`
+- `hover`
+- `active`
+- `focus`
+- `selected`
+- `disabled`
+
+When `state` is not `default`, `stateDirection` is required.
+
+## Context
+
+Valid contexts:
+
+- `light`
+- `dark`
+
+If resolver context, palette context, and system default context are all absent,
+resolution throws:
+
+```text
+Context could not be resolved. Provide resolverContext, paletteContext, or systemDefaultContext.
+```
+
+## Output
+
+Valid output names:
+
+- `oklch`
+- `oklab`
+- `srgb`
+- `p3`
+- `hex`
+- `rgba`
+
+Runtime serialization currently supports `oklch`, `hex`, and `rgba`.
+
+`oklab`, `srgb`, and `p3` throw unsupported output errors in v0.4.
