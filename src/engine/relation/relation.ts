@@ -14,6 +14,7 @@ import {
 	createMissingRequiredAxisError,
 	createMultipleRelationsError,
 } from '../../utils/errors/errors.js';
+import type { Context } from '../context/context.js';
 import type { Level } from '../level/level.js';
 import { assertUsage, type Usage } from '../usage/strategy.js';
 
@@ -39,6 +40,7 @@ export type ResolvedRelation<R extends Relation = Relation> = Readonly<{
 export type RelationApplicationInput = Readonly<{
 	usage: Usage;
 	color: RelationTarget;
+	context?: Context;
 	level?: Level;
 	resolverConfig?: ResolverConfig;
 	relations?: RelationOptions;
@@ -51,6 +53,7 @@ export type RelationApplicationResult = Readonly<{
 
 export type RelationApplicationHookInput = Readonly<{
 	color: RelationTarget;
+	context: Context;
 	relation: ResolvedRelation;
 	level?: Level;
 	resolverConfig: ResolverConfig;
@@ -179,6 +182,7 @@ export const relationApplicationHooks = Object.freeze({
 					chromaLimits: input.resolverConfig.chromaLimits,
 					on: input.resolverConfig.relationParams.on,
 				},
+				context: input.context,
 				target: input.relation.target,
 			}),
 			relation: input.relation,
@@ -241,6 +245,7 @@ export function applyRelation(
 
 	return relationApplicationHooks[relation.relation]({
 		color: input.color,
+		context: input.context ?? 'light',
 		level: input.level,
 		relation,
 		resolverConfig: input.resolverConfig ?? defaultResolverConfig,

@@ -18,6 +18,7 @@ export type {
 	PaletteResolveOutput,
 	RelationParamsConfig,
 	ResolverConfig,
+	ResolverConfigOverrides,
 	ResolverPresetName,
 	RgbaColor,
 	RgbColor,

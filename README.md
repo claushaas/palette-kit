@@ -67,7 +67,9 @@ APIs in v0.4.
 decrease lightness.
 
 Context is explicit. Provide palette-level `context`, resolver-level `context`,
-or host-injected `systemDefaultContext`.
+or host-injected `systemDefaultContext`. Context affects default level curves;
+for example, dark context inverts the structural lightness scale while
+preserving intent hue and chroma.
 
 ## Output
 
@@ -82,6 +84,9 @@ Supported outputs:
 
 RGB-like outputs use clipped 8-bit channels. Output never changes semantic
 resolution.
+
+Output precedence is resolver-level `output`, then palette-level `output`, then
+host-injected `systemDefaultOutput`, then the explicit `oklch` default.
 
 ## Configuration
 

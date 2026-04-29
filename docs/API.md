@@ -109,6 +109,10 @@ Precedence:
 
 If none is available, resolution throws.
 
+Context affects default level curves. In dark context, the default fill and
+lines curves use the inverted structural lightness scale while preserving
+intent hue and chroma.
+
 ## Output Rules
 
 | Output | Runtime status |
@@ -121,6 +125,13 @@ If none is available, resolution throws.
 | `rgba` | Serialized to `{ r, g, b, a }` |
 
 RGB-like outputs use clipped 8-bit channels.
+
+Output precedence:
+
+1. Resolver-level `output`
+2. Palette-level `output`
+3. `systemDefaultOutput`
+4. Explicit `oklch` default
 
 ## Public Types
 
@@ -142,6 +153,7 @@ The package root reexports:
 - `IntentDefinition`
 - `ResolverPresetName`
 - `ResolverConfig`
+- `ResolverConfigOverrides`
 - `RelationParamsConfig`
 - `ChromaConfig`
 

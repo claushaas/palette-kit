@@ -24,6 +24,7 @@ import {
 	type ResolvedRelation,
 } from '../relation/relation.js';
 import {
+	applyStateAlphaDelta,
 	applyStateDelta,
 	assertState,
 	type State,
@@ -111,6 +112,14 @@ const resolveBaseLightness = (
 		return resolverConfig.levelCurves.lines(level as Level, context);
 	}
 
+	if (usage === 'overlays') {
+		return (
+			50 +
+			resolverConfig.levelCurves.overlays(level as Level, context)
+				.luminanceDelta
+		);
+	}
+
 	return 50;
 };
 
@@ -119,6 +128,10 @@ const resolveStateDirection = (
 	stateDirection: StateDeltaDirection | undefined,
 ): StateDeltaDirection => {
 	if (state === 'default') {
+		if (stateDirection !== undefined) {
+			assertStateDeltaDirection(stateDirection);
+		}
+
 		return stateDirection ?? 'increase';
 	}
 
@@ -166,6 +179,7 @@ export function resolveColor(options: ResolveColorOptions): ResolvedColor {
 
 	const relationResult = applyRelation({
 		color: baseColor,
+		context,
 		level,
 		relations: {
 			on: options.on,
@@ -187,9 +201,19 @@ export function resolveColor(options: ResolveColorOptions): ResolvedColor {
 		resolverConfig.stateDeltas.luminance,
 	);
 	const contextDelta = contextCurve(context);
+	const alpha =
+		options.usage === 'overlays'
+			? applyStateAlphaDelta(
+					relationResult.color.alpha,
+					stateInput,
+					stateDirection,
+					resolverConfig.stateDeltas.alpha,
+				)
+			: relationResult.color.alpha;
 	const color = Object.freeze(
 		normalizeOklch({
 			...relationResult.color,
+			alpha,
 			l: stateLightness + contextDelta,
 		}),
 	);

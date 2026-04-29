@@ -58,14 +58,17 @@ const overlayLevelTargets = Object.freeze({
 	9: Object.freeze({ luminanceDelta: 9 }),
 } satisfies Record<Level, OverlayLevelResult>);
 
+const resolveContextualLightness = (lightness: number, context: Context) =>
+	context === 'dark' ? 100 - lightness : lightness;
+
 export const defaultLevelCurves: LevelCurveConfig = Object.freeze({
-	fill(level, _context) {
+	fill(level, context) {
 		assertLevel(level);
-		return fillLevelTargets[level];
+		return resolveContextualLightness(fillLevelTargets[level], context);
 	},
-	lines(level, _context) {
+	lines(level, context) {
 		assertLevel(level);
-		return linesLevelTargets[level];
+		return resolveContextualLightness(linesLevelTargets[level], context);
 	},
 	overlays(level, _context) {
 		assertLevel(level);

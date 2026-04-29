@@ -37,6 +37,7 @@ The public config supports:
 - `context`
 - `systemDefaultContext`
 - `output`
+- `systemDefaultOutput`
 - `preset`
 - `resolverConfig`
 
@@ -74,12 +75,17 @@ and the current explicit clip gamut strategy.
 - Same input produces the same output.
 - Output format does not change internal OKLCH resolution.
 - Context is explicit and never inferred.
+- Context affects structural level curves while preserving semantic intent.
 - Level is explicit and never inferred.
 - Non-default state requires `stateDirection`.
 - Forbidden axis combinations throw.
-- `on` enforces APCA contrast with a default Lc 60 target.
+- `on` enforces APCA contrast with a default Lc 60 target and exposes WCAG as a
+  fallback diagnostic.
 - `over` applies configured alpha by level.
 - `under` applies configured alpha and luminance reduction by level.
+- State alpha deltas apply only where alpha is allowed, currently `overlays`.
+- Intent names are semantic-only and cannot encode usage, state, relation,
+  level, or visual implementation details.
 
 ## Current Limitations
 

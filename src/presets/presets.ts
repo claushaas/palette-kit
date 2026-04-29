@@ -1,3 +1,4 @@
+import type { Context } from '../engine/context/context.js';
 import {
 	defaultLevelCurves,
 	type LevelCurveConfig,
@@ -89,16 +90,19 @@ const assertNonNegativeConfigNumber = (name: string, value: number) => {
 	}
 };
 
+const resolveContextualLightness = (lightness: number, context: Context) =>
+	context === 'dark' ? 100 - lightness : lightness;
+
 const createNumberLevelCurve = (targets: Readonly<Record<Level, number>>) =>
-	Object.freeze((level: Level): number => {
+	Object.freeze((level: Level, context: Context): number => {
 		assertLevel(level);
-		return targets[level];
+		return resolveContextualLightness(targets[level], context);
 	});
 
 const createOverlayLevelCurve = (
 	targets: Readonly<Record<Level, OverlayLevelResult>>,
 ) =>
-	Object.freeze((level: Level): OverlayLevelResult => {
+	Object.freeze((level: Level, _context: Context): OverlayLevelResult => {
 		assertLevel(level);
 		return targets[level];
 	});

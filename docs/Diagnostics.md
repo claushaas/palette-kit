@@ -14,7 +14,7 @@ not part of the public API surface yet.
 - missing `on` relation
 - multiple relations
 - unresolved context
-- unsupported serialized output
+- invalid or unsupported serialized output
 
 ## Current Recommendation
 

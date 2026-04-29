@@ -26,9 +26,9 @@ The internal resolver:
 1. validates usage, state, context, level, and relations;
 2. looks up the registered intent;
 3. selects the usage strategy;
-4. applies level for level-driven usages;
+4. applies context-aware level curves for level-driven usages;
 5. applies relation validation and behavior;
-6. applies explicit state deltas;
+6. applies explicit luminance state deltas and overlay alpha deltas;
 7. applies structural context hooks;
 8. returns normalized OKLCH.
 

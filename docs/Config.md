@@ -30,6 +30,11 @@ Record<string, { hue: number; chroma: number }>
 `hue` must be finite and is normalized to `[0, 360)`. `chroma` must be finite
 and greater than or equal to `0`.
 
+Intent names must describe semantic meaning only. Names that encode usage,
+state, relation, level, or visual implementation details are rejected. Keep
+dimensions such as `fill`, `hover`, `on`, `strong`, `red`, and `dark` in
+resolver options or configuration instead of intent names.
+
 ## context
 
 ```ts
@@ -40,6 +45,9 @@ and greater than or equal to `0`.
 for resolver calls.
 
 Palette Kit never reads `prefers-color-scheme`, the DOM, or platform state.
+
+Context affects default level curves. Dark context inverts the structural
+lightness scale for `fill` and `lines` while preserving semantic hue and chroma.
 
 ## systemDefaultContext
 
@@ -73,6 +81,21 @@ Runtime support in the current v0.4 implementation:
 - `p3`: supported
 - `hex`: supported
 - `rgba`: supported
+
+## systemDefaultOutput
+
+```ts
+"oklch" | "oklab" | "srgb" | "p3" | "hex" | "rgba"
+```
+
+`systemDefaultOutput` is an optional host-provided output fallback.
+
+Output precedence:
+
+1. Resolver-level `output`
+2. Palette-level `output`
+3. `systemDefaultOutput`
+4. Explicit `oklch` default
 
 ## Presets and Resolver Config
 

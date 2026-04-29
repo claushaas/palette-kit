@@ -20,6 +20,7 @@ import {
 	type ResolverConfig,
 } from './presets/presets.js';
 import type {
+	PaletteDefaultOutput,
 	PaletteKit,
 	PaletteKitConfig,
 	PaletteResolveOptions,
@@ -50,20 +51,22 @@ function validateOptionalOutput(output: ColorOutput | undefined): void {
 
 function createResolveFunction<
 	I extends string,
-	PaletteOutput extends ColorOutput,
+	DefaultOutput extends ColorOutput,
 >(
 	intentRegistry: IntentRegistry<I>,
 	paletteContext: Context | undefined,
 	systemDefaultContext: Context | undefined,
-	paletteOutput: PaletteOutput | undefined,
+	paletteOutput: ColorOutput | undefined,
+	systemDefaultOutput: ColorOutput | undefined,
 	resolverConfig: ResolverConfig,
 ) {
-	return <const ResolverOutput extends ColorOutput = PaletteOutput>(
+	return <const ResolverOutput extends ColorOutput = DefaultOutput>(
 		options: PaletteResolveOptions<I, ResolverOutput>,
 	) => {
 		const output = resolveOutput({
 			paletteOutput,
 			resolverOutput: options.output,
+			systemDefaultOutput,
 		}) as ResolverOutput;
 
 		const resolved = resolveColor({
@@ -94,11 +97,15 @@ function createResolveFunction<
  */
 export function createPaletteKit<
 	const I extends string,
-	const PaletteOutput extends ColorOutput = 'oklch',
->(config: PaletteKitConfig<I, PaletteOutput>): PaletteKit<I, PaletteOutput> {
+	const PaletteOutput extends ColorOutput | undefined = undefined,
+	const SystemDefaultOutput extends ColorOutput | undefined = undefined,
+>(
+	config: PaletteKitConfig<I, PaletteOutput, SystemDefaultOutput>,
+): PaletteKit<I, PaletteDefaultOutput<PaletteOutput, SystemDefaultOutput>> {
 	validateOptionalContext(config.context);
 	validateOptionalContext(config.systemDefaultContext);
 	validateOptionalOutput(config.output);
+	validateOptionalOutput(config.systemDefaultOutput);
 	const presetConfig =
 		config.preset === undefined
 			? defaultResolverConfig
@@ -113,12 +120,16 @@ export function createPaletteKit<
 	);
 
 	return Object.freeze({
-		resolve: createResolveFunction(
+		resolve: createResolveFunction<
+			I,
+			PaletteDefaultOutput<PaletteOutput, SystemDefaultOutput>
+		>(
 			intentRegistry,
 			config.context,
 			config.systemDefaultContext,
 			config.output,
+			config.systemDefaultOutput,
 			resolverConfig,
 		),
-	}) as PaletteKit<I, PaletteOutput>;
+	}) as PaletteKit<I, PaletteDefaultOutput<PaletteOutput, SystemDefaultOutput>>;
 }

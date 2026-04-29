@@ -81,6 +81,28 @@ describe('public Palette Kit API', () => {
 		expect(color).toBe('#aae2ff');
 	});
 
+	it('uses systemDefaultOutput as the lowest output precedence', () => {
+		const palette = createPaletteKit({
+			context: 'light',
+			intents,
+			systemDefaultOutput: 'hex',
+		});
+		const paletteOutput = createPaletteKit({
+			context: 'light',
+			intents,
+			output: 'rgba',
+			systemDefaultOutput: 'hex',
+		});
+
+		expect(palette.resolve(brandFillOptions)).toBe('#aae2ff');
+		expect(paletteOutput.resolve(brandFillOptions)).toEqual({
+			a: 1,
+			b: 255,
+			g: 226,
+			r: 170,
+		});
+	});
+
 	it('uses palette-level and resolver-level context explicitly', () => {
 		const paletteContext = createPaletteKit({ context: 'light', intents });
 		const systemContext = createPaletteKit({
@@ -90,7 +112,13 @@ describe('public Palette Kit API', () => {
 		const resolverContext = createPaletteKit({ intents });
 
 		expect(paletteContext.resolve(brandFillOptions).space).toBe('oklch');
-		expect(systemContext.resolve(brandFillOptions).space).toBe('oklch');
+		expect(systemContext.resolve(brandFillOptions)).toEqual({
+			alpha: 1,
+			c: 0.14,
+			h: 260,
+			l: 9,
+			space: 'oklch',
+		} satisfies OklchColor);
 		expect(
 			resolverContext.resolve({ ...brandFillOptions, context: 'light' }).space,
 		).toBe('oklch');

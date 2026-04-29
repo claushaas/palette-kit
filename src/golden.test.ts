@@ -100,7 +100,7 @@ const goldenCases = [
 			alpha: 0.06,
 			c: 0,
 			h: 0,
-			l: 42,
+			l: 43,
 			space: 'oklch',
 		} satisfies OklchColor),
 		name: 'overlay',
@@ -249,11 +249,14 @@ describe('axis isolation invariants', () => {
 		expect(hover.axes.intent).toBe(base.axes.intent);
 	});
 
-	it('does not let context alter OKLCH while context hooks are structural', () => {
+	it('lets context affect lightness while preserving intent and usage', () => {
 		const light = resolveInternal({ resolverContext: 'light' });
 		const dark = resolveInternal({ resolverContext: 'dark' });
 
-		expect(dark.color).toEqual(light.color);
+		expect(light.color.l).toBe(94);
+		expect(dark.color.l).toBe(6);
+		expect(dark.color.h).toBe(light.color.h);
+		expect(dark.color.c).toBe(light.color.c);
 		expect(dark.axes.context).toBe('dark');
 		expect(light.axes.context).toBe('light');
 		expect(dark.axes.intent).toBe(light.axes.intent);

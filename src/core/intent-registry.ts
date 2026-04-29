@@ -19,6 +19,21 @@ const normalizeHue = (hue: number) => {
 	return Object.is(normalized, -0) ? 0 : normalized;
 };
 
+const forbiddenIntentTokens = Object.freeze({
+	level: new Set(['strong', 'subtle', 'weak', 'muted', 'heavy']),
+	relation: new Set(['on', 'over', 'under', 'overlay']),
+	state: new Set(['hover', 'active', 'focus', 'selected', 'disabled']),
+	usage: new Set(['text', 'border', 'icon', 'fill', 'line', 'lines']),
+	visual: new Set(['green', 'red', 'blue', 'dark', 'light']),
+});
+
+const splitIntentName = (name: string) =>
+	name
+		.replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+		.split(/[-_]+|\s+/)
+		.map((part) => part.toLowerCase())
+		.filter((part) => part.length > 0);
+
 const validateIntentName = (name: string) => {
 	if (name.length === 0) {
 		throw new Error('Intent name must not be empty.');
@@ -30,6 +45,18 @@ const validateIntentName = (name: string) => {
 
 	if (name.includes('.')) {
 		throw new Error(`Intent name "${name}" must use a flat namespace.`);
+	}
+
+	const tokens = splitIntentName(name);
+
+	for (const [category, forbiddenTokens] of Object.entries(
+		forbiddenIntentTokens,
+	)) {
+		if (tokens.some((token) => forbiddenTokens.has(token))) {
+			throw new Error(
+				`Intent name "${name}" must describe meaning only and must not encode ${category}.`,
+			);
+		}
 	}
 };
 

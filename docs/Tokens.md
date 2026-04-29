@@ -18,8 +18,8 @@ const tokens = {
 
 ## Important Constraint
 
-Palette Kit does not require semantic names to encode usage, state, relation, or
-context. Keep those dimensions in resolver options.
+Palette Kit rejects intent names that encode usage, state, relation, level, or
+visual implementation details. Keep those dimensions in resolver options.
 
 Prefer:
 
@@ -37,4 +37,6 @@ Avoid designing intent names such as:
 
 ```text
 brandFillHoverOnDark
+dangerStrong
+successText
 ```

@@ -60,6 +60,34 @@ describe('createIntentRegistry', () => {
 		).toThrow('Intent name "brand.primary" must use a flat namespace.');
 	});
 
+	it('rejects intent names that encode axes or visual implementation details', () => {
+		expect(() =>
+			createIntentRegistry({ incomeStrong: { chroma: 0, hue: 0 } }),
+		).toThrow(
+			'Intent name "incomeStrong" must describe meaning only and must not encode level.',
+		);
+		expect(() =>
+			createIntentRegistry({ incomeHover: { chroma: 0, hue: 0 } }),
+		).toThrow(
+			'Intent name "incomeHover" must describe meaning only and must not encode state.',
+		);
+		expect(() =>
+			createIntentRegistry({ incomeOverlay: { chroma: 0, hue: 0 } }),
+		).toThrow(
+			'Intent name "incomeOverlay" must describe meaning only and must not encode relation.',
+		);
+		expect(() =>
+			createIntentRegistry({ textIncome: { chroma: 0, hue: 0 } }),
+		).toThrow(
+			'Intent name "textIncome" must describe meaning only and must not encode usage.',
+		);
+		expect(() =>
+			createIntentRegistry({ redAlert: { chroma: 0, hue: 0 } }),
+		).toThrow(
+			'Intent name "redAlert" must describe meaning only and must not encode visual.',
+		);
+	});
+
 	it('rejects non-finite intent channels', () => {
 		expect(() =>
 			createIntentRegistry({ brand: { chroma: 0, hue: Number.NaN } }),

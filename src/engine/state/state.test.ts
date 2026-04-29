@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import * as publicApi from '../../index.js';
 import {
+	applyStateAlphaDelta,
 	applyStateDelta,
 	assertState,
 	defaultStateDeltas,
@@ -98,6 +99,29 @@ describe('state deltas', () => {
 		expect(() =>
 			applyStateDelta(Number.POSITIVE_INFINITY, 'hover', 'increase'),
 		).toThrow('State delta value must be a finite number.');
+	});
+
+	it('applies explicit alpha deltas with 0..1 clamping', () => {
+		const deltas = {
+			active: 0.2,
+			default: 0,
+			disabled: 0.5,
+			focus: 0.1,
+			hover: 0.1,
+			selected: 0.15,
+		};
+
+		expect(applyStateAlphaDelta(0.4, 'default', 'increase', deltas)).toBe(0.4);
+		expect(applyStateAlphaDelta(0.4, 'hover', 'increase', deltas)).toBe(0.5);
+		expect(applyStateAlphaDelta(0.4, 'hover', 'decrease', deltas)).toBe(0.3);
+		expect(applyStateAlphaDelta(0.9, 'disabled', 'increase', deltas)).toBe(1);
+		expect(applyStateAlphaDelta(0.1, 'disabled', 'decrease', deltas)).toBe(0);
+	});
+
+	it('rejects non-finite alpha values', () => {
+		expect(() => applyStateAlphaDelta(Number.NaN, 'hover', 'increase')).toThrow(
+			'State alpha delta value must be a finite number.',
+		);
 	});
 
 	it('does not expose state APIs from the public entrypoint', () => {

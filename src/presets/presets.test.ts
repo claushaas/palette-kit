@@ -21,8 +21,10 @@ const invalidPresetError =
 	'Unknown resolver preset "vivid". Expected one of: soft, neutral, strong.';
 const invalidLevelError = 'Invalid level "0". Expected an integer from 1 to 9.';
 
-const valuesFor = (curve: (level: Level, context: 'light') => number) =>
-	LEVELS.map((level) => curve(level, 'light'));
+const valuesFor = (
+	curve: (level: Level, context: 'light' | 'dark') => number,
+	context: 'light' | 'dark' = 'light',
+) => LEVELS.map((level) => curve(level, context));
 
 const overlayValuesFor = (config: ResolverConfig) =>
 	LEVELS.map(
@@ -106,8 +108,14 @@ describe('resolver preset configs', () => {
 		expect(valuesFor(softResolverConfig.levelCurves.fill)).toEqual([
 			98, 97, 96, 94, 92, 89, 86, 82, 78,
 		]);
+		expect(valuesFor(softResolverConfig.levelCurves.fill, 'dark')).toEqual([
+			2, 3, 4, 6, 8, 11, 14, 18, 22,
+		]);
 		expect(valuesFor(softResolverConfig.levelCurves.lines)).toEqual([
 			96, 95, 94, 93, 92, 91, 90, 89, 88,
+		]);
+		expect(valuesFor(softResolverConfig.levelCurves.lines, 'dark')).toEqual([
+			4, 5, 6, 7, 8, 9, 10, 11, 12,
 		]);
 		expect(overlayValuesFor(softResolverConfig)).toEqual([
 			0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5,
@@ -136,8 +144,14 @@ describe('resolver preset configs', () => {
 		expect(valuesFor(strongResolverConfig.levelCurves.fill)).toEqual([
 			99, 96, 92, 87, 81, 74, 66, 57, 47,
 		]);
+		expect(valuesFor(strongResolverConfig.levelCurves.fill, 'dark')).toEqual([
+			1, 4, 8, 13, 19, 26, 34, 43, 53,
+		]);
 		expect(valuesFor(strongResolverConfig.levelCurves.lines)).toEqual([
 			97, 95, 92, 89, 85, 81, 76, 70, 64,
+		]);
+		expect(valuesFor(strongResolverConfig.levelCurves.lines, 'dark')).toEqual([
+			3, 5, 8, 11, 15, 19, 24, 30, 36,
 		]);
 		expect(overlayValuesFor(strongResolverConfig)).toEqual([
 			2, 4, 6, 8, 10, 12, 14, 16, 18,

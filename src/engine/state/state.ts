@@ -47,6 +47,8 @@ const formatInvalidStateError = (value: unknown) =>
 	`Invalid state "${String(value)}". Expected one of: ${stateList}.`;
 
 const clampPercentage = (value: number) => Math.min(100, Math.max(0, value));
+const clampAlpha = (value: number) =>
+	Number(Math.min(1, Math.max(0, value)).toFixed(12));
 
 export function isState(value: unknown): value is State {
 	return (
@@ -83,4 +85,29 @@ export function applyStateDelta(
 	}
 
 	return clampPercentage(value - delta);
+}
+
+export function applyStateAlphaDelta(
+	value: number,
+	state: State,
+	direction: StateDeltaDirection,
+	deltas: StateDeltaTable = defaultStateDeltas.alpha,
+): number {
+	if (!Number.isFinite(value)) {
+		throw new Error('State alpha delta value must be a finite number.');
+	}
+
+	assertState(state);
+
+	const delta = deltas[state];
+
+	if (state === 'default') {
+		return clampAlpha(value);
+	}
+
+	if (direction === 'increase') {
+		return clampAlpha(value + delta);
+	}
+
+	return clampAlpha(value - delta);
 }

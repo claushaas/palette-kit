@@ -9,9 +9,13 @@ Intent names must be flat strings:
 - not empty
 - no whitespace
 - no `.`
+- no encoded usage, state, relation, level, or visual implementation tokens
 
 Intent values must include finite numeric `hue` and `chroma`. Chroma must be
 greater than or equal to `0`.
+
+Examples of rejected names include `textIncome`, `incomeHover`,
+`incomeOverlay`, `incomeStrong`, and `redAlert`.
 
 Unknown intents throw:
 

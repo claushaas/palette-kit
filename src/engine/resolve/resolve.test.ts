@@ -3,6 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { createIntentRegistry } from '../../core/intent-registry.js';
 import { isOklchColor, normalizeOklch } from '../../core/oklch.js';
 import * as publicApi from '../../index.js';
+import {
+	defaultResolverConfig,
+	mergeResolverConfig,
+} from '../../presets/presets.js';
 import { PaletteKitError } from '../../utils/errors/errors.js';
 import { type ResolveColorOptions, resolveColor } from './resolve.js';
 
@@ -116,6 +120,17 @@ describe('resolveColor', () => {
 		);
 	});
 
+	it('validates stateDirection when it is provided for the default state', () => {
+		expect(() =>
+			resolve({
+				state: 'default',
+				stateDirection: 'sideways' as 'increase',
+			}),
+		).toThrow(
+			'Invalid stateDirection "sideways". Expected one of: increase, decrease.',
+		);
+	});
+
 	it('applies explicit state directions to lightness', () => {
 		expect(
 			resolve({ level: 4, state: 'hover', stateDirection: 'increase' }).color.l,
@@ -123,6 +138,32 @@ describe('resolveColor', () => {
 		expect(
 			resolve({ level: 4, state: 'hover', stateDirection: 'decrease' }).color.l,
 		).toBe(88);
+	});
+
+	it('applies configured state alpha deltas only to overlays', () => {
+		const resolverConfig = mergeResolverConfig(defaultResolverConfig, {
+			stateDeltas: {
+				alpha: {
+					hover: 0.1,
+				},
+			},
+		});
+		const overlay = resolve({
+			level: 1,
+			over: surface,
+			resolverConfig,
+			state: 'hover',
+			stateDirection: 'increase',
+			usage: 'overlays',
+		});
+		const fill = resolve({
+			resolverConfig,
+			state: 'hover',
+			stateDirection: 'increase',
+		});
+
+		expect(overlay.color.alpha).toBe(0.14);
+		expect(fill.color.alpha).toBe(1);
 	});
 
 	it('resolves context precedence', () => {
@@ -140,6 +181,31 @@ describe('resolveColor', () => {
 		expect(resolve({ systemDefaultContext: 'light' }).axes.context).toBe(
 			'light',
 		);
+	});
+
+	it('uses context-aware level curves', () => {
+		const light = resolve({ resolverContext: 'light' });
+		const dark = resolve({ resolverContext: 'dark' });
+
+		expect(light.color.l).toBe(94);
+		expect(dark.color.l).toBe(6);
+		expect(dark.color.h).toBe(light.color.h);
+		expect(dark.color.c).toBe(light.color.c);
+		expect(dark.axes.context).toBe('dark');
+	});
+
+	it('uses overlay level curves as resolver configuration', () => {
+		const overlay = resolve({
+			level: 4,
+			resolverConfig: mergeResolverConfig(defaultResolverConfig, {
+				levelCurves: {
+					overlays: () => Object.freeze({ luminanceDelta: 12 }),
+				},
+			}),
+			usage: 'overlays',
+		});
+
+		expect(overlay.color.l).toBe(62);
 	});
 
 	it('throws when no context can be resolved', () => {

@@ -51,12 +51,11 @@ export type RgbColor = InternalRgbColor;
 /** Intent registry entry supplied at palette creation. */
 export type IntentDefinition = InternalIntentDefinition;
 
-/** Public resolver preset names. */
-/** Public resolver configuration override shape. */
 export type {
 	ChromaConfig,
 	RelationParamsConfig,
 	ResolverConfig,
+	ResolverConfigOverrides,
 	ResolverPresetName,
 };
 
@@ -67,7 +66,8 @@ export type PaletteResolveOutput<O extends ColorOutput = 'oklch'> =
 /** Configuration for `createPaletteKit`. */
 export type PaletteKitConfig<
 	I extends string = string,
-	PaletteOutput extends ColorOutput = 'oklch',
+	PaletteOutput extends ColorOutput | undefined = undefined,
+	SystemDefaultOutput extends ColorOutput | undefined = undefined,
 > = Readonly<{
 	/** Flat intent registry owned by the application. */
 	intents: Record<I, IntentDefinition>;
@@ -81,12 +81,24 @@ export type PaletteKitConfig<
 	/** Palette-level output used when a resolver call does not override it. */
 	output?: PaletteOutput;
 
+	/** Host-provided output fallback. Defaults to `oklch` when omitted. */
+	systemDefaultOutput?: SystemDefaultOutput;
+
 	/** Public resolver preset. Defaults to `neutral`. */
 	preset?: ResolverPresetName;
 
 	/** Explicit resolver configuration overrides merged on top of the preset. */
 	resolverConfig?: ResolverConfigOverrides;
 }>;
+
+export type PaletteDefaultOutput<
+	PaletteOutput extends ColorOutput | undefined,
+	SystemDefaultOutput extends ColorOutput | undefined,
+> = PaletteOutput extends ColorOutput
+	? PaletteOutput
+	: SystemDefaultOutput extends ColorOutput
+		? SystemDefaultOutput
+		: 'oklch';
 
 type RelationTarget = OklchColor;
 

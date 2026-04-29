@@ -15,6 +15,9 @@ The palette instance exposes `palette.resolve`.
 It depends on `output`.
 
 - `output: "oklch"` returns a normalized OKLCH object.
+- `output: "oklab"` returns an OKLab object.
+- `output: "srgb"` returns `{ r, g, b, alpha }`.
+- `output: "p3"` returns Display-P3 `{ r, g, b, alpha }`.
 - `output: "hex"` returns a `#rrggbb` string.
 - `output: "rgba"` returns `{ r, g, b, a }`.
 
@@ -48,3 +51,9 @@ explicitly if the target cannot be satisfied.
 
 No. Context is explicit. Provide `context`, resolver-level `context`, or
 `systemDefaultContext`.
+
+## Can output have a host default?
+
+Yes. Use `systemDefaultOutput` when the host wants to inject a fallback. Resolver
+output overrides palette output, palette output overrides `systemDefaultOutput`,
+and `oklch` is used when none of those are provided.
