@@ -1,53 +1,98 @@
-# Palette Kit — v0.2 Code-Based Spec
+# Palette Kit v0.4 Current Implementation Spec
 
-This document replaces the previous speculative spec. It reflects **only what exists in the v0.2 codebase**.
+This document summarizes the current v0.4 branch implementation. The complete
+planning specification lives in
+[planning/v0.4/v0.4-palette-kit-spec.md](../planning/v0.4/v0.4-palette-kit-spec.md).
 
-For full documentation, see:
+## Public Scope
 
-- [docs/README.md](./README.md)
-- [docs/_api-surface.md](./_api-surface.md)
-- [docs/spec-legacy.md](./spec-legacy.md) (archived, speculative v0.1-era spec)
+The package root exposes:
 
-## Scope of v0.2
+- `createPaletteKit`
+- `softResolverConfig`
+- `neutralResolverConfig`
+- `strongResolverConfig`
+- `defaultResolverConfig`
+- public TypeScript types
 
-- Public API: `createTheme` + types from `src/types/index.ts`.
-- Theme resolution returns OKLCH channel data (not CSS strings).
-- Internal serializers/exporters exist in `src/export/` but are **not exported** from the package entrypoint.
-- CLI is declared in `package.json` but has no implementation in the repository.
+The package root does not expose CLI commands, subpath exporters, serializer
+functions, validators, or internal resolver helpers.
 
-## Design intent vs current implementation
+## Public Configuration
 
-The original spec covered a broader system (tokens, exporters, CLI). In v0.2:
+```ts
+createPaletteKit({
+  context: "light",
+  output: "oklch",
+  intents: {
+    brand: { hue: 260, chroma: 0.14 },
+    neutral: { hue: 0, chroma: 0 },
+  },
+});
+```
 
-**Implemented (current)**:
+The public config supports:
 
-- Resolver engine with `createTheme`, `resolve`, `color`, `onSolid`, `withContext`
-- OKLCH step generation (12 steps)
-- State and emphasis operators
-- APCA/WCAG2-based `onSolid`
+- `intents`
+- `context`
+- `systemDefaultContext`
+- `output`
+- `systemDefaultOutput`
+- `preset`
+- `resolverConfig`
 
-**Planned but not implemented in v0.2**:
+## Resolver Axes
 
-- Public exporters (CSS/JSON) as part of the package API
-- CLI for generating tokens
-- Token map output as part of the public API
-- Anchor-step/slot pinning
+`palette.resolve` accepts:
 
-**Why it was cut**:
+- `usage`
+- `intent`
+- `level`
+- `on`
+- `over`
+- `under`
+- `state`
+- `stateDirection`
+- `context`
+- `output`
 
-- The public entrypoint in v0.2 exports only `createTheme` + types.
-- Exporters and serializers exist in `src/export/`, but they are not exposed in `package.json` exports.
-- CLI is declared but no `src/cli.*` exists in this tag.
+The resolver is deterministic and resolves internally in OKLCH.
 
-## Implementation summary
+## Implemented Outputs
 
-- Seeds: required `light`/`dark` `neutral` + `accent` hex values.
-- Presets: `modern` (default) and `radixLike`.
-- Scale generation: 12 steps per surface in OKLCH.
-- Resolution: `resolve`/`color` map semantic queries to a scale step, then apply state/emphasis operators.
-- `onSolid`: computes text/icon colors with APCA/WCAG2 checks and default alpha.
+- `oklch`
+- `oklab`
+- `srgb`
+- `p3`
+- `hex`
+- `rgba`
 
-## See also
+RGB-like outputs use clipped 8-bit channels. `p3` uses Display-P3 conversion
+and the current explicit clip gamut strategy.
 
-- [Architecture](./Architecture.md)
-- [API](./API.md)
+## Implemented Guarantees
+
+- Same input produces the same output.
+- Output format does not change internal OKLCH resolution.
+- Context is explicit and never inferred.
+- Context affects structural level curves while preserving semantic intent.
+- Level is explicit and never inferred.
+- Non-default state requires `stateDirection`.
+- Forbidden axis combinations throw.
+- `on` enforces APCA contrast with a default Lc 60 target and exposes WCAG as a
+  fallback diagnostic.
+- `over` applies configured alpha by level.
+- `under` applies configured alpha and luminance reduction by level.
+- State alpha deltas apply only where alpha is allowed, currently `overlays`.
+- Intent names are semantic-only and cannot encode usage, state, relation,
+  level, or visual implementation details.
+
+## Current Limitations
+
+- CLI and exporters are not public in v0.4.
+
+## References
+
+- [Resolver Reference](../planning/v0.4/v0.4-resolver-reference.md)
+- [Output Serialization Contract](../planning/v0.4/v0.4-output-serialization-contract.md)
+- [Testing Strategy](../planning/v0.4/v0.4-testing-strategy-golden-cases.md)

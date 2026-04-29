@@ -1,37 +1,14 @@
 # Alpha
 
-Alpha handling in v0.2 is controlled by `AlphaStrategy` in `ColorQuery` and `OnSolidQuery`.
+Alpha is present in the normalized OKLCH model as `alpha`.
 
-## AlphaStrategy
+In the current v0.4 implementation:
 
-```ts
-type AlphaStrategy =
-  | { mode: "none" }
-  | { mode: "fixed"; alpha: number }
-  | { mode: "solveOnBackground" };
-```
+- base resolved OKLCH colors use `alpha: 1`;
+- `rgba` output maps alpha to `a`;
+- `over` and `under` relations apply configured alpha by level;
+- state alpha deltas from `resolverConfig` apply only to `overlays`;
+- non-overlay usages preserve resolved alpha and never use alpha to satisfy
+  contrast.
 
-## `onSolid` behavior
-
-`engine/onSolid.ts` implements fixed alpha defaults for text/icon:
-
-- `text`: `0.92`
-- `icon`: `0.72`
-
-If `alpha.mode` is `fixed`, that value is validated to `[0..1]`.
-
-`alpha.mode: "solveOnBackground"` is **not supported** in `onSolid`:
-
-- In strict mode: throws an error.
-- In non-strict mode: logs a warning and falls back to the fixed defaults above.
-
-### Example
-
-```ts
-const text = theme.onSolid({
-  bgRole: "action.primary",
-  usage: "text",
-  context: "light",
-  alpha: { mode: "fixed", alpha: 0.9 },
-});
-```
+Alpha behavior is explicit and deterministic.

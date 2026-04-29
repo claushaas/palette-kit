@@ -1,0 +1,236 @@
+import {
+	getIntent,
+	type IntentName,
+	type IntentRegistry,
+} from '../../core/intent-registry.js';
+import { normalizeOklch, type OklchColor } from '../../core/oklch.js';
+import {
+	defaultResolverConfig,
+	type ResolverConfig,
+} from '../../presets/presets.js';
+import {
+	createForbiddenAxisCombinationError,
+	createMissingRequiredAxisError,
+} from '../../utils/errors/errors.js';
+import {
+	type Context,
+	createContextCurveHook,
+	resolveContext,
+} from '../context/context.js';
+import { assertLevel, type Level } from '../level/level.js';
+import {
+	applyRelation,
+	type RelationOptions,
+	type ResolvedRelation,
+} from '../relation/relation.js';
+import {
+	applyStateAlphaDelta,
+	applyStateDelta,
+	assertState,
+	type State,
+	type StateDeltaDirection,
+} from '../state/state.js';
+import {
+	assertUsage,
+	getUsageStrategy,
+	type Usage,
+} from '../usage/strategy.js';
+
+export type ResolveColorOptions = Readonly<{
+	intentRegistry: IntentRegistry;
+	usage: unknown;
+	intent: IntentName;
+	level?: unknown;
+	on?: RelationOptions['on'];
+	over?: RelationOptions['over'];
+	under?: RelationOptions['under'];
+	state?: unknown;
+	stateDirection?: StateDeltaDirection;
+	resolverContext?: unknown;
+	paletteContext?: unknown;
+	systemDefaultContext?: unknown;
+	resolverConfig?: ResolverConfig;
+}>;
+
+export type ResolvedColorAxes = Readonly<{
+	usage: Usage;
+	intent: IntentName;
+	context: Context;
+	level?: Level;
+	state: State;
+	relation?: ResolvedRelation;
+}>;
+
+export type ResolvedColor = Readonly<{
+	color: OklchColor;
+	axes: ResolvedColorAxes;
+}>;
+
+const contextCurve = createContextCurveHook({
+	dark: 0,
+	light: 0,
+});
+
+function assertStateDeltaDirection(
+	value: unknown,
+): asserts value is StateDeltaDirection {
+	if (value !== 'increase' && value !== 'decrease') {
+		throw new Error(
+			`Invalid stateDirection "${String(value)}". Expected one of: increase, decrease.`,
+		);
+	}
+}
+
+const resolveLevel = (usage: Usage, level: unknown): Level | undefined => {
+	if (usage === 'visualVocabulary') {
+		if (level !== undefined) {
+			throw createForbiddenAxisCombinationError('Level', 'visualVocabulary');
+		}
+
+		return undefined;
+	}
+
+	if (level === undefined) {
+		throw createMissingRequiredAxisError('Level', usage);
+	}
+
+	assertLevel(level);
+	return level;
+};
+
+const resolveBaseLightness = (
+	usage: Usage,
+	level: Level | undefined,
+	context: Context,
+	resolverConfig: ResolverConfig,
+) => {
+	if (usage === 'fill') {
+		return resolverConfig.levelCurves.fill(level as Level, context);
+	}
+
+	if (usage === 'lines') {
+		return resolverConfig.levelCurves.lines(level as Level, context);
+	}
+
+	if (usage === 'overlays') {
+		return (
+			50 +
+			resolverConfig.levelCurves.overlays(level as Level, context)
+				.luminanceDelta
+		);
+	}
+
+	return 50;
+};
+
+const resolveStateDirection = (
+	state: State,
+	stateDirection: StateDeltaDirection | undefined,
+): StateDeltaDirection => {
+	if (state === 'default') {
+		if (stateDirection !== undefined) {
+			assertStateDeltaDirection(stateDirection);
+		}
+
+		return stateDirection ?? 'increase';
+	}
+
+	if (stateDirection === undefined) {
+		throw createMissingRequiredAxisError(
+			'stateDirection',
+			'state',
+			'stateDirection is required when state is not "default".',
+		);
+	}
+
+	assertStateDeltaDirection(stateDirection);
+	return stateDirection;
+};
+
+export function resolveColor(options: ResolveColorOptions): ResolvedColor {
+	assertUsage(options.usage);
+	const resolverConfig = options.resolverConfig ?? defaultResolverConfig;
+
+	const stateInput = options.state ?? 'default';
+	assertState(stateInput);
+
+	const context = resolveContext({
+		paletteContext: options.paletteContext,
+		resolverContext: options.resolverContext,
+		systemDefaultContext: options.systemDefaultContext,
+	});
+
+	const level = resolveLevel(options.usage, options.level);
+	const intent = getIntent(options.intentRegistry, options.intent);
+	const usageResult = getUsageStrategy(options.usage).resolve({ intent });
+	const baseLightness = resolveBaseLightness(
+		options.usage,
+		level,
+		context,
+		resolverConfig,
+	);
+
+	const baseColor = normalizeOklch({
+		alpha: 1,
+		c: usageResult.intent.chroma,
+		h: usageResult.intent.hue,
+		l: baseLightness,
+	});
+
+	const relationResult = applyRelation({
+		color: baseColor,
+		context,
+		level,
+		relations: {
+			on: options.on,
+			over: options.over,
+			under: options.under,
+		},
+		resolverConfig,
+		usage: options.usage,
+	});
+
+	const stateDirection = resolveStateDirection(
+		stateInput,
+		options.stateDirection,
+	);
+	const stateLightness = applyStateDelta(
+		relationResult.color.l,
+		stateInput,
+		stateDirection,
+		resolverConfig.stateDeltas.luminance,
+	);
+	const contextDelta = contextCurve(context);
+	const alpha =
+		options.usage === 'overlays'
+			? applyStateAlphaDelta(
+					relationResult.color.alpha,
+					stateInput,
+					stateDirection,
+					resolverConfig.stateDeltas.alpha,
+				)
+			: relationResult.color.alpha;
+	const color = Object.freeze(
+		normalizeOklch({
+			...relationResult.color,
+			alpha,
+			l: stateLightness + contextDelta,
+		}),
+	);
+
+	const axes = Object.freeze({
+		context,
+		intent: options.intent,
+		usage: options.usage,
+		...(level === undefined ? {} : { level }),
+		state: stateInput,
+		...(relationResult.relation === undefined
+			? {}
+			: { relation: relationResult.relation }),
+	} satisfies ResolvedColorAxes);
+
+	return Object.freeze({
+		axes,
+		color,
+	});
+}

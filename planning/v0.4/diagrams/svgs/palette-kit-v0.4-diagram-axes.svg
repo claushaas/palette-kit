@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
+<style>
+  .box { fill:#ffffff; stroke:#111827; stroke-width:1.5; rx:8; ry:8; }
+  .title { font: 14px sans-serif; fill:#111827; font-weight:600; }
+  .text { font: 12px sans-serif; fill:#111827; }
+  .arrow { stroke:#111827; stroke-width:1.2; fill:none; marker-end:url(#arrow); }
+</style>
+<defs>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+    <path d="M0,0 L0,6 L9,3 z" fill="#111827" />
+  </marker>
+</defs>
+
+<rect class="box" x="350" y="40" width="200" height="50"/><text class="title" x="450" y="70" text-anchor="middle">Color Resolution</text>
+
+<rect class="box" x="80" y="140" width="180" height="50"/><text class="text" x="170" y="170" text-anchor="middle">Usage</text>
+<rect class="box" x="300" y="140" width="180" height="50"/><text class="text" x="390" y="170" text-anchor="middle">Intent</text>
+<rect class="box" x="520" y="140" width="180" height="50"/><text class="text" x="610" y="170" text-anchor="middle">Level</text>
+
+<rect class="box" x="80" y="240" width="180" height="50"/><text class="text" x="170" y="270" text-anchor="middle">Relation</text>
+<rect class="box" x="300" y="240" width="180" height="50"/><text class="text" x="390" y="270" text-anchor="middle">State</text>
+<rect class="box" x="520" y="240" width="180" height="50"/><text class="text" x="610" y="270" text-anchor="middle">Context</text>
+
+<path class="arrow" d="M450 90 L170 140"/>
+<path class="arrow" d="M450 90 L390 140"/>
+<path class="arrow" d="M450 90 L610 140"/>
+<path class="arrow" d="M450 90 L170 240"/>
+<path class="arrow" d="M450 90 L390 240"/>
+<path class="arrow" d="M450 90 L610 240"/>
+
+</svg>

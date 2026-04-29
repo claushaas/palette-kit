@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420">
+<style>
+  .box { fill:#ffffff; stroke:#111827; stroke-width:1.5; rx:10; ry:10; }
+  .title { font: 14px sans-serif; fill:#111827; font-weight:700; }
+  .text { font: 12px sans-serif; fill:#111827; }
+  .arrow { stroke:#111827; stroke-width:1.2; fill:none; marker-end:url(#arrow); }
+</style>
+<defs>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+    <path d="M0,0 L0,6 L9,3 z" fill="#111827" />
+  </marker>
+</defs>
+
+<rect class="box" x="350" y="40" width="220" height="50"/>
+<text class="title" x="460" y="70" text-anchor="middle">Palette Kit Never</text>
+
+<rect class="box" x="80" y="150" width="200" height="50"/>
+<text class="text" x="180" y="180" text-anchor="middle">Guess missing axes</text>
+
+<rect class="box" x="300" y="150" width="200" height="50"/>
+<text class="text" x="400" y="180" text-anchor="middle">Infer context automatically</text>
+
+<rect class="box" x="520" y="150" width="200" height="50"/>
+<text class="text" x="620" y="180" text-anchor="middle">Mix orthogonal axes</text>
+
+<rect class="box" x="190" y="250" width="220" height="50"/>
+<text class="text" x="300" y="280" text-anchor="middle">Use magic semantic tokens</text>
+
+<rect class="box" x="430" y="250" width="220" height="50"/>
+<text class="text" x="540" y="280" text-anchor="middle">Mutate global state</text>
+
+<path class="arrow" d="M460 90 L180 150"/>
+<path class="arrow" d="M460 90 L400 150"/>
+<path class="arrow" d="M460 90 L620 150"/>
+<path class="arrow" d="M460 90 L300 250"/>
+<path class="arrow" d="M460 90 L540 250"/>
+</svg>

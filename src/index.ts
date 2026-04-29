@@ -1,3 +1,28 @@
-export type { PaletteConfig, TokenPresetName } from "./cli/config.js";
-export * from "./core/index.js";
-export * from "./types/index.js";
+export { createPaletteKit } from './create-palette-kit.js';
+export {
+	defaultResolverConfig,
+	neutralResolverConfig,
+	softResolverConfig,
+	strongResolverConfig,
+} from './presets/presets.js';
+export type {
+	ChromaConfig,
+	ColorOutput,
+	Context,
+	IntentDefinition,
+	Level,
+	OklchColor,
+	PaletteKit,
+	PaletteKitConfig,
+	PaletteResolveOptions,
+	PaletteResolveOutput,
+	RelationParamsConfig,
+	ResolverConfig,
+	ResolverConfigOverrides,
+	ResolverPresetName,
+	RgbaColor,
+	RgbColor,
+	State,
+	StateDeltaDirection,
+	Usage,
+} from './types/index.js';

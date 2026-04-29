@@ -1,41 +1,63 @@
-# Usage (React Native)
+# Usage: React Native
 
-Palette Kit v0.2 only exposes **OKLCH channel data**. React Native requires **color strings**, so you must serialize yourself.
-
-## 1) Create a theme
+React Native needs platform-compatible color values. In v0.4, use
+`output: "rgba"` for public runtime output.
 
 ```ts
-import { createTheme } from "@clhaas/palette-kit";
+import { createPaletteKit } from "@clhaas/palette-kit";
 
-const theme = createTheme({
-  seeds: {
-    light: { neutral: "#111827", accent: "#3d63dd" },
-    dark: { neutral: "#111827", accent: "#3d63dd" },
+const palette = createPaletteKit({
+  context: "light",
+  output: "rgba",
+  intents: {
+    brand: { hue: 260, chroma: 0.14 },
+    neutral: { hue: 0, chroma: 0 },
   },
 });
 ```
 
-## 2) Resolve a color
+## Resolve RGBA
 
 ```ts
-const text = theme.onSolid({
-  bgRole: "action.primary",
-  usage: "text",
-  context: "light",
+const background = palette.resolve({
+  usage: "fill",
+  intent: "brand",
+  level: 4,
 });
 ```
 
-## 3) Serialize for RN
-
-React Native does not accept OKLCH channel objects. Use a serializer appropriate for your environment.
-
-Minimal OKLCH serializer (if you have a runtime that supports `oklch()` strings):
-
-- [docs/snippets/serialize-oklch.md](./snippets/serialize-oklch.md)
+`background` has this shape:
 
 ```ts
-// Assumes `toOklch` from the snippet above.
-const rnColor = toOklch(text.oklch);
+type RgbaColor = {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+};
 ```
 
-If you need hex/`rgba()` strings, use an OKLCH → sRGB conversion library. v0.2 does not export a converter.
+Convert it to a React Native string if needed:
+
+```ts
+const rnColor = `rgba(${background.r}, ${background.g}, ${background.b}, ${background.a})`;
+```
+
+## Resolver Override
+
+You can override output per call:
+
+```ts
+const hex = palette.resolve({
+  usage: "fill",
+  intent: "brand",
+  level: 4,
+  output: "hex",
+});
+```
+
+## Notes
+
+- Palette Kit does not inspect platform color scheme automatically.
+- Provide `context` or `systemDefaultContext` explicitly.
+- `rgba` is usually the most direct React Native output.

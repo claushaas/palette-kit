@@ -1,65 +1,97 @@
-# Validation & Errors
+# Validation
 
-This document lists **observable runtime errors** in v0.2 based on the code. It focuses on public entrypoints (`createTheme` → `theme.resolve` / `theme.onSolid`). Internal exporter errors are called out explicitly.
+This document lists observable validation behavior in the current v0.4 branch.
 
-## Input validation (public)
+## Intent Registry
 
-### Color roles and usage
+Intent names must be flat strings:
 
-- `role` is required for `theme.resolve` and must be non-empty.
-- `usage` is required for `theme.onSolid` (`text` or `icon`).
-- For `theme.resolve`, if `usage` is omitted:
-  - it is inferred from the role prefix when possible
-  - **if `output.strict` is true and usage can’t be inferred**, an error is thrown
+- not empty
+- no whitespace
+- no `.`
+- no encoded usage, state, relation, level, or visual implementation tokens
 
-### Variants
+Intent values must include finite numeric `hue` and `chroma`. Chroma must be
+greater than or equal to `0`.
 
-- `variant` must be a known variant (`neutral`, `accent`, `success`, etc.) or a string matching `category:*` / `chart:*`.
-- Invalid variants throw an error in normalization.
+Examples of rejected names include `textIncome`, `incomeHover`,
+`incomeOverlay`, `incomeStrong`, and `redAlert`.
 
-### Background hints
+Unknown intents throw:
 
-- `on: { kind: "color", value: "#hex" }` requires a non-empty value.
-- If `output.strict` is true and the color is not a valid hex, an error is thrown.
-- If `output.strict` is false, invalid hex values log a warning and are accepted as-is.
+```text
+Unknown intent "<name>". Did you forget to register it in the Intent Registry?
+```
 
-### Contrast requirements
+## Usage
 
-- APCA targets (`targetLc`, `minLc`, `maxLc`) must be numbers and must be internally consistent.
-- WCAG2 contrast requires `minRatio` (or legacy `ratio`).
-- Unknown contrast model values throw.
+Valid usages:
 
-### Alpha strategy
+- `fill`
+- `visualVocabulary`
+- `lines`
+- `overlays`
 
-- `alpha.mode: "fixed"` requires `alpha` to be a number between 0 and 1.
-- `alpha.mode` must be one of `none | fixed | solveOnBackground`.
+Unknown usages throw a message listing the valid usages.
 
-### Output options
+## Level
 
-- `output.strict` and `output.includeMeta` must be booleans.
+Valid levels are integers from `1` to `9`.
 
-## onSolid-specific constraints (public)
+Level rules:
 
-- `onSolid` does **not** support `alpha.mode: "solveOnBackground"`.
-  - If `output.strict` is true, it throws.
-  - If `output.strict` is false, it warns and falls back to a fixed alpha.
-- If the contrast solver cannot reach the requested target and `output.strict` is true, it throws:
-  - `Contrast solver failed (...)`
-- `onSolid` can also throw if a required background is missing in the solver.
+- `fill`, `lines`, and `overlays` require `level`.
+- `visualVocabulary` forbids `level`.
 
-## parseColor errors (public, via theme seeds)
+## Relations
 
-Seed colors are parsed by `parseColor` when creating a theme. The following inputs throw:
+Only one relation may be provided per resolve call.
 
-- Invalid hex formats (length or characters)
-- OKLCH inputs with invalid chroma values
-- Any input that cannot be converted to RGB/OKLCH
+Relation rules:
 
-## Internal exporter errors (not public API)
+- `visualVocabulary` requires `on`.
+- `overlays` forbids `on`.
+- `fill` and `lines` allow `on`.
 
-If you use internal exporters/serializers from `src/export/`, you may see:
+Relation targets must be normalized OKLCH colors.
 
-- `Unable to serialize preferred space: srgb|p3` when `output.strict` is true and conversion fails
-- `Unable to convert color to <target>` or `Unable to clamp chroma for <target>` from gamut mapping
+## State
 
-These are internal-only in v0.2 and not part of the public entrypoint.
+Valid states:
+
+- `default`
+- `hover`
+- `active`
+- `focus`
+- `selected`
+- `disabled`
+
+When `state` is not `default`, `stateDirection` is required.
+
+## Context
+
+Valid contexts:
+
+- `light`
+- `dark`
+
+If resolver context, palette context, and system default context are all absent,
+resolution throws:
+
+```text
+Context could not be resolved. Provide resolverContext, paletteContext, or systemDefaultContext.
+```
+
+## Output
+
+Valid output names:
+
+- `oklch`
+- `oklab`
+- `srgb`
+- `p3`
+- `hex`
+- `rgba`
+
+Runtime serialization supports all valid output names. RGB-like outputs use
+explicit clip gamut handling.

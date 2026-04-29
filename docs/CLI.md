@@ -1,43 +1,22 @@
 # CLI
 
-Palette Kit v0.3 ships a CLI binary:
+Palette Kit v0.4 does not expose a public CLI.
 
-```json
-{
-  "bin": { "palette-kit": "./dist/cli.js" }
-}
+There is no `bin` entry in the current package surface and no documented command
+for generating tokens.
+
+Use the runtime API directly:
+
+```ts
+import { createPaletteKit } from "@clhaas/palette-kit";
+
+const palette = createPaletteKit({
+  context: "light",
+  intents: {
+    brand: { hue: 260, chroma: 0.14 },
+  },
+});
 ```
 
-## Commands
-
-### `palette-kit init`
-
-Creates a typed `palette.config.ts`.
-
-Flags:
-
-- `--path <dir>` output directory (default: current directory)
-- `--force` overwrite existing config
-
-### `palette-kit build`
-
-Builds deterministic artifacts in `dist/palette/`:
-
-- `tokens.css`
-- `tokens.json`
-- `tokens.ts`
-- `tokens.d.ts`
-- `report.md` (optional; `--report`)
-
-Flags:
-
-- `--config <path>` config file path (default: `palette.config.ts`)
-- `--outDir <dir>` output directory (default: `dist/palette`)
-- `--report` write `report.md`
-
-## Config loading notes
-
-`palette-kit build` loads the config via ESM `import()`.
-
-- If you use a TypeScript config (`palette.config.ts`), Node needs a TS loader.
-- Alternative: use a `.mjs` config and pass `--config palette.config.mjs`.
+CLI support may be added in a future phase, but it is not part of v0.4 current
+implementation.

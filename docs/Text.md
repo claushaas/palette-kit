@@ -1,36 +1,41 @@
-# Text
+# Text and Visual Vocabulary
 
-Text and icon colors are primarily handled by `theme.onSolid`, which solves for contrast against a solid background.
-
-## Defaults (from code)
-
-`engine/onSolid.ts` uses APCA by default with target Lc:
-
-- `text`: `75`
-- `icon`: `60`
-
-You can override this via `contrast` in `OnSolidQuery`.
-
-## Example
+Text, icons, and similar foreground elements use:
 
 ```ts
-const text = theme.onSolid({
-  bgRole: "action.primary",
-  usage: "text",
-  context: "light",
-  contrast: { model: "apca", targetLc: 80 },
+usage: "visualVocabulary"
+```
+
+## Rules
+
+`visualVocabulary`:
+
+- requires `on`;
+- forbids `level`;
+- resolves from the selected intent and relation target.
+
+```ts
+const surface = palette.resolve({
+  usage: "fill",
+  intent: "neutral",
+  level: 2,
+});
+
+const text = palette.resolve({
+  usage: "visualVocabulary",
+  intent: "brand",
+  on: surface,
 });
 ```
 
-## WCAG2 fallback
+## Current Behavior
 
-You can request WCAG2 using:
+`on` enforces APCA contrast. The default target is Lc 60. APCA is the primary
+metric; WCAG contrast is available as a fallback diagnostic when APCA does not
+produce a usable numeric value.
 
-```ts
-const icon = theme.onSolid({
-  bgRole: "action.primary",
-  usage: "icon",
-  context: "light",
-  contrast: { model: "wcag2", minRatio: 4.5 },
-});
-```
+The resolver first adjusts OKLCH lightness while preserving hue. If luminance
+alone is insufficient, it may reduce chroma within the configured limits. If the
+target still cannot be reached, resolution throws.
+
+The contrast solver never changes alpha for `visualVocabulary`.

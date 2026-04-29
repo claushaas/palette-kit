@@ -1,31 +1,56 @@
 # Architecture
 
-This document reflects the **actual modules and flow in v0.2**.
+This document reflects the current v0.4 branch implementation.
 
-## Pipeline overview
+## Public Flow
 
-1. **Input** — `createTheme` is called with `ThemeConfig` seeds and optional variants/preset.
-2. **Parsing** — `utils/parseColor` converts hex to OKLCH + sRGB channels.
-3. **Scale generation** — `engine/generateScale` creates 12-step scales per surface using preset curves.
-4. **Resolution** — `engine/resolveBaseColor` maps `ColorQuery` (role/usage/context/surface/state) to a base OKLCH step.
-5. **Operators** — `operators/emphasis` and `operators/state` adjust the base OKLCH.
-6. **onSolid** — `engine/onSolid` solves text/icon colors on solid backgrounds using APCA by default; WCAG2 is optional via `contrast`.
-7. **(Internal) Serialization** — `export/serializeColor` formats OKLCH/P3/sRGB strings (not exported in v0.2).
+```text
+createPaletteKit(config) -> palette.resolve(options) -> output
+```
 
-## Key design decisions (from code)
+Resolution is deterministic and side-effect free.
 
-- **Deterministic curves**: Curves are defined per surface in `presets/curves.ts` with fixed L/C ranges.
-- **Usage-driven steps**: `resolveStep` maps `usage + surface` to a step index (1–12), clamped.
-- **Variant fallback**: If a role does not specify a variant, it is inferred from the role prefix (e.g. `action.*` → accent).
-- **onSolid defaults**: If no alpha is specified, text uses `0.92` and icons use `0.72`.
-- **Strict mode**: Normalization and solver respect `output.strict` and may throw on invalid inputs.
+## Main Layers
 
-## Modules (high level)
+- `core`: OKLCH model and intent registry.
+- `engine`: usage, level, state, relation, context, and resolver pipeline.
+- `export`: output typing and serializers.
+- `presets`: official resolver presets and config merge helpers.
+- `types`: public type contracts reexported by the package root.
+- `utils`: structured internal errors.
 
-- `core/` — public theme creation
-- `engine/` — resolution and normalization
-- `operators/` — state/emphasis transforms
-- `contrast/` — APCA/WCAG2 solver and utilities
-- `presets/` — curve presets (`modern`, `radixLike`)
-- `export/` — serializers/exporters (internal in v0.2)
-- `utils/` — math and parsing utilities
+## Resolver Pipeline
+
+The internal resolver:
+
+1. validates usage, state, context, level, and relations;
+2. looks up the registered intent;
+3. selects the usage strategy;
+4. applies context-aware level curves for level-driven usages;
+5. applies relation validation and behavior;
+6. applies explicit luminance state deltas and overlay alpha deltas;
+7. applies structural context hooks;
+8. returns normalized OKLCH.
+
+Output serialization happens after resolution.
+
+## Public Outputs
+
+- `oklch`: normalized OKLCH object.
+- `oklab`: OKLab object.
+- `srgb`: clipped 8-bit sRGB object.
+- `p3`: clipped 8-bit Display-P3 object.
+- `hex`: serialized sRGB hex string.
+- `rgba`: serialized sRGB object.
+
+## Not Public in v0.4
+
+- CLI
+- subpath exporters
+- serializer functions
+- registry helpers
+
+See also:
+
+- [Resolver Pipeline Diagram](../planning/v0.4/diagrams/resolver-pipeline.md)
+- [Axes Diagram](../planning/v0.4/diagrams/axes.md)

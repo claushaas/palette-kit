@@ -1,17 +1,33 @@
 # Overlays
 
-Overlays are modeled as `surface: "overlay"` with `usage: "bg"`. The preset curves define overlay lightness/chroma ranges.
-
-## Example
+`overlays` is a public usage value in v0.4.
 
 ```ts
-const scrim = theme.resolve({
-  role: "overlay.scrim",
-  usage: "bg",
-  surface: "overlay",
-  context: "dark",
-  alpha: { mode: "fixed", alpha: 0.55 },
+const scrim = palette.resolve({
+  usage: "overlays",
+  intent: "neutral",
+  level: 1,
+  under: surface,
 });
 ```
 
-The returned value is an OKLCH color with an alpha channel (in `scrim.oklch.alpha`).
+## Rules
+
+- `level` is required.
+- `on` is forbidden.
+- `over` and `under` are optional relation targets.
+
+## Current Behavior
+
+The current v0.4 resolver applies configured relation behavior:
+
+- base lightness is `50`;
+- the overlay level curve can add a configured luminance delta;
+- `over` applies alpha from `relationParams.over.baseAlphaByLevel`;
+- `under` applies alpha from `relationParams.under.baseAlphaByLevel`;
+- `under` also reduces lightness by
+  `relationParams.under.luminanceReduction`;
+- non-default state can apply configured overlay alpha deltas when
+  `stateDirection` is provided;
+
+`over` and `under` do not enforce contrast.

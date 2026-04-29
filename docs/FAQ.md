@@ -1,26 +1,59 @@
 # FAQ
 
-## Does v0.2 return CSS color strings?
+## What is the public API in v0.4?
 
-No. The public API (`createTheme`) returns OKLCH channel data (`BaseResolvedColor.oklch`). String serialization exists only in internal modules.
+The public runtime API is `createPaletteKit` from the package root.
+
+```ts
+import { createPaletteKit } from "@clhaas/palette-kit";
+```
+
+The palette instance exposes `palette.resolve`.
+
+## Does Palette Kit return CSS strings?
+
+It depends on `output`.
+
+- `output: "oklch"` returns a normalized OKLCH object.
+- `output: "oklab"` returns an OKLab object.
+- `output: "srgb"` returns `{ r, g, b, alpha }`.
+- `output: "p3"` returns Display-P3 `{ r, g, b, alpha }`.
+- `output: "hex"` returns a `#rrggbb` string.
+- `output: "rgba"` returns `{ r, g, b, a }`.
+
+## Are `oklab`, `srgb`, and `p3` supported?
+
+Yes. `oklab` returns an OKLab object. `srgb` and `p3` return RGB-like objects
+with `{ r, g, b, alpha }`.
 
 ## Is there a CLI?
 
-`package.json` declares a `palette-kit` binary, but there is no CLI implementation in the repo v0.2.
+No. There is no public CLI in the v0.4 branch.
 
 ## Can I export CSS variables or JSON tokens?
 
-Exporters exist in `src/export/`, but they are not publicly exported by the package. See [Exporters](./Exporters.md) for internal usage.
+There is no public exporter subpath in v0.4. Build CSS, JSON, or token files
+manually from `palette.resolve`.
 
-## What color spaces are supported?
+## Are presets public?
 
-Public types allow `srgb`, `p3`, and `oklch` in `OutputOptions`. `oklab` is not present in v0.2.
+Yes. `soft`, `neutral`, and `strong` are public resolver presets. The package
+root also exports the preset config objects.
 
-## Which preset curves are available?
+`createPaletteKit` accepts `preset` and explicit `resolverConfig` overrides.
 
-Two presets are implemented internally:
+## Does `on` enforce contrast?
 
-- `modern` (default)
-- `radixLike`
+Yes. `on` enforces APCA contrast with a default Lc 60 target and fails
+explicitly if the target cannot be satisfied.
 
-These are selected via `createTheme({ preset: "modern" | "radixLike" })`.
+## Does Palette Kit detect dark mode?
+
+No. Context is explicit. Provide `context`, resolver-level `context`, or
+`systemDefaultContext`.
+
+## Can output have a host default?
+
+Yes. Use `systemDefaultOutput` when the host wants to inject a fallback. Resolver
+output overrides palette output, palette output overrides `systemDefaultOutput`,
+and `oklch` is used when none of those are provided.
