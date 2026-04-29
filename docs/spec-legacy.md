@@ -534,8 +534,8 @@ hc.color("text.primary")
 
 ## 10. Dependências recomendadas (bibliotecas)
 
-- principal: `culori`
-- alternativa: `colorjs.io`
+- principal: implementação OKLCH explícita e auditável
+- alternativa: biblioteca de cor com OKLCH nativo
 - evitar: libs sem OKLCH nativo
 
 Arquitetura: adapter + engine + contrast + exporters.
@@ -725,7 +725,7 @@ Abaixo está o **Implementation Plan v1**, que transforma a SPEC em um plano té
 
 ### 0.2 Dependências
 
-- `culori` (obrigatória)
+- implementação OKLCH explícita
 - `apca-w3`
 
 ---

@@ -26,7 +26,7 @@ If something is unclear, **stop and ask before proceeding**.
 
 ## 3. Dependencies
 
-- Keep the required dependencies available: `culori` and an APCA implementation (`apca-w3` is acceptable).
+- Keep the required APCA implementation available (`apca-w3` is acceptable).
 
 ---
 
@@ -192,7 +192,7 @@ The agent **must stop and request confirmation** when:
 
 - Project type: TypeScript ESM library with optional CLI tooling.
 - `src/` layout must follow: `core`, `engine`, `contrast`, `operators`, `export`, `presets`, `types`, `utils`.
-- Required dependencies: `culori` and an APCA implementation (`apca-w3` is acceptable).
+- Required dependencies: an APCA implementation (`apca-w3` is acceptable).
 - Public types live in `src/types/index.ts` and must not contain business logic.
 - Planning docs for v0.4 live in `planning/v0.4`.
 - Public docs live in `docs/`.
