@@ -54,6 +54,10 @@
 	"publishConfig": {
 		"access": "public"
 	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/claushaas/palette-kit"
+	},
 	"scripts": {
 		"build": "tsc -p tsconfig.build.json",
 		"clean": "rm -rf dist",
