@@ -1,22 +1,37 @@
-# Why Palette Kit
+# Why
 
-Palette Kit exists to make semantic color systems deterministic and repeatable, without locking consumers into static hex values.
+Palette Kit exists to make semantic color resolution deterministic without
+forcing applications to maintain large sets of precomposed color tokens.
 
-## Problems it addresses (from code behavior)
+## Design Direction
 
-- **Semantic resolution**: The engine accepts semantic queries (role/usage/context/surface/state) and maps them to OKLCH colors.
-- **Deterministic scales**: It generates 12-step OKLCH scales from seed colors using preset curves.
-- **Contrast-aware `onSolid`**: It computes text/icon colors for solid backgrounds with APCA/WCAG2 checks.
-- **Light/Dark parity**: It uses separate light/dark seed sets and normalizes queries per context.
+Instead of names like `brandHoverTextOnDark`, v0.4 separates decisions into
+axes:
 
-## Alternatives and trade-offs
+- intent
+- usage
+- level
+- relation
+- state
+- context
+- output
 
-- **Static tokens**: simple to ship, but hard to scale across surfaces/states. Palette Kit chooses generated scales.
-- **Manual contrast fixes**: error-prone and inconsistent. Palette Kit uses an automated solver for `onSolid`.
-- **Wide-gamut output**: internal serializers support P3/OKLCH strings, but v0.2 does not export them publicly. This is a deliberate limitation of the current API surface.
+This keeps meaning separate from presentation and environment.
 
-## Explicit constraints in v0.2
+## Current v0.4 Constraints
 
-- Only `createTheme` and type exports are part of the public package API.
-- Exporters/serializers exist in source but are **not exported** through `package.json`.
-- CLI is declared in `package.json` but not implemented in the repo.
+- Public runtime API is `createPaletteKit`.
+- Resolution is internal OKLCH.
+- Context is explicit and never inferred.
+- Level is explicit and never inferred.
+- Output is applied after resolution.
+- `on` enforces APCA contrast explicitly.
+- `hex`, `rgba`, `oklab`, `srgb`, and `p3` are supported delivery formats.
+- Presets and resolver config are explicit public configuration.
+- CLI and exporters are not public.
+
+## Trade-Off
+
+The current v0.4 branch favors an auditable API over broad convenience tooling.
+CLI commands, token exporters, and codegen can be added later without changing
+the resolver model.

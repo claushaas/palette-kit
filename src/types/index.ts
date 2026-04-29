@@ -1,207 +1,188 @@
-export type CssColorString = string;
+import type { IntentDefinition as InternalIntentDefinition } from '../core/intent-registry.js';
+import type { OklchColor as InternalOklchColor } from '../core/oklch.js';
+import type { Context as InternalContext } from '../engine/context/context.js';
+import type { Level as InternalLevel } from '../engine/level/level.js';
+import type {
+	State as InternalState,
+	StateDeltaDirection,
+} from '../engine/state/state.js';
+import type { Usage as InternalUsage } from '../engine/usage/strategy.js';
+import type {
+	ColorOutput as InternalColorOutput,
+	RgbaColor as InternalRgbaColor,
+	RgbColor as InternalRgbColor,
+	ResolveOutput,
+} from '../export/types.js';
+import type {
+	ChromaConfig,
+	RelationParamsConfig,
+	ResolverConfig,
+	ResolverConfigOverrides,
+	ResolverPresetName,
+} from '../presets/presets.js';
 
-export type ColorSpace = "srgb" | "p3" | "oklch";
+/** Semantic usage axis used by the resolver. */
+export type Usage = InternalUsage;
 
-export type ColorContext = "light" | "dark" | "highContrast" | "dimmed";
+/** Explicit level axis. Valid values are integers from 1 to 9. */
+export type Level = InternalLevel;
 
-export type SurfaceIntent =
-  | "app"
-  | "surface"
-  | "subtle"
-  | "solid"
-  | "overlay"
-  | "data"
-  | "transparent";
+/** Interactive state axis. State deltas are applied only when explicitly requested. */
+export type State = InternalState;
 
-export type ColorState = "default" | "hover" | "active" | "selected" | "focus" | "disabled";
+/** Direction used when applying non-default state deltas. Palette Kit never infers it. */
+export type { StateDeltaDirection };
 
-export type ColorEmphasis = "muted" | "subtle" | "default" | "strong" | "inverted";
+/** Environmental context axis. Palette Kit never detects this automatically. */
+export type Context = InternalContext;
 
-export type SemanticVariant =
-  | "neutral"
-  | "accent"
-  | "success"
-  | "warning"
-  | "danger"
-  | "info"
-  | "highlight"
-  | "premium"
-  | `category:${string}`
-  | `chart:${string}`;
+/** Output format applied after OKLCH resolution. */
+export type ColorOutput = InternalColorOutput;
 
-export type ColorRole = string;
+/** Normalized internal OKLCH color returned by the default public output. */
+export type OklchColor = InternalOklchColor;
 
-export type ColorUsage = "bg" | "border" | "text" | "icon" | "ring" | "shadow" | "stroke" | "fill";
+/** RGBA object returned by `output: "rgba"`. */
+export type RgbaColor = InternalRgbaColor;
 
-/**
- * Token-safe background hints.
- * Tokens must not embed literal colors.
- */
-export type TokenBackgroundHint = { kind: "auto" } | { kind: "role"; role: ColorRole };
+/** RGB object returned by `output: "srgb"` and `output: "p3"`. */
+export type RgbColor = InternalRgbColor;
 
-/**
- * Token-safe query shape (Phase 3).
- * - `output` is forbidden (export/serializer concern)
- * - `on.kind: "color"` is forbidden (no embedded colors)
- * - `state` must not be encoded (states are operators; declare via TokenDefinition.states)
- */
-export type TokenQuery = Omit<ColorQuery, "output" | "on" | "state"> & {
-  output?: never;
-  on?: TokenBackgroundHint;
-  state?: never;
+/** Intent registry entry supplied at palette creation. */
+export type IntentDefinition = InternalIntentDefinition;
+
+export type {
+	ChromaConfig,
+	RelationParamsConfig,
+	ResolverConfig,
+	ResolverConfigOverrides,
+	ResolverPresetName,
 };
 
-/**
- * Token-supported interactive states.
- *
- * Note: `"default"` is the base token, so it is intentionally excluded here.
- */
-export type TokenState = Exclude<ColorState, "default">;
+/** Public return type for a selected resolver output format. */
+export type PaletteResolveOutput<O extends ColorOutput = 'oklch'> =
+	ResolveOutput<O>;
 
-/**
- * Declarative set of supported states for a token.
- * Use `true` to mark a state as supported.
- */
-export type TokenStates = Partial<Record<TokenState, true>>;
+/** Configuration for `createPaletteKit`. */
+export type PaletteKitConfig<
+	I extends string = string,
+	PaletteOutput extends ColorOutput | undefined = undefined,
+	SystemDefaultOutput extends ColorOutput | undefined = undefined,
+> = Readonly<{
+	/** Flat intent registry owned by the application. */
+	intents: Record<I, IntentDefinition>;
 
-export type BackgroundHint =
-  | { kind: "auto" }
-  | { kind: "role"; role: ColorRole }
-  | { kind: "color"; value: CssColorString };
+	/** Palette-level context used when a resolver call does not override it. */
+	context?: Context;
 
-export type ContrastRequirement =
-  | { model: "apca"; targetLc: number; minLc?: number; maxLc?: number }
-  | { model: "wcag2"; minRatio: number }
-  | { model: "none" };
+	/** Host-provided context fallback. Palette Kit never reads system preferences. */
+	systemDefaultContext?: Context;
 
-export type AlphaStrategy =
-  | { mode: "none" }
-  | { mode: "fixed"; alpha: number }
-  | { mode: "solveOnBackground" };
+	/** Palette-level output used when a resolver call does not override it. */
+	output?: PaletteOutput;
 
-export interface OutputOptions {
-  preferSpace?: ColorSpace;
-  includeSpaces?: ColorSpace[];
-  gamutMapping?: "clip" | "compressChroma" | "preferP3ThenCompress";
-  strict?: boolean;
-  precision?: {
-    l?: number;
-    c?: number;
-    h?: number;
-    alpha?: number;
-  };
-  includeMeta?: boolean;
-  srgbFormat?: "hex" | "rgb" | "rgba";
-}
+	/** Host-provided output fallback. Defaults to `oklch` when omitted. */
+	systemDefaultOutput?: SystemDefaultOutput;
 
-export interface RawColor {
-  space: ColorSpace;
-  channels: number[];
-  alpha: number;
-}
+	/** Public resolver preset. Defaults to `neutral`. */
+	preset?: ResolverPresetName;
 
-export interface ColorMeta {
-  role?: ColorRole;
-  variant?: SemanticVariant;
-  usage?: ColorUsage;
-  context?: ColorContext;
-  surface?: SurfaceIntent;
-  state?: ColorState;
-  emphasis?: ColorEmphasis;
-  on?: BackgroundHint;
-  contrast?: ContrastRequirement;
-  step?: number;
-  variantUsed?: string;
-  seedUsed?: CssColorString;
-  gamutMapping?: OutputOptions["gamutMapping"];
-  spaceUsed?: ColorSpace;
-  clipped?: boolean;
-  compressed?: boolean;
-  provenance?: string;
-}
+	/** Explicit resolver configuration overrides merged on top of the preset. */
+	resolverConfig?: ResolverConfigOverrides;
+}>;
 
-/**
- * Declarative token definition consumed by registries, exporters, CLI and codegen.
- *
- * Rules:
- * - Tokens never carry actual color values.
- * - `query.output` is forbidden; output formatting is decided by serializers/exporters.
- * - Do not encode interactive state in `query.state`; declare supported states via `states`.
- * - Do not embed literal background colors via `query.on: { kind: "color" }`.
- */
-export interface TokenDefinition {
-  name: string;
-  description?: string;
-  query: TokenQuery;
-  category?: string;
-  states?: TokenStates;
-}
+export type PaletteDefaultOutput<
+	PaletteOutput extends ColorOutput | undefined,
+	SystemDefaultOutput extends ColorOutput | undefined,
+> = PaletteOutput extends ColorOutput
+	? PaletteOutput
+	: SystemDefaultOutput extends ColorOutput
+		? SystemDefaultOutput
+		: 'oklch';
 
-/**
- * Collection of base token definitions keyed by token name.
- */
-export interface TokenRegistry {
-  tokens: Record<string, TokenDefinition>;
-}
+type RelationTarget = OklchColor;
 
-export interface ResolvedColor {
-  /**
-   * Serialized string corresponding to `preferSpace`.
-   * Always present.
-   */
-  value: CssColorString;
-  /**
-   * Auxiliary sRGB representation.
-   * Only present if included via `includeSpaces`.
-   */
-  srgb?: CssColorString;
-  /**
-   * Auxiliary Display-P3 representation.
-   * Only present if included via `includeSpaces`.
-   */
-  p3?: CssColorString;
-  /**
-   * Auxiliary OKLCH representation.
-   * Only present if included via `includeSpaces`.
-   */
-  oklch?: CssColorString;
-  alpha: number;
-  meta?: ColorMeta;
-}
+type DefaultStateOptions = Readonly<{
+	state?: 'default';
+	stateDirection?: StateDeltaDirection;
+}>;
 
-export interface ColorQuery {
-  role: ColorRole;
-  variant?: SemanticVariant;
-  usage?: ColorUsage;
-  context?: ColorContext;
-  surface?: SurfaceIntent;
-  state?: ColorState;
-  emphasis?: ColorEmphasis;
-  on?: BackgroundHint;
-  contrast?: ContrastRequirement;
-  alpha?: AlphaStrategy;
-  output?: OutputOptions;
-}
+type NonDefaultStateOptions = Readonly<{
+	state: Exclude<State, 'default'>;
+	stateDirection: StateDeltaDirection;
+}>;
 
-export interface OnSolidQuery {
-  bgRole: ColorRole;
-  usage: "text" | "icon";
-  context?: ColorContext;
-  state?: ColorState;
-  emphasis?: ColorEmphasis;
-  alpha?: AlphaStrategy;
-  contrast?: ContrastRequirement;
-  output?: OutputOptions;
-}
+type StateOptions = DefaultStateOptions | NonDefaultStateOptions;
 
-export interface SemanticColorTheme {
-  resolve(query: ColorQuery): ResolvedColor;
-  resolveMany(queries: ColorQuery[]): ResolvedColor[];
-  color(role: ColorRole, options?: Omit<ColorQuery, "role">): ResolvedColor;
-  onSolid(query: OnSolidQuery): ResolvedColor;
-  withContext(context: ColorContext): SemanticColorTheme;
-  export: {
-    cssVars(): string;
-    json(): unknown;
-  };
-}
+type BaseResolveOptions<
+	I extends string,
+	ResolverOutput extends ColorOutput,
+> = Readonly<{
+	/** Registered semantic intent name. */
+	intent: I;
+
+	/** Resolver-level context override. */
+	context?: Context;
+
+	/** Resolver-level output override. */
+	output?: ResolverOutput;
+}>;
+
+type FillResolveOptions = Readonly<{
+	usage: 'fill';
+	level: Level;
+	on?: RelationTarget;
+	over?: never;
+	under?: never;
+}>;
+
+type LinesResolveOptions = Readonly<{
+	usage: 'lines';
+	level: Level;
+	on?: RelationTarget;
+	over?: never;
+	under?: never;
+}>;
+
+type VisualVocabularyResolveOptions = Readonly<{
+	usage: 'visualVocabulary';
+	on: RelationTarget;
+	level?: never;
+	over?: never;
+	under?: never;
+}>;
+
+type OverlayRelationOptions =
+	| Readonly<{ over?: RelationTarget; under?: never }>
+	| Readonly<{ under?: RelationTarget; over?: never }>
+	| Readonly<{ over?: undefined; under?: undefined }>;
+
+type OverlaysResolveOptions = Readonly<{
+	usage: 'overlays';
+	level: Level;
+	on?: never;
+}> &
+	OverlayRelationOptions;
+
+type UsageResolveOptions =
+	| FillResolveOptions
+	| LinesResolveOptions
+	| VisualVocabularyResolveOptions
+	| OverlaysResolveOptions;
+
+/** Options accepted by `palette.resolve`. */
+export type PaletteResolveOptions<
+	I extends string = string,
+	ResolverOutput extends ColorOutput = ColorOutput,
+> = BaseResolveOptions<I, ResolverOutput> & UsageResolveOptions & StateOptions;
+
+/** Immutable public Palette Kit instance. */
+export type PaletteKit<
+	I extends string = string,
+	PaletteOutput extends ColorOutput = 'oklch',
+> = Readonly<{
+	/** Resolves a color from semantic axes and formats it after OKLCH resolution. */
+	resolve<const ResolverOutput extends ColorOutput = PaletteOutput>(
+		options: PaletteResolveOptions<I, ResolverOutput>,
+	): PaletteResolveOutput<ResolverOutput>;
+}>;

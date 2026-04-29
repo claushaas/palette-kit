@@ -1,5 +1,30 @@
 # Changelog
 
+<!-- markdownlint-disable MD024 -->
+
+## v0.4.0
+
+### Breaking changes
+
+- Replaces the previous experimental `createTheme` API with `createPaletteKit`.
+- Publishes only the package root export. CLI commands, token exporters, and
+  serializer subpaths are not part of v0.4.
+- Resolver options are modeled as explicit axes: `usage`, `intent`, `level`,
+  relation, `state`, `context`, and `output`.
+
+### Features
+
+- Public `createPaletteKit` factory and `palette.resolve`.
+- Public resolver presets: `soft`, `neutral`, and `strong`.
+- Explicit `resolverConfig` overrides for level curves, state deltas, relation
+  parameters, and chroma limits.
+- APCA contrast enforcement for `on` relations with a default Lc 60 target.
+- Functional `over` and `under` overlay relations with configured alpha and
+  depth behavior.
+- Supported outputs: `oklch`, `oklab`, `srgb`, `p3`, `hex`, and `rgba`.
+- Strict public TypeScript option types for invalid usage/level/relation/state
+  combinations where possible.
+
 ## v0.3.0
 
 ### Breaking changes

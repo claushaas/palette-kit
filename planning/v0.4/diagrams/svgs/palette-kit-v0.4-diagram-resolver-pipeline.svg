@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="380" viewBox="0 0 900 380">
+<style>
+  .box { fill:#ffffff; stroke:#111827; stroke-width:1.5; rx:8; ry:8; }
+  .title { font: 14px sans-serif; fill:#111827; font-weight:600; }
+  .text { font: 12px sans-serif; fill:#111827; }
+  .arrow { stroke:#111827; stroke-width:1.2; fill:none; marker-end:url(#arrow); }
+</style>
+<defs>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+    <path d="M0,0 L0,6 L9,3 z" fill="#111827" />
+  </marker>
+</defs>
+
+<rect class="box" x="60" y="60" width="180" height="40"/><text class="text" x="150" y="85" text-anchor="middle">Input</text>
+<rect class="box" x="260" y="60" width="180" height="40"/><text class="text" x="350" y="85" text-anchor="middle">Validate</text>
+<rect class="box" x="460" y="60" width="180" height="40"/><text class="text" x="550" y="85" text-anchor="middle">Usage Strategy</text>
+
+<rect class="box" x="60" y="130" width="180" height="40"/><text class="text" x="150" y="155" text-anchor="middle">Intent</text>
+<rect class="box" x="260" y="130" width="180" height="40"/><text class="text" x="350" y="155" text-anchor="middle">Level</text>
+<rect class="box" x="460" y="130" width="180" height="40"/><text class="text" x="550" y="155" text-anchor="middle">Relation</text>
+
+<rect class="box" x="160" y="200" width="180" height="40"/><text class="text" x="250" y="225" text-anchor="middle">State</text>
+<rect class="box" x="360" y="200" width="180" height="40"/><text class="text" x="450" y="225" text-anchor="middle">Context</text>
+
+<rect class="box" x="260" y="270" width="180" height="40"/><text class="text" x="350" y="295" text-anchor="middle">Resolved Color</text>
+
+<path class="arrow" d="M240 80 L260 80"/>
+<path class="arrow" d="M440 80 L460 80"/>
+
+<path class="arrow" d="M150 100 L150 130"/>
+<path class="arrow" d="M350 100 L350 130"/>
+<path class="arrow" d="M550 100 L550 130"/>
+
+<path class="arrow" d="M150 170 L250 200"/>
+<path class="arrow" d="M350 170 L450 200"/>
+
+<path class="arrow" d="M250 240 L350 270"/>
+<path class="arrow" d="M450 240 L350 270"/>
+
+</svg>

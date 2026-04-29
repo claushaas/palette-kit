@@ -1,51 +1,61 @@
-# Migration Guide: v0.2 → v0.3
+# Migration Notes for the v0.4 Branch
 
-This guide summarizes the most important API surface and packaging changes when upgrading from v0.2 to v0.3.
+The v0.4 branch is a rebuild around `createPaletteKit` and orthogonal resolver
+axes. It is not a continuation of the older theme factory API.
 
-## Breaking changes
+## Removed From the Public Surface
 
-### Exporters moved to a public subpath
+- legacy theme factory
+- public exporter subpaths
+- public serializer subpaths
+- CLI commands
+- seed-based theme config
+- older public presets
 
-v0.3 exposes exporters via:
-
-```ts
-import { exportThemeCss, exportThemeJson } from "@clhaas/palette-kit/export";
-```
-
-The runtime entrypoint (`@clhaas/palette-kit`) stays runtime-first and does not reexport exporters.
-
-### Serializer is public via subpath
-
-v0.3 exposes the serializer via:
+## Current Public Surface
 
 ```ts
-import { serializeColor, serializeResolved } from "@clhaas/palette-kit/serialize";
+import { createPaletteKit } from "@clhaas/palette-kit";
+
+const palette = createPaletteKit({
+  context: "light",
+  intents: {
+    brand: { hue: 260, chroma: 0.14 },
+    neutral: { hue: 0, chroma: 0 },
+  },
+});
 ```
 
-### CLI is now functional
+## Conceptual Migration
 
-v0.3 ships a working CLI:
+Older versions organized resolution around seeds, roles, surfaces, and theme
+helpers. The v0.4 branch organizes resolution around explicit axes:
 
-```bash
-palette-kit init
-palette-kit build
+- `intent`
+- `usage`
+- `level`
+- `relation`
+- `state`
+- `context`
+- `output`
+
+## Output Migration
+
+Use resolver output directly:
+
+```ts
+const color = palette.resolve({
+  usage: "fill",
+  intent: "brand",
+  level: 4,
+  output: "hex",
+});
 ```
 
-The build command writes deterministic artifacts under `dist/palette/`:
+There is no public token exporter or CLI in the current v0.4 branch.
 
-- `tokens.css`
-- `tokens.json`
-- `tokens.ts`
-- `tokens.d.ts`
+## References
 
-## Non-breaking additions
-
-- Token registry contracts (`TokenRegistry`, `TokenDefinition`, token-safe query types)
-- Codegen outputs for DX (generated `dist/palette/tokens.ts` / `tokens.d.ts`)
-- Stronger inference and actionable strict-mode validation
-
-## See also
-
-- API surface: `docs/_api-surface.md`
-- Exporters: `docs/Exporters.md`
-- CLI: `docs/CLI.md`
+- [API](./API.md)
+- [Configuration](./Config.md)
+- [v0.4 SPEC](../planning/v0.4/v0.4-palette-kit-spec.md)

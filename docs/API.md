@@ -1,139 +1,167 @@
 # API
 
-This reference is derived from the **API Surface Report** (`docs/_api-surface.md`). Only items exported by the package entrypoint are documented as public API.
+This document describes the public API exposed by the package root in the v0.4
+branch.
 
-## Public entrypoint
+## Public Entry Point
 
 ```ts
-import { createTheme } from "@clhaas/palette-kit";
+import { createPaletteKit } from "@clhaas/palette-kit";
 ```
 
-## createTheme
+The package root exports `createPaletteKit` and the official resolver preset
+configs. Public TypeScript types are also reexported from the package root.
 
-**Source**: `src/core/createTheme.ts`
-
-### Signature (observed)
+## createPaletteKit
 
 ```ts
-function createTheme(config: {
-  seeds: {
-    light: { neutral: string; accent: string };
-    dark: { neutral: string; accent: string };
-  };
-  variants?: Record<string, string>;
-  preset?: "modern" | "radixLike";
-}): {
-  resolve(query: ColorQuery): BaseResolvedColor;
-  color(role: ColorRole, options?: Omit<ColorQuery, "role">): BaseResolvedColor;
-  onSolid(query: OnSolidQuery): BaseResolvedColor;
-  withContext(context: ColorContext): ReturnType<typeof createTheme>;
-}
+function createPaletteKit(config: PaletteKitConfig): PaletteKit;
 ```
 
-### Data contract (runtime return shape)
-
-`createTheme` returns a **BaseResolvedColor** object for `resolve`, `color`, and `onSolid`. This shape is not exported, but it is the **actual runtime contract** in v0.2:
-
-```ts
-type BaseResolvedColor = {
-  oklch: { l: number; c: number; h: number; alpha?: number };
-  step: number;
-  variantUsed: string;
-  seedUsed: string;
-};
-```
-
-If you need CSS strings, you must serialize `oklch` yourself or use the internal serializers in `src/export/` (not part of the published API).
-
-**Stability note**: while `BaseResolvedColor` is not exported as a type, its runtime shape is considered stable for the v0.x line.
-
-### Example
+`createPaletteKit` creates an immutable palette resolver. It normalizes the
+intent registry once and keeps context and output defaults explicit.
 
 ```ts
-import { createTheme } from "@clhaas/palette-kit";
-
-const theme = createTheme({
-  seeds: {
-    light: { neutral: "#111827", accent: "#3d63dd" },
-    dark: { neutral: "#111827", accent: "#3d63dd" },
+const palette = createPaletteKit({
+  context: "light",
+  output: "oklch",
+  preset: "neutral",
+  intents: {
+    brand: { hue: 260, chroma: 0.14 },
+    neutral: { hue: 0, chroma: 0 },
   },
 });
+```
 
-const bg = theme.resolve({
-  role: "bg.app",
-  usage: "bg",
-  surface: "app",
-  context: "light",
+## palette.resolve
+
+```ts
+palette.resolve({
+  usage,
+  intent,
+  level,
+  on,
+  over,
+  under,
+  state,
+  stateDirection,
+  context,
+  output,
+});
+```
+
+Resolution always happens in OKLCH first. The selected `output` is applied only
+after resolution.
+
+```ts
+const surface = palette.resolve({
+  usage: "fill",
+  intent: "neutral",
+  level: 2,
 });
 
-console.log(bg.oklch); // { l, c, h, alpha }
+const text = palette.resolve({
+  usage: "visualVocabulary",
+  intent: "brand",
+  on: surface,
+});
 ```
 
-## Type exports
+## Usage Rules
 
-All types below are exported from `src/types/index.ts` and reexported by the package entrypoint.
+| Usage | Level | Relations |
+| --- | --- | --- |
+| `fill` | Required | `on` optional |
+| `visualVocabulary` | Forbidden | `on` required |
+| `lines` | Required | `on` optional |
+| `overlays` | Required | `over` or `under` optional |
 
-- `CssColorString`
-- `ColorSpace`
-- `ColorContext`
-- `SurfaceIntent`
-- `ColorState`
-- `ColorEmphasis`
-- `SemanticVariant`
-- `ColorRole`
-- `ColorUsage`
-- `BackgroundHint`
-- `ContrastRequirement`
-- `AlphaStrategy`
-- `OutputOptions`
-- `RawColor`
-- `ColorMeta`
-- `ResolvedColor`
-- `ColorQuery`
-- `OnSolidQuery`
-- `SemanticColorTheme`
+`on` enforces APCA contrast. The default target is Lc 60. If the resolver cannot
+meet the target after the configured luminance shift and chroma reduction, it
+throws.
 
-### Selected type details
+## State Rules
 
-#### ColorSpace
+`state` defaults to `"default"`.
+
+When `state` is not `"default"`, `stateDirection` is required. Palette Kit never
+infers whether a state should increase or decrease lightness.
 
 ```ts
-type ColorSpace = "srgb" | "p3" | "oklch";
+palette.resolve({
+  usage: "fill",
+  intent: "brand",
+  level: 4,
+  state: "hover",
+  stateDirection: "increase",
+});
 ```
 
-#### OutputOptions
+## Context Rules
 
-```ts
-interface OutputOptions {
-  preferSpace?: ColorSpace;
-  includeSpaces?: ColorSpace[];
-  gamutMapping?: "clip" | "compressChroma" | "preferP3ThenCompress";
-  strict?: boolean;
-  precision?: { l?: number; c?: number; h?: number; alpha?: number };
-  includeMeta?: boolean;
-}
-```
+Context is never inferred from the system or DOM.
 
-#### ResolvedColor
+Precedence:
 
-```ts
-interface ResolvedColor {
-  value: string;
-  srgb?: string;
-  p3?: string;
-  oklch?: string;
-  alpha: number;
-  meta?: ColorMeta;
-}
-```
+1. Resolver-level `context`
+2. Palette-level `context`
+3. `systemDefaultContext`
 
-`ResolvedColor` is used by internal serializers. It is not returned by `createTheme` in v0.2.
+If none is available, resolution throws.
 
-### Data flow summary
+Context affects default level curves. In dark context, the default fill and
+lines curves use the inverted structural lightness scale while preserving
+intent hue and chroma.
 
-```text
-createTheme(...) → theme.resolve(...) → BaseResolvedColor (runtime shape)
-createTheme(...) → theme.onSolid(...) → BaseResolvedColor (runtime shape)
-```
+## Output Rules
 
-`ResolvedColor` is a **serialization-only** type in v0.2. It is not part of the public resolver contract.
+| Output | Runtime status |
+| --- | --- |
+| `oklch` | Returns normalized OKLCH object |
+| `oklab` | Returns OKLab object |
+| `srgb` | Returns `{ r, g, b, alpha }` |
+| `p3` | Returns Display-P3 `{ r, g, b, alpha }` |
+| `hex` | Serialized to `#rrggbb` |
+| `rgba` | Serialized to `{ r, g, b, a }` |
+
+RGB-like outputs use clipped 8-bit channels.
+
+Output precedence:
+
+1. Resolver-level `output`
+2. Palette-level `output`
+3. `systemDefaultOutput`
+4. Explicit `oklch` default
+
+## Public Types
+
+The package root reexports:
+
+- `PaletteKitConfig`
+- `PaletteKit`
+- `PaletteResolveOptions`
+- `PaletteResolveOutput`
+- `Usage`
+- `Level`
+- `State`
+- `StateDeltaDirection`
+- `Context`
+- `ColorOutput`
+- `OklchColor`
+- `RgbColor`
+- `RgbaColor`
+- `IntentDefinition`
+- `ResolverPresetName`
+- `ResolverConfig`
+- `ResolverConfigOverrides`
+- `RelationParamsConfig`
+- `ChromaConfig`
+
+## Not Public in v0.4
+
+- Intent registry helpers
+- Validators
+- Internal resolver helpers
+- Serializer functions
+- CLI
+- Subpath exporters

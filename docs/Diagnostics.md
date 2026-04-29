@@ -1,19 +1,22 @@
 # Diagnostics
 
-v0.2 does not expose a public diagnostics API. However, some internal serialization paths can attach metadata when `includeMeta` is enabled.
+Palette Kit v0.4 does not expose a public diagnostics API.
 
-## Available metadata (type only)
+Runtime misuse is reported through thrown errors. Core resolver/configuration
+misuse uses structured internal `PaletteKitError` instances, but that class is
+not part of the public API surface yet.
 
-`ColorMeta` includes:
+## Observable Error Areas
 
-- role, variant, usage, context, surface, state, emphasis
-- contrast (APCA/WCAG2 requirements)
-- gamutMapping
-- provenance (string)
+- unknown intent
+- missing required level
+- forbidden level on `visualVocabulary`
+- missing `on` relation
+- multiple relations
+- unresolved context
+- invalid or unsupported serialized output
 
-## Public API status
+## Current Recommendation
 
-- `createTheme` returns `BaseResolvedColor` without `meta`.
-- Internal serializers (`serializeColor`) can attach `meta` when called directly.
-
-If diagnostics are required in the public API, the entrypoint exports would need to change in a future version.
+Catch errors at application boundaries and report the message. Do not depend on
+internal error classes until they are explicitly exported.

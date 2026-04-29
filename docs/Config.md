@@ -1,51 +1,144 @@
-# Config
+# Configuration
 
-This file documents the configuration object accepted by `createTheme`.
-
-## Theme config shape
+`createPaletteKit` accepts a small explicit configuration object.
 
 ```ts
-import { createTheme } from "@clhaas/palette-kit";
+import { createPaletteKit } from "@clhaas/palette-kit";
 
-createTheme({
-  seeds: {
-    light: { neutral: "#111827", accent: "#3d63dd" },
-    dark: { neutral: "#111827", accent: "#3d63dd" },
+const palette = createPaletteKit({
+  context: "light",
+  output: "oklch",
+  intents: {
+    brand: { hue: 260, chroma: 0.14 },
+    neutral: { hue: 0, chroma: 0 },
   },
-  variants: {
-    "category:food": "#ef4444",
-  },
-  preset: "modern",
 });
 ```
 
-### `seeds` (required)
+## intents
 
 ```ts
-{
-  light: { neutral: string; accent: string };
-  dark: { neutral: string; accent: string };
-}
+Record<string, { hue: number; chroma: number }>
 ```
 
-Seed values are **hex strings** only (`#RGB`, `#RRGGBB`, or `#RRGGBBAA`). This is enforced by `utils/parseColor`.
+`intents` is required. Intent names must be flat strings:
 
-### `variants` (optional)
+- not empty
+- no whitespace
+- no `.`
+
+`hue` must be finite and is normalized to `[0, 360)`. `chroma` must be finite
+and greater than or equal to `0`.
+
+Intent names must describe semantic meaning only. Names that encode usage,
+state, relation, level, or visual implementation details are rejected. Keep
+dimensions such as `fill`, `hover`, `on`, `strong`, `red`, and `dark` in
+resolver options or configuration instead of intent names.
+
+## context
 
 ```ts
-Record<string, string>
+"light" | "dark"
 ```
 
-If a `SemanticVariant` like `category:*` or `chart:*` is requested and exists in `variants`, it is used as the seed. Otherwise it falls back to `accent`.
+`context` is optional at palette creation. It becomes the default environment
+for resolver calls.
 
-### `preset` (optional)
+Palette Kit never reads `prefers-color-scheme`, the DOM, or platform state.
 
-- `"modern"` (default)
-- `"radixLike"`
+Context affects default level curves. Dark context inverts the structural
+lightness scale for `fill` and `lines` while preserving semantic hue and chroma.
 
-Presets define OKLCH lightness/chroma curves per surface.
+## systemDefaultContext
 
-## Defaults (from code)
+```ts
+"light" | "dark"
+```
 
-- `preset`: `"modern"`
-- `variants`: `{}`
+`systemDefaultContext` is an optional host-provided fallback.
+
+Context precedence:
+
+1. Resolver-level `context`
+2. Palette-level `context`
+3. `systemDefaultContext`
+
+If no context can be resolved, `palette.resolve` throws.
+
+## output
+
+```ts
+"oklch" | "oklab" | "srgb" | "p3" | "hex" | "rgba"
+```
+
+`output` is optional and defaults to `oklch`.
+
+Runtime support in the current v0.4 implementation:
+
+- `oklch`: supported
+- `oklab`: supported
+- `srgb`: supported
+- `p3`: supported
+- `hex`: supported
+- `rgba`: supported
+
+## systemDefaultOutput
+
+```ts
+"oklch" | "oklab" | "srgb" | "p3" | "hex" | "rgba"
+```
+
+`systemDefaultOutput` is an optional host-provided output fallback.
+
+Output precedence:
+
+1. Resolver-level `output`
+2. Palette-level `output`
+3. `systemDefaultOutput`
+4. Explicit `oklch` default
+
+## Presets and Resolver Config
+
+`preset` is optional and defaults to `"neutral"`.
+
+```ts
+createPaletteKit({
+  context: "light",
+  preset: "soft",
+  intents,
+});
+```
+
+Public presets:
+
+- `soft`
+- `neutral`
+- `strong`
+
+`resolverConfig` explicitly overrides the selected preset.
+
+```ts
+createPaletteKit({
+  context: "light",
+  preset: "neutral",
+  intents,
+  resolverConfig: {
+    relationParams: {
+      on: { contrastTarget: 75 },
+    },
+    stateDeltas: {
+      luminance: { hover: 4 },
+    },
+  },
+});
+```
+
+Supported resolver config sections:
+
+- `levelCurves`
+- `stateDeltas`
+- `relationParams`
+- `chromaLimits`
+
+The default `on` contrast target is APCA Lc 60. `over` and `under` alpha values
+are configured per level.
