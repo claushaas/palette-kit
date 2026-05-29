@@ -80,6 +80,11 @@ const text = palette.resolve({
 meet the target after the configured luminance shift and chroma reduction, it
 throws.
 
+Relation targets may be any color returned by Palette Kit outputs: `oklch`,
+`oklab`, `srgb`, `p3`, `hex`, or `rgba`. Serialized targets are normalized back
+to OKLCH internally before contrast or layering logic runs. CSS/RN strings such
+as `rgba(...)` are not relation targets.
+
 ## State Rules
 
 `state` defaults to `"default"`.

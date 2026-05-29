@@ -28,6 +28,10 @@ const text = palette.resolve({
 });
 ```
 
+`on` may receive any color returned by Palette Kit outputs. This supports
+palettes configured with `output: "rgba"` while keeping contrast resolution
+internal to OKLCH.
+
 ## Current Behavior
 
 `on` enforces APCA contrast. The default target is Lc 60. APCA is the primary

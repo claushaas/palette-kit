@@ -100,7 +100,7 @@ export type PaletteDefaultOutput<
 		? SystemDefaultOutput
 		: 'oklch';
 
-type RelationTarget = OklchColor;
+type RelationTarget = PaletteResolveOutput<ColorOutput>;
 
 type DefaultStateOptions = Readonly<{
 	state?: 'default';

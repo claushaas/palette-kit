@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { normalizeOklch, type OklchColor } from '../../core/oklch.js';
+import {
+	serializeOklchToHex,
+	serializeOklchToOklab,
+	serializeOklchToSrgb,
+} from '../../export/serialize.js';
 import * as publicApi from '../../index.js';
 import { PaletteKitError } from '../../utils/errors/errors.js';
 import {
@@ -18,6 +23,13 @@ const targetColor = normalizeOklch({ c: 0, h: 0, l: 96 });
 
 const invalidRelationError =
 	'Invalid relation "beside". Expected one of: on, over, under.';
+
+const expectSerializedNeutralTarget = (target: OklchColor | undefined) => {
+	expect(target?.space).toBe('oklch');
+	expect(target?.alpha).toBe(1);
+	expect(target?.c).toBeCloseTo(0);
+	expect(target?.l).toBeCloseTo(96.1151360371199);
+};
 
 describe('relation validation', () => {
 	it('accepts canonical relations', () => {
@@ -104,6 +116,23 @@ describe('relation compatibility', () => {
 		);
 	});
 
+	it('normalizes serialized relation targets to OKLCH', () => {
+		const oklabTarget = serializeOklchToOklab(targetColor);
+		const hexTarget = serializeOklchToHex(targetColor);
+		const srgbTarget = serializeOklchToSrgb(targetColor);
+
+		expect(validateRelationOptions('fill', { on: oklabTarget })).toEqual({
+			relation: 'on',
+			target: targetColor,
+		});
+		expectSerializedNeutralTarget(
+			validateRelationOptions('fill', { on: hexTarget })?.target,
+		);
+		expectSerializedNeutralTarget(
+			validateRelationOptions('fill', { on: srgbTarget })?.target,
+		);
+	});
+
 	it('rejects forbidden usage and relation combinations', () => {
 		expect(() =>
 			validateRelationOptions('fill', { over: targetColor }),
@@ -136,12 +165,21 @@ describe('relation compatibility', () => {
 			validateRelationOptions('fill', {
 				on: { space: 'rgb' },
 			} as unknown as RelationOptions),
-		).toThrow('Relation "on" target must be a normalized OKLCH color.');
+		).toThrow(
+			'Relation "on" target must be a normalized OKLCH color or a serialized Palette Kit color output.',
+		);
 		expect(() =>
 			validateRelationOptions('fill', {
 				on: { space: 'rgb' },
 			} as unknown as RelationOptions),
 		).toThrow(PaletteKitError);
+		expect(() =>
+			validateRelationOptions('fill', {
+				on: 'rgba(255, 255, 255, 1)',
+			} as unknown as RelationOptions),
+		).toThrow(
+			'Relation "on" target must be a normalized OKLCH color or a serialized Palette Kit color output.',
+		);
 	});
 });
 

@@ -4,6 +4,8 @@ import {
 	normalizeOklch,
 	type OklchColor,
 } from '../../core/oklch.js';
+import type { ColorOutput, ResolveOutput } from '../../export/types.js';
+import { linearRgbToOklab, oklabToOklch } from '../../operators/convert.js';
 import {
 	defaultResolverConfig,
 	type ResolverConfig,
@@ -24,12 +26,14 @@ export type Relation = (typeof RELATIONS)[number];
 
 export type RelationAvailability = 'required' | 'optional' | 'forbidden';
 
+export type RelationInputTarget = ResolveOutput<ColorOutput>;
+
 export type RelationTarget = Readonly<OklchColor>;
 
 export type RelationOptions = Readonly<{
-	on?: RelationTarget;
-	over?: RelationTarget;
-	under?: RelationTarget;
+	on?: RelationInputTarget;
+	over?: RelationInputTarget;
+	under?: RelationInputTarget;
 }>;
 
 export type ResolvedRelation<R extends Relation = Relation> = Readonly<{
@@ -101,6 +105,95 @@ const relationList = RELATIONS.join(', ');
 const formatInvalidRelationError = (value: unknown) =>
 	`Invalid relation "${String(value)}". Expected one of: ${relationList}.`;
 
+const isFiniteNumber = (value: unknown): value is number =>
+	typeof value === 'number' && Number.isFinite(value);
+
+const isEncodedRgbChannel = (value: unknown): value is number =>
+	typeof value === 'number' &&
+	Number.isInteger(value) &&
+	value >= 0 &&
+	value <= 255;
+
+const isAlphaChannel = (value: unknown): value is number =>
+	isFiniteNumber(value) && value >= 0 && value <= 1;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+	typeof value === 'object' && value !== null;
+
+const isOklabRelationTarget = (
+	value: unknown,
+): value is ResolveOutput<'oklab'> => {
+	if (!isRecord(value)) {
+		return false;
+	}
+
+	return (
+		value.space === 'oklab' &&
+		isFiniteNumber(value.l) &&
+		value.l >= 0 &&
+		value.l <= 1 &&
+		isFiniteNumber(value.a) &&
+		isFiniteNumber(value.b) &&
+		isAlphaChannel(value.alpha)
+	);
+};
+
+const isRgbRelationTarget = (
+	value: unknown,
+): value is ResolveOutput<'srgb'> => {
+	if (!isRecord(value)) {
+		return false;
+	}
+
+	return (
+		isEncodedRgbChannel(value.r) &&
+		isEncodedRgbChannel(value.g) &&
+		isEncodedRgbChannel(value.b) &&
+		isAlphaChannel(value.alpha)
+	);
+};
+
+const isRgbaRelationTarget = (
+	value: unknown,
+): value is ResolveOutput<'rgba'> => {
+	if (!isRecord(value)) {
+		return false;
+	}
+
+	return (
+		isEncodedRgbChannel(value.r) &&
+		isEncodedRgbChannel(value.g) &&
+		isEncodedRgbChannel(value.b) &&
+		isAlphaChannel(value.a)
+	);
+};
+
+const isHexRelationTarget = (value: unknown): value is ResolveOutput<'hex'> =>
+	typeof value === 'string' && /^#[0-9a-f]{6}$/.test(value);
+
+const parseHexChannel = (hex: string, start: number) =>
+	Number.parseInt(hex.slice(start, start + 2), 16);
+
+const decodeSrgbChannel = (channel: number) => {
+	const encoded = channel / 255;
+
+	return encoded <= 0.04045
+		? encoded / 12.92
+		: ((encoded + 0.055) / 1.055) ** 2.4;
+};
+
+const rgbTargetToOklch = (
+	target: Readonly<{ r: number; g: number; b: number; alpha: number }>,
+) =>
+	oklabToOklch(
+		linearRgbToOklab({
+			alpha: target.alpha,
+			b: decodeSrgbChannel(target.b),
+			g: decodeSrgbChannel(target.g),
+			r: decodeSrgbChannel(target.r),
+		}),
+	);
+
 export function isRelation(value: unknown): value is Relation {
 	return (
 		typeof value === 'string' &&
@@ -114,13 +207,41 @@ export function assertRelation(value: unknown): asserts value is Relation {
 	}
 }
 
-function assertRelationTarget(
+function normalizeRelationTarget(
 	relation: Relation,
 	target: unknown,
-): asserts target is RelationTarget {
-	if (!isOklchColor(target)) {
-		throw createInvalidRelationTargetError(relation);
+): RelationTarget {
+	if (isOklchColor(target)) {
+		return target;
 	}
+
+	if (isOklabRelationTarget(target)) {
+		return oklabToOklch(target);
+	}
+
+	if (isHexRelationTarget(target)) {
+		return rgbTargetToOklch({
+			alpha: 1,
+			b: parseHexChannel(target, 5),
+			g: parseHexChannel(target, 3),
+			r: parseHexChannel(target, 1),
+		});
+	}
+
+	if (isRgbaRelationTarget(target)) {
+		return rgbTargetToOklch({
+			alpha: target.a,
+			b: target.b,
+			g: target.g,
+			r: target.r,
+		});
+	}
+
+	if (isRgbRelationTarget(target)) {
+		return rgbTargetToOklch(target);
+	}
+
+	throw createInvalidRelationTargetError(relation);
 }
 
 const getProvidedRelations = (relations: RelationOptions) =>
@@ -165,11 +286,11 @@ export function validateRelationOptions(
 	}
 
 	const target = relations[relation];
-	assertRelationTarget(relation, target);
+	const normalizedTarget = normalizeRelationTarget(relation, target);
 
 	return Object.freeze({
 		relation,
-		target,
+		target: normalizedTarget,
 	});
 }
 

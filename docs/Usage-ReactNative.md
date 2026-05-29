@@ -43,6 +43,17 @@ Convert it to a React Native string if needed:
 const rnColor = `rgba(${background.r}, ${background.g}, ${background.b}, ${background.a})`;
 ```
 
+Use the Palette Kit RGBA object itself for relation targets before converting it
+to a React Native string:
+
+```ts
+const text = palette.resolve({
+  usage: "visualVocabulary",
+  intent: "brand",
+  on: background,
+});
+```
+
 ## Resolver Override
 
 You can override output per call:
