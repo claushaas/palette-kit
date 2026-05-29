@@ -76,7 +76,7 @@ export const createInvalidRelationTargetError = (
 		'INVALID_RELATION_TARGET',
 		'resolver-input',
 		message ??
-			`Relation "${relation}" target must be a normalized OKLCH color.`,
+			`Relation "${relation}" target must be a normalized OKLCH color or a serialized Palette Kit color output.`,
 		{ relation },
 	);
 

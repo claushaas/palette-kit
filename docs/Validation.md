@@ -53,7 +53,9 @@ Relation rules:
 - `overlays` forbids `on`.
 - `fill` and `lines` allow `on`.
 
-Relation targets must be normalized OKLCH colors.
+Relation targets may be normalized OKLCH colors or serialized Palette Kit
+outputs: `oklab`, `srgb`, `p3`, `hex`, or `rgba`. CSS/RN strings such as
+`rgba(...)` are not accepted.
 
 ## State
 

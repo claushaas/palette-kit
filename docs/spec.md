@@ -81,6 +81,8 @@ and the current explicit clip gamut strategy.
 - Forbidden axis combinations throw.
 - `on` enforces APCA contrast with a default Lc 60 target and exposes WCAG as a
   fallback diagnostic.
+- Relation targets accept normalized OKLCH or any serialized Palette Kit output
+  and are normalized back to OKLCH before relation logic runs.
 - `over` applies configured alpha by level.
 - `under` applies configured alpha and luminance reduction by level.
 - State alpha deltas apply only where alpha is allowed, currently `overlays`.

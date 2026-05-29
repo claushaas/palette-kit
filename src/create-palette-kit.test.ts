@@ -187,6 +187,33 @@ describe('public Palette Kit API', () => {
 		);
 	});
 
+	it('accepts serialized Palette Kit outputs as relation targets', () => {
+		const oklchPalette = createPaletteKit({ context: 'light', intents });
+		const rgbaPalette = createPaletteKit({
+			context: 'light',
+			intents,
+			output: 'rgba',
+		});
+		const surface = oklchPalette.resolve(surfaceOptions);
+		const rgbaSurface = rgbaPalette.resolve(surfaceOptions);
+		const text = rgbaPalette.resolve({
+			intent: 'brand',
+			on: rgbaSurface,
+			output: 'oklch',
+			usage: 'visualVocabulary',
+		});
+
+		expect(rgbaSurface).toEqual({
+			a: 1,
+			b: 242,
+			g: 242,
+			r: 242,
+		} satisfies RgbaColor);
+		expect(Math.abs(measureApcaContrast(text, surface))).toBeGreaterThanOrEqual(
+			60,
+		);
+	});
+
 	it('uses preset and resolverConfig as public resolver configuration', () => {
 		const softPalette = createPaletteKit({
 			context: 'light',
@@ -270,6 +297,19 @@ describe('public Palette Kit API', () => {
 		const palette = createPaletteKit({ context: 'light', intents });
 		const surface = palette.resolve(surfaceOptions);
 		const expectTypeErrors = () => {
+			const rgbaPalette = createPaletteKit({
+				context: 'light',
+				intents,
+				output: 'rgba',
+			});
+			const rgbaSurface: PaletteResolveOutput<'rgba'> =
+				rgbaPalette.resolve(surfaceOptions);
+			rgbaPalette.resolve({
+				intent: 'brand',
+				on: rgbaSurface,
+				usage: 'visualVocabulary',
+			});
+
 			// @ts-expect-error fill requires level.
 			palette.resolve({ intent: 'brand', usage: 'fill' });
 			// @ts-expect-error visualVocabulary requires on.
