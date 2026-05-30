@@ -68,8 +68,6 @@ jobs:
 
       - name: Publish to npm
         if: steps.published.outputs.exists == 'false'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public --provenance
 
       - name: Skip already published version
