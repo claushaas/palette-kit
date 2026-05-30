@@ -31,12 +31,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Verify publishing toolchain
+        run: |
+          node --version
+          npm --version
 
       - name: Validate package
         run: |
@@ -68,7 +73,7 @@ jobs:
 
       - name: Publish to npm
         if: steps.published.outputs.exists == 'false'
-        run: npm publish --access public --provenance
+        run: npm publish --access public
 
       - name: Skip already published version
         if: steps.published.outputs.exists == 'true'
